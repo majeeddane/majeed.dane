@@ -18,27 +18,24 @@ const LanguageContext = createContext<LanguageContextType>({
   t: (ar: string, en: string) => ar,
 });
 
+function getInitialLang(): Language {
+  if (typeof window === 'undefined') return 'ar';
+  const saved = localStorage.getItem('lang');
+  if (saved === 'ar' || saved === 'en') return saved;
+  return 'ar';
+}
+
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState<Language>('ar');
-  const [mounted, setMounted] = useState(false);
+  const [lang, setLang] = useState<Language>(getInitialLang);
 
   useEffect(() => {
-    const saved = localStorage.getItem('lang');
-    if (saved === 'ar' || saved === 'en') {
-      setLang(saved);
-    }
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
     localStorage.setItem('lang', lang);
-  }, [lang, mounted]);
+  }, [lang]);
 
   const toggleLanguage = useCallback(() => {
-    setLang((prev) => (prev === 'ar' ? 'en' : 'ar'));
+    setLang((prev) => prev === 'ar' ? 'en' : 'ar');
   }, []);
 
   const t = useCallback(

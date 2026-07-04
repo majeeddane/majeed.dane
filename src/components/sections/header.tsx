@@ -2,7 +2,7 @@
 
 import { useLanguage } from '@/lib/language-context';
 import { useState, useEffect } from 'react';
-import { Menu, Download } from 'lucide-react';
+import { Menu, Download, X } from 'lucide-react';
 import { Sheet, SheetTrigger, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 
@@ -27,10 +27,7 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleNavClick = (
-    e: React.MouseEvent<HTMLAnchorElement>,
-    href: string
-  ) => {
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
     setMobileOpen(false);
     const target = document.querySelector(href);
@@ -39,7 +36,7 @@ export default function Header() {
     }
   };
 
-  const scrollToTop = (e: React.MouseEvent<HTMLAnchorElement>) => {
+  const scrollToTop = (e: React.MouseEvent) => {
     e.preventDefault();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -48,20 +45,21 @@ export default function Header() {
     <header
       className={`fixed top-0 z-50 w-full transition-all duration-300 ${
         scrolled
-          ? 'border-b border-navy-800/10 bg-white/80 backdrop-blur-md shadow-sm'
+          ? 'border-b border-navy-800/10 bg-white/90 backdrop-blur-lg shadow-sm'
           : 'bg-transparent'
       }`}
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
         {/* Logo / Name */}
-        <a
-          href="#"
+        <button
           onClick={scrollToTop}
-          className="text-lg font-bold text-navy-900 transition-colors hover:text-blue-600"
+          className={`text-lg font-bold transition-colors hover:text-blue-600 ${
+            scrolled ? 'text-navy-900' : 'text-white'
+          }`}
         >
           {t('عبدالمجيد الضاعني', 'Al-Daani')}
-        </a>
+        </button>
 
         {/* Desktop Navigation */}
         <nav className="hidden items-center gap-1 md:flex">
@@ -70,7 +68,9 @@ export default function Header() {
               key={index}
               href={link.href}
               onClick={(e) => handleNavClick(e, link.href)}
-              className="rounded-md px-3 py-2 text-sm text-navy-900/70 transition-colors duration-200 hover:bg-navy-800/5 hover:text-navy-900"
+              className={`rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-white/10 ${
+                scrolled ? 'text-navy-900/70 hover:text-navy-900 hover:bg-navy-800/5' : 'text-white/80 hover:text-white'
+              }`}
             >
               {t(link.ar, link.en)}
             </a>
@@ -82,7 +82,11 @@ export default function Header() {
           {/* Language Toggle */}
           <button
             onClick={toggleLanguage}
-            className="flex h-9 min-w-[42px] cursor-pointer items-center justify-center rounded-full bg-navy-900 px-3 text-xs font-semibold text-white transition-colors duration-200 hover:bg-navy-800"
+            className={`flex h-9 min-w-[42px] cursor-pointer items-center justify-center rounded-full px-3 text-xs font-bold transition-all duration-200 ${
+              scrolled
+                ? 'bg-navy-900 text-white hover:bg-navy-800'
+                : 'bg-white/15 text-white hover:bg-white/25 border border-white/20'
+            }`}
           >
             {lang === 'ar' ? 'EN' : 'عربي'}
           </button>
@@ -90,73 +94,74 @@ export default function Header() {
           {/* CV Download Button */}
           <a
             href="#"
-            className="inline-flex items-center gap-2 rounded-lg bg-gold px-4 py-2 text-sm font-semibold text-navy-900 transition-colors duration-200 hover:bg-gold-light"
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+              scrolled
+                ? 'bg-gold text-navy-900 hover:bg-gold-light'
+                : 'bg-gold text-navy-900 hover:bg-gold-light shadow-lg shadow-gold/20'
+            }`}
           >
             <Download className="h-4 w-4" />
-            {t('السيرة الذاتية', 'CV')}
+            <span className="hidden lg:inline">{t('السيرة الذاتية', 'Download CV')}</span>
           </a>
         </div>
 
         {/* Mobile Menu */}
         <div className="flex items-center gap-2 md:hidden">
-          {/* Language Toggle (Mobile) */}
           <button
             onClick={toggleLanguage}
-            className="flex h-8 min-w-[36px] cursor-pointer items-center justify-center rounded-full bg-navy-900 px-2 text-[10px] font-semibold text-white transition-colors duration-200 hover:bg-navy-800"
+            className={`flex h-8 min-w-[36px] cursor-pointer items-center justify-center rounded-full px-2 text-[10px] font-bold transition-all duration-200 ${
+              scrolled ? 'bg-navy-900 text-white' : 'bg-white/15 text-white border border-white/20'
+            }`}
           >
             {lang === 'ar' ? 'EN' : 'عربي'}
           </button>
 
-          {/* Hamburger Menu */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-navy-900">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={scrolled ? 'text-navy-900' : 'text-white'}
+              >
                 <Menu className="h-6 w-6" />
-                <span className="sr-only">
-                  {t('فتح القائمة', 'Open menu')}
-                </span>
+                <span className="sr-only">{t('فتح القائمة', 'Open menu')}</span>
               </Button>
             </SheetTrigger>
             <SheetContent
               side={isRTL ? 'right' : 'left'}
-              className="w-[280px] bg-white"
+              className="w-[280px] bg-white pt-12"
             >
-              <div className="flex flex-col gap-6 pt-8">
+              <div className="flex flex-col gap-2">
                 {/* Mobile Nav Links */}
-                <nav className="flex flex-col gap-1">
-                  {navLinks.map((link, index) => (
-                    <a
-                      key={index}
-                      href={link.href}
-                      onClick={(e) => handleNavClick(e, link.href)}
-                      className="rounded-md px-4 py-3 text-base font-medium text-navy-900/80 transition-colors duration-200 hover:bg-navy-800/5 hover:text-navy-900"
-                    >
-                      {t(link.ar, link.en)}
-                    </a>
-                  ))}
-                </nav>
-
-                {/* Mobile Actions */}
-                <div className="flex flex-col gap-3 border-t border-navy-800/10 pt-4">
-                  {/* Language Toggle in Sheet */}
-                  <button
-                    onClick={() => {
-                      toggleLanguage();
-                    }}
-                    className="flex items-center justify-center rounded-lg border border-navy-800/10 px-4 py-3 text-sm font-medium text-navy-900 transition-colors duration-200 hover:bg-navy-800/5"
-                  >
-                    {lang === 'ar' ? 'English' : 'العربية'}
-                  </button>
-
-                  {/* CV Download */}
+                {navLinks.map((link, index) => (
                   <a
-                    href="#"
-                    className="inline-flex items-center justify-center gap-2 rounded-lg bg-gold px-4 py-3 text-sm font-semibold text-navy-900 transition-colors duration-200 hover:bg-gold-light"
+                    key={index}
+                    href={link.href}
+                    onClick={(e) => handleNavClick(e, link.href)}
+                    className="rounded-lg px-4 py-3 text-base font-medium text-navy-900/80 transition-colors duration-200 hover:bg-navy-800/5 hover:text-navy-900"
                   >
-                    <Download className="h-4 w-4" />
-                    {t('تحميل السيرة الذاتية', 'Download CV')}
+                    {t(link.ar, link.en)}
                   </a>
-                </div>
+                ))}
+
+                <div className="my-4 border-t border-navy-800/10" />
+
+                {/* Language Toggle */}
+                <button
+                  onClick={() => { toggleLanguage(); setMobileOpen(false); }}
+                  className="flex items-center justify-center rounded-lg border border-navy-800/10 px-4 py-3 text-sm font-medium text-navy-900 transition-colors duration-200 hover:bg-navy-800/5"
+                >
+                  {lang === 'ar' ? 'English' : 'العربية'}
+                </button>
+
+                {/* CV Download */}
+                <a
+                  href="#"
+                  className="mt-2 inline-flex items-center justify-center gap-2 rounded-lg bg-gold px-4 py-3 text-sm font-semibold text-navy-900 transition-colors duration-200 hover:bg-gold-light"
+                >
+                  <Download className="h-4 w-4" />
+                  {t('تحميل السيرة الذاتية', 'Download CV')}
+                </a>
               </div>
             </SheetContent>
           </Sheet>

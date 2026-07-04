@@ -4,7 +4,7 @@ import { useLanguage } from '@/lib/language-context';
 import { Download } from 'lucide-react';
 
 const quickLinks = [
-  { ar: 'عني', en: 'About', href: '#about' },
+  { ar: 'نبذة عني', en: 'About', href: '#about' },
   { ar: 'المهارات', en: 'Skills', href: '#skills' },
   { ar: 'الخبرة', en: 'Experience', href: '#experience' },
   { ar: 'الأعمال', en: 'Portfolio', href: '#portfolio' },
@@ -24,7 +24,7 @@ export default function Footer() {
 
   return (
     <footer
-      className="border-t border-gold/50 bg-[#0A1D3A]"
+      className="border-t border-gold/30 bg-[#0A1D3A]"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
@@ -34,10 +34,10 @@ export default function Footer() {
             <h3 className="text-xl font-bold text-white">
               {t('عبدالمجيد الضاعني', 'Al-Daani')}
             </h3>
-            <p className="mt-1 text-sm text-gold">
+            <p className="mt-1 text-sm font-medium text-gold">
               {t('مصمم ومسوق رقمي', 'Digital Designer & Marketer')}
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-white/60">
+            <p className="mt-3 text-sm leading-relaxed text-white/50">
               {t(
                 'أساعد العلامات التجارية على بناء هوية بصرية مميزة وتحقيق نمو رقمي مستدام.',
                 'Helping brands build distinctive visual identities and achieve sustainable digital growth.'
@@ -50,13 +50,13 @@ export default function Footer() {
             <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gold">
               {t('روابط سريعة', 'Quick Links')}
             </h4>
-            <nav className="flex flex-col gap-3">
+            <nav className="flex flex-col gap-2.5">
               {quickLinks.map((link, index) => (
                 <a
                   key={index}
                   href={link.href}
                   onClick={(e) => handleNavClick(e, link.href)}
-                  className="text-sm text-white/60 transition-colors duration-200 hover:text-gold"
+                  className="text-sm text-white/50 transition-colors duration-200 hover:text-gold"
                 >
                   {t(link.ar, link.en)}
                 </a>
@@ -72,14 +72,14 @@ export default function Footer() {
               </h4>
               <a
                 href="#"
-                className="inline-flex items-center gap-2 rounded-lg border border-gold px-5 py-2.5 text-sm font-medium text-gold transition-all duration-300 hover:bg-gold hover:text-navy-900"
+                className="inline-flex items-center gap-2 rounded-lg border border-gold/50 px-5 py-2.5 text-sm font-medium text-gold transition-all duration-300 hover:bg-gold hover:text-navy-900"
               >
                 <Download className="h-4 w-4" />
                 {t('تحميل السيرة الذاتية', 'Download CV')}
               </a>
             </div>
 
-            <p className="mt-8 text-xs text-white/40 md:mt-0">
+            <p className="mt-8 text-xs text-white/30 md:mt-0">
               {t(
                 '© 2024 عبدالمجيد الضاعني. جميع الحقوق محفوظة',
                 '© 2024 Al-Daani. All Rights Reserved'
