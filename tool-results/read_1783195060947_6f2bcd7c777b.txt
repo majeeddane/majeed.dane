@@ -1,0 +1,587 @@
+     1→     1→'use client';
+     2→     2→
+     3→     3→import { useState, useEffect, useCallback } from 'react';
+     4→     4→import { useLanguage } from '@/lib/language-context';
+     5→     5→import { Button } from '@/components/ui/button';
+     6→     6→import { Input } from '@/components/ui/input';
+     7→     7→import { Textarea } from '@/components/ui/textarea';
+     8→     8→import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+     9→     9→import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+    10→    10→import { Badge } from '@/components/ui/badge';
+    11→    11→import {
+    12→    12→  X,
+    13→    13→  Lock,
+    14→    14→  Upload,
+    15→    15→  FileText,
+    16→    16→  Image as ImageIcon,
+    17→    17→  Settings,
+    18→    18→  LogOut,
+    19→    19→  Loader2,
+    20→    20→  Check,
+    21→    21→  Plus,
+    22→    22→  Trash2,
+    23→    23→  Save,
+    24→    24→  Eye,
+    25→    25→  ChevronDown,
+    26→    26→} from 'lucide-react';
+    27→    27→import { useToast } from '@/hooks/use-toast';
+    28→    28→
+    29→    29→interface ContentItem {
+    30→    30→  key: string;
+    31→    31→  valueAr: string;
+    32→    32→  valueEn: string;
+    33→    33→  type: string;
+    34→    34→}
+    35→    35→
+    36→    36→interface PortfolioItemData {
+    37→    37→  id: string;
+    38→    38→  titleAr: string;
+    39→    39→  titleEn: string;
+    40→    40→  category: string;
+    41→    41→  imageUrl: string;
+    42→    42→}
+    43→    43→
+    44→    44→// Map content keys to readable labels
+    45→    45→const keyLabels: Record<string, { ar: string; en: string; icon: string }> = {
+    46→    46→  hero_name_ar: { ar: 'الاسم الكامل', en: 'Full Name', icon: 'user' },
+    47→    47→  hero_title_ar: { ar: 'المسمى الوظيفي', en: 'Job Title', icon: 'briefcase' },
+    48→    48→  hero_tagline_ar: { ar: 'الشعار النصي', en: 'Tagline', icon: 'quote' },
+    49→    49→  about_ar: { ar: 'النبذة التعريفية', en: 'About Bio', icon: 'filetext' },
+    50→    50→  about_age: { ar: 'العمر', en: 'Age', icon: 'user' },
+    51→    51→  about_nationality: { ar: 'الجنسية', en: 'Nationality', icon: 'globe' },
+    52→    52→  about_status: { ar: 'الحالة الاجتماعية', en: 'Status', icon: 'heart' },
+    53→    53→  about_availability: { ar: 'التفرغ', en: 'Availability', icon: 'briefcase' },
+    54→    54→  about_license: { ar: 'رخصة القيادة', en: 'License', icon: 'car' },
+    55→    55→  about_teamwork: { ar: 'العمل ضمن فريق', en: 'Teamwork', icon: 'users' },
+    56→    56→  about_location: { ar: 'الموقع', en: 'Location', icon: 'map' },
+    57→    57→  education_ar: { ar: 'التعليم', en: 'Education', icon: 'grad' },
+    58→    58→  contact_phone: { ar: 'الهاتف', en: 'Phone', icon: 'phone' },
+    59→    59→  contact_email: { ar: 'البريد الإلكتروني', en: 'Email', icon: 'mail' },
+    60→    60→  contact_location: { ar: 'موقع التواصل', en: 'Contact Location', icon: 'map' },
+    61→    61→  stats_experience: { ar: 'سنوات الخبرة', en: 'Years Experience', icon: 'chart' },
+    62→    62→  stats_clients: { ar: 'عدد العملاء', en: 'Clients Count', icon: 'chart' },
+    63→    63→  stats_projects: { ar: 'عدد المشاريع', en: 'Projects Count', icon: 'chart' },
+    64→    64→  stats_campaigns: { ar: 'عدد الحملات', en: 'Campaigns Count', icon: 'chart' },
+    65→    65→  stats_experience_label_ar: { ar: 'وصف الخبرة', en: 'Experience Label', icon: 'text' },
+    66→    66→  stats_clients_label_ar: { ar: 'وصف العملاء', en: 'Clients Label', icon: 'text' },
+    67→    67→  stats_projects_label_ar: { ar: 'وصف المشاريع', en: 'Projects Label', icon: 'text' },
+    68→    68→  stats_campaigns_label_ar: { ar: 'وصف الحملات', en: 'Campaigns Label', icon: 'text' },
+    69→    69→};
+    70→    70→
+    71→    71→export default function AdminPanel() {
+    72→    72→  const { lang, t } = useLanguage();
+    73→    73→  const isRTL = lang === 'ar';
+    74→    74→  const [isOpen, setIsOpen] = useState(false);
+    75→    75→  const [isLoggedIn, setIsLoggedIn] = useState(false);
+    76→    76→  const [password, setPassword] = useState('');
+    77→    77→  const [loginLoading, setLoginLoading] = useState(false);
+    78→    78→  const [activeTab, setActiveTab] = useState('content');
+    79→    79→  const [saving, setSaving] = useState(false);
+    80→    80→  const { toast } = useToast();
+    81→    81→
+    82→    82→  const [contentData, setContentData] = useState<Record<string, { valueAr: string; valueEn: string }>>({});
+    83→    83→  const [contentLoaded, setContentLoaded] = useState(false);
+    84→    84→  const [portfolioItems, setPortfolioItems] = useState<PortfolioItemData[]>([]);
+    85→    85→  const [portfolioLoaded, setPortfolioLoaded] = useState(false);
+    86→    86→  const [uploading, setUploading] = useState(false);
+    87→    87→  const [expandedKey, setExpandedKey] = useState<string | null>(null);
+    88→    88→
+    89→    89→  // Current file states
+    90→    90→  const [currentProfileImg, setCurrentProfileImg] = useState<string>('');
+    91→    91→  const [currentCvFile, setCurrentCvFile] = useState<string>('');
+    92→    92→  const [currentPortfolioFile, setCurrentPortfolioFile] = useState<string>('');
+    93→    93→
+    94→    94→  useEffect(() => {
+    95→    95→    const handleKeyDown = (e: KeyboardEvent) => {
+    96→    96→      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+    97→    97→        e.preventDefault();
+    98→    98→        setIsOpen(true);
+    99→    99→      }
+   100→   100→      if (e.key === 'Escape' && isOpen) setIsOpen(false);
+   101→   101→    };
+   102→   102→    window.addEventListener('keydown', handleKeyDown);
+   103→   103→    return () => window.removeEventListener('keydown', handleKeyDown);
+   104→   104→  }, [isOpen]);
+   105→   105→
+   106→   106→  const handleLogin = useCallback(async (e: React.FormEvent) => {
+   107→   107→    e.preventDefault();
+   108→   108→    setLoginLoading(true);
+   109→   109→    try {
+   110→   110→      const res = await fetch('/api/auth', {
+   111→   111→        method: 'POST',
+   112→   112→        headers: { 'Content-Type': 'application/json' },
+   113→   113→        body: JSON.stringify({ password }),
+   114→   114→      });
+   115→   115→      const data = await res.json();
+   116→   116→      if (data.success) {
+   117→   117→        setIsLoggedIn(true);
+   118→   118→        toast({ title: t('تم تسجيل الدخول بنجاح', 'Login successful') });
+   119→   119→      } else {
+   120→   120→        toast({ title: t('كلمة المرور غير صحيحة', 'Incorrect password'), variant: 'destructive' });
+   121→   121→      }
+   122→   122→    } catch {
+   123→   123→      toast({ title: t('حدث خطأ', 'An error occurred'), variant: 'destructive' });
+   124→   124→    }
+   125→   125→    setLoginLoading(false);
+   126→   126→  }, [password, t, toast]);
+   127→   127→
+   128→   128→  const loadContent = useCallback(async () => {
+   129→   129→    if (contentLoaded) return;
+   130→   130→    try {
+   131→   131→      const res = await fetch('/api/content');
+   132→   132→      const data: ContentItem[] = await res.json();
+   133→   133→      const map: Record<string, { valueAr: string; valueEn: string }> = {};
+   134→   134→      data.forEach((item) => {
+   135→   135→        map[item.key] = { valueAr: item.valueAr || '', valueEn: item.valueEn || '' };
+   136→   136→        if (item.key === 'profile_image' && item.valueAr) setCurrentProfileImg(item.valueAr);
+   137→   137→        if (item.key === 'cv_file' && item.valueAr) setCurrentCvFile(item.valueAr);
+   138→   138→        if (item.key === 'portfolio_file' && item.valueAr) setCurrentPortfolioFile(item.valueAr);
+   139→   139→      });
+   140→   140→      setContentData(map);
+   141→   141→      setContentLoaded(true);
+   142→   142→    } catch {
+   143→   143→      toast({ title: t('فشل تحميل المحتوى', 'Failed to load content'), variant: 'destructive' });
+   144→   144→    }
+   145→   145→  }, [contentLoaded, t, toast]);
+   146→   146→
+   147→   147→  const loadPortfolio = useCallback(async () => {
+   148→   148→    if (portfolioLoaded) return;
+   149→   149→    try {
+   150→   150→      const res = await fetch('/api/portfolio');
+   151→   151→      const data: PortfolioItemData[] = await res.json();
+   152→   152→      setPortfolioItems(data);
+   153→   153→      setPortfolioLoaded(true);
+   154→   154→    } catch {
+   155→   155→      toast({ title: t('فشل تحميل الأعمال', 'Failed to load portfolio'), variant: 'destructive' });
+   156→   156→    }
+   157→   157→  }, [portfolioLoaded, t, toast]);
+   158→   158→
+   159→   159→  const saveContent = useCallback(async (key: string) => {
+   160→   160→    setSaving(true);
+   161→   161→    try {
+   162→   162→      const item = contentData[key];
+   163→   163→      if (!item) return;
+   164→   164→      await fetch('/api/content', {
+   165→   165→        method: 'PUT',
+   166→   166→        headers: { 'Content-Type': 'application/json' },
+   167→   167→        body: JSON.stringify({ key, valueAr: item.valueAr, valueEn: item.valueEn }),
+   168→   168→      });
+   169→   169→      toast({ title: t('✓ تم الحفظ بنجاح', '✓ Saved successfully') });
+   170→   170→    } catch {
+   171→   171→      toast({ title: t('فشل الحفظ', 'Save failed'), variant: 'destructive' });
+   172→   172→    }
+   173→   173→    setSaving(false);
+   174→   174→  }, [contentData, t, toast]);
+   175→   175→
+   176→   176→  const handleFileUpload = useCallback(async (file: File, purpose: string) => {
+   177→   177→    setUploading(true);
+   178→   178→    const formData = new FormData();
+   179→   179→    formData.append('file', file);
+   180→   180→    formData.append('purpose', purpose);
+   181→   181→    try {
+   182→   182→      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+   183→   183→      const data = await res.json();
+   184→   184→      if (data.url) {
+   185→   185→        await fetch('/api/content', {
+   186→   186→          method: 'PUT',
+   187→   187→          headers: { 'Content-Type': 'application/json' },
+   188→   188→          body: JSON.stringify({ key: purpose, valueAr: data.url, valueEn: data.url }),
+   189→   189→        });
+   190→   190→        if (purpose === 'profile_image') setCurrentProfileImg(data.url);
+   191→   191→        if (purpose === 'cv_file') setCurrentCvFile(data.url);
+   192→   192→        if (purpose === 'portfolio_file') setCurrentPortfolioFile(data.url);
+   193→   193→        toast({ title: t('✓ تم رفع الملف بنجاح', '✓ File uploaded successfully') });
+   194→   194→      }
+   195→   195→    } catch {
+   196→   196→      toast({ title: t('فشل رفع الملف', 'File upload failed'), variant: 'destructive' });
+   197→   197→    }
+   198→   198→    setUploading(false);
+   199→   199→  }, [t, toast]);
+   200→   200→
+   201→   201→  const addPortfolioItem = useCallback(async () => {
+   202→   202→    try {
+   203→   203→      const res = await fetch('/api/portfolio', {
+   204→   204→        method: 'POST',
+   205→   205→        headers: { 'Content-Type': 'application/json' },
+   206→   206→        body: JSON.stringify({ titleAr: 'عمل جديد', titleEn: 'New Work', category: 'posts', imageUrl: '/placeholder.jpg' }),
+   207→   207→      });
+   208→   208→      const data = await res.json();
+   209→   209→      setPortfolioItems((prev) => [...prev, data]);
+   210→   210→      toast({ title: t('تم إضافة العمل', 'Item added') });
+   211→   211→    } catch {
+   212→   212→      toast({ title: t('فشل الإضافة', 'Add failed'), variant: 'destructive' });
+   213→   213→    }
+   214→   214→  }, [t, toast]);
+   215→   215→
+   216→   216→  const deletePortfolioItem = useCallback(async (id: string) => {
+   217→   217→    try {
+   218→   218→      await fetch(`/api/portfolio/${id}`, { method: 'DELETE' });
+   219→   219→      setPortfolioItems((prev) => prev.filter((item) => item.id !== id));
+   220→   220→      toast({ title: t('تم الحذف', 'Item deleted') });
+   221→   221→    } catch {
+   222→   222→      toast({ title: t('فشل الحذف', 'Delete failed'), variant: 'destructive' });
+   223→   223→    }
+   224→   224→  }, [t, toast]);
+   225→   225→
+   226→   226→  if (!isOpen) {
+   227→   227→    return (
+   228→   228→      <button
+   229→   229→        onClick={() => setIsOpen(true)}
+   230→   230→        className="fixed bottom-6 right-6 z-[60] flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-navy-900 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:shadow-xl"
+   231→   231→        aria-label="Admin"
+   232→   232→        title={t('لوحة التحكم (Ctrl+Shift+A)', 'Admin Panel (Ctrl+Shift+A)')}
+   233→   233→      >
+   234→   234→        <Settings className="h-5 w-5" />
+   235→   235→      </button>
+   236→   236→    );
+   237→   237→  }
+   238→   238→
+   239→   239→  const contentKeys = Object.keys(contentData).filter(
+   240→   240→    (key) => !['cv_file', 'portfolio_file', 'profile_image'].includes(key)
+   241→   241→  );
+   242→   242→
+   243→   243→  const getKeyLabel = (key: string) => {
+   244→   244→    const label = keyLabels[key];
+   245→   245→    return label ? t(label.ar, label.en) : key;
+   246→   246→  };
+   247→   247→
+   248→   248→  return (
+   249→   249→    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+   250→   250→      <div
+   251→   251→        className="relative flex h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl shadow-2xl"
+   252→   252→        style={{ background: 'linear-gradient(180deg, #0B2545 0%, #0A1D3A 100%)' }}
+   253→   253→        dir={isRTL ? 'rtl' : 'ltr'}
+   254→   254→      >
+   255→   255→        {/* Header Bar */}
+   256→   256→        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+   257→   257→          <div className="flex items-center gap-3">
+   258→   258→            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold/20">
+   259→   259→              <Settings className="h-5 w-5 text-gold" />
+   260→   260→            </div>
+   261→   261→            <div>
+   262→   262→              <h2 className="text-base font-bold text-white">{t('لوحة التحكم', 'Admin Dashboard')}</h2>
+   263→   263→              <p className="text-xs text-white/50">{t('إدارة محتوى الموقع', 'Manage site content')}</p>
+   264→   264→            </div>
+   265→   265→          </div>
+   266→   266→          <div className="flex items-center gap-2">
+   267→   267→            <Button
+   268→   268→              variant="ghost"
+   269→   269→              size="sm"
+   270→   270→              onClick={() => { setIsLoggedIn(false); setPassword(''); setContentLoaded(false); setPortfolioLoaded(false); }}
+   271→   271→              className="text-white/60 hover:text-white hover:bg-white/10"
+   272→   272→            >
+   273→   273→              <LogOut className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />
+   274→   274→              {t('خروج', 'Logout')}
+   275→   275→            </Button>
+   276→   276→            <button
+   277→   277→              onClick={() => setIsOpen(false)}
+   278→   278→              className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-white/60 transition-colors hover:bg-white/10 hover:text-white"
+   279→   279→            >
+   280→   280→              <X className="h-5 w-5" />
+   281→   281→            </button>
+   282→   282→          </div>
+   283→   283→        </div>
+   284→   284→
+   285→   285→        {!isLoggedIn ? (
+   286→   286→          /* Login Screen */
+   287→   287→          <div className="flex flex-1 items-center justify-center p-8">
+   288→   288→            <div className="w-full max-w-sm rounded-xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm text-center">
+   289→   289→              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-navy-800 border-2 border-gold/30">
+   290→   290→                <Lock className="h-9 w-9 text-gold" />
+   291→   291→              </div>
+   292→   292→              <h3 className="text-xl font-bold text-white mb-2">{t('لوحة التحكم', 'Admin Panel')}</h3>
+   293→   293→              <p className="text-sm text-white/50 mb-6">{t('أدخل كلمة المرور للدخول', 'Enter password to login')}</p>
+   294→   294→              <form onSubmit={handleLogin} className="flex flex-col gap-4">
+   295→   295→                <Input
+   296→   296→                  type="password"
+   297→   297→                  placeholder={t('كلمة المرور', 'Password')}
+   298→   298→                  value={password}
+   299→   299→                  onChange={(e) => setPassword(e.target.value)}
+   300→   300→                  className="border-white/20 bg-white/10 text-white placeholder:text-white/40 focus:border-gold focus:ring-gold/30"
+   301→   301→                />
+   302→   302→                <Button
+   303→   303→                  type="submit"
+   304→   304→                  disabled={loginLoading}
+   305→   305→                  className="bg-gold text-navy-900 hover:bg-gold-light font-bold"
+   306→   306→                >
+   307→   307→                  {loginLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : t('دخول', 'Login')}
+   308→   308→                </Button>
+   309→   309→              </form>
+   310→   310→            </div>
+   311→   311→          </div>
+   312→   312→        ) : (
+   313→   313→          /* Dashboard */
+   314→   314→          <Tabs
+   315→   315→            value={activeTab}
+   316→   316→            onValueChange={setActiveTab}
+   317→   317→            className="flex flex-1 flex-col overflow-hidden"
+   318→   318→          >
+   319→   319→            {/* Tab Navigation */}
+   320→   320→            <div className="flex border-b border-white/10 px-6">
+   321→   321→              <TabsList className="h-11 gap-1 rounded-none border-0 bg-transparent p-0">
+   322→   322→                <TabsTrigger
+   323→   323→                  value="content"
+   324→   324→                  className="rounded-lg border border-transparent px-4 py-2 text-sm font-medium text-white/60 transition-all data-[state=active]:border-gold/30 data-[state=active]:bg-gold/10 data-[state=active]:text-gold data-[state=active]:shadow-none"
+   325→   325→                >
+   326→   326→                  <FileText className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />
+   327→   327→                  {t('المحتوى', 'Content')}
+   328→   328→                </TabsTrigger>
+   329→   329→                <TabsTrigger
+   330→   330→                  value="portfolio"
+   331→   331→                  className="rounded-lg border border-transparent px-4 py-2 text-sm font-medium text-white/60 transition-all data-[state=active]:border-gold/30 data-[state=active]:bg-gold/10 data-[state=active]:text-gold data-[state=active]:shadow-none"
+   332→   332→                >
+   333→   333→                  <ImageIcon className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />
+   334→   334→                  {t('معرض الأعمال', 'Portfolio')}
+   335→   335→                </TabsTrigger>
+   336→   336→                <TabsTrigger
+   337→   337→                  value="files"
+   338→   338→                  className="rounded-lg border border-transparent px-4 py-2 text-sm font-medium text-white/60 transition-all data-[state=active]:border-gold/30 data-[state=active]:bg-gold/10 data-[state=active]:text-gold data-[state=active]:shadow-none"
+   339→   339→                >
+   340→   340→                  <Upload className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />
+   341→   341→                  {t('الملفات', 'Files')}
+   342→   342→                </TabsTrigger>
+   343→   343→              </TabsList>
+   344→   344→            </div>
+   345→   345→
+   346→   346→            {/* Scrollable Content Area */}
+   347→   347→            <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#13315C transparent' }}>
+   348→   348→              {/* Content Tab */}
+   349→   349→              {activeTab === 'content' && (
+   350→   350→                <div className="p-6 space-y-3">
+   351→   351→                  {!contentLoaded ? (
+   352→   352→                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+   353→   353→                      <Loader2 className="h-8 w-8 animate-spin text-gold" />
+   354→   354→                      <p className="text-white/60">{t('جارٍ تحميل المحتوى...', 'Loading content...')}</p>
+   355→   355→                    </div>
+   356→   356→                  ) : (
+   357→   357→                    contentKeys.map((key) => (
+   358→   358→                      <div
+   359→   359→                        key={key}
+   360→   360→                        className="rounded-xl border border-white/10 bg-white/5 overflow-hidden transition-all duration-200 hover:border-white/20"
+   361→   361→                      >
+   362→   362→                        {/* Collapsible Header */}
+   363→   363→                        <button
+   364→   364→                          onClick={() => setExpandedKey(expandedKey === key ? null : key)}
+   365→   365→                          className="w-full flex items-center justify-between px-5 py-3.5 cursor-pointer text-left"
+   366→   366→                          dir={isRTL ? 'rtl' : 'ltr'}
+   367→   367→                        >
+   368→   368→                          <div className="flex items-center gap-3">
+   369→   369→                            <div className="h-2 w-2 rounded-full bg-gold/60" />
+   370→   370→                            <span className="text-sm font-medium text-white/90">{getKeyLabel(key)}</span>
+   371→   371→                            <span className="text-xs text-white/30 font-mono">{key}</span>
+   372→   372→                          </div>
+   373→   373→                          <ChevronDown className={`h-4 w-4 text-white/40 transition-transform duration-200 ${expandedKey === key ? 'rotate-180' : ''}`} />
+   374→   374→                        </button>
+   375→   375→
+   376→   376→                        {/* Expandable Content */}
+   377→   377→                        {expandedKey === key && (
+   378→   378→                          <div className="border-t border-white/10 px-5 py-4 space-y-3">
+   379→   379→                            <div>
+   380→   380→                              <label className="mb-1.5 block text-xs font-medium text-white/50">عربي</label>
+   381→   381→                              <Textarea
+   382→   382→                                value={contentData[key]?.valueAr || ''}
+   383→   383→                                onChange={(e) =>
+   384→   384→                                  setContentData({ ...contentData, [key]: { ...contentData[key], valueAr: e.target.value } })
+   385→   385→                                }
+   386→   386→                                className="min-h-[60px] border-white/15 bg-white/5 text-white text-sm placeholder:text-white/30 focus:border-gold focus:ring-gold/20"
+   387→   387→                                dir="rtl"
+   388→   388→                              />
+   389→   389→                            </div>
+   390→   390→                            <div>
+   391→   391→                              <label className="mb-1.5 block text-xs font-medium text-white/50">English</label>
+   392→   392→                              <Textarea
+   393→   393→                                value={contentData[key]?.valueEn || ''}
+   394→   394→                                onChange={(e) =>
+   395→   395→                                  setContentData({ ...contentData, [key]: { ...contentData[key], valueEn: e.target.value } })
+   396→   396→                                }
+   397→   397→                                className="min-h-[60px] border-white/15 bg-white/5 text-white text-sm placeholder:text-white/30 focus:border-gold focus:ring-gold/20"
+   398→   398→                                dir="ltr"
+   399→   399→                              />
+   400→   400→                            </div>
+   401→   401→                            <div className="flex justify-end pt-1">
+   402→   402→                              <Button
+   403→   403→                                onClick={() => saveContent(key)}
+   404→   404→                                disabled={saving}
+   405→   405→                                size="sm"
+   406→   406→                                className="bg-gold text-navy-900 hover:bg-gold-light font-semibold"
+   407→   407→                              >
+   408→   408→                                {saving ? (
+   409→   409→                                  <Loader2 className={`${isRTL ? 'ml-2' : 'mr-2'} h-3.5 w-3.5 animate-spin`} />
+   410→   410→                                ) : (
+   411→   411→                                  <Save className={`${isRTL ? 'ml-2' : 'mr-2'} h-3.5 w-3.5`} />
+   412→   412→                                )}
+   413→   413→                                {t('حفظ', 'Save')}
+   414→   414→                              </Button>
+   415→   415→                            </div>
+   416→   416→                          </div>
+   417→   417→                        )}
+   418→   418→                      </div>
+   419→   419→                    ))
+   420→   420→                  )}
+   421→   421→                </div>
+   422→   422→              )}
+   423→   423→
+   424→   424→              {/* Portfolio Tab */}
+   425→   425→              {activeTab === 'portfolio' && (
+   426→   426→                <div className="p-6 space-y-4">
+   427→   427→                  <div className="flex items-center justify-between">
+   428→   428→                    <p className="text-sm text-white/50">{t('إدارة أعمال معرض الأعمال', 'Manage portfolio items')}</p>
+   429→   429→                    <Button onClick={addPortfolioItem} size="sm" className="bg-gold text-navy-900 hover:bg-gold-light font-semibold">
+   430→   430→                      <Plus className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />
+   431→   431→                      {t('إضافة عمل', 'Add Item')}
+   432→   432→                    </Button>
+   433→   433→                  </div>
+   434→   434→
+   435→   435→                  {!portfolioLoaded ? (
+   436→   436→                    <div className="flex flex-col items-center justify-center py-20 gap-4">
+   437→   437→                      <Loader2 className="h-8 w-8 animate-spin text-gold" />
+   438→   438→                      <p className="text-white/60">{t('جارٍ تحميل الأعمال...', 'Loading portfolio...')}</p>
+   439→   439→                    </div>
+   440→   440→                  ) : portfolioItems.length === 0 ? (
+   441→   441→                    <div className="flex flex-col items-center justify-center py-20 gap-3">
+   442→   442→                      <ImageIcon className="h-12 w-12 text-white/20" />
+   443→   443→                      <p className="text-white/40">{t('لا توجد أعمال بعد', 'No portfolio items yet')}</p>
+   444→   444→                    </div>
+   445→   445→                  ) : (
+   446→   446→                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+   447→   447→                      {portfolioItems.map((item) => (
+   448→   448→                        <div
+   449→   449→                          key={item.id}
+   450→   450→                          className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 p-4 transition-all hover:border-white/20"
+   451→   451→                        >
+   452→   452→                          <div className="flex items-center gap-3 min-w-0">
+   453→   453→                            <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-white/10 flex items-center justify-center">
+   454→   454→                              {item.imageUrl && item.imageUrl !== '/placeholder.jpg' ? (
+   455→   455→                                <img src={item.imageUrl} alt={item.titleAr} className="h-full w-full object-cover" />
+   456→   456→                              ) : (
+   457→   457→                                <ImageIcon className="h-5 w-5 text-white/30" />
+   458→   458→                              )}
+   459→   459→                            </div>
+   460→   460→                            <div className="min-w-0">
+   461→   461→                              <p className="font-medium text-white/90 truncate">{item.titleAr}</p>
+   462→   462→                              <p className="text-xs text-white/50 truncate">{item.titleEn}</p>
+   463→   463→                              <Badge className="mt-1 text-[10px] bg-white/10 text-white/60 border-0 hover:bg-white/15">
+   464→   464→                                {item.category === 'posts' ? t('بوستات', 'Posts') : item.category === 'profiles' ? t('بروفايلات', 'Profiles') : t('مواقع', 'Websites')}
+   465→   465→                              </Badge>
+   466→   466→                            </div>
+   467→   467→                          </div>
+   468→   468→                          <Button
+   469→   469→                            variant="ghost"
+   470→   470→                            size="icon"
+   471→   471→                            onClick={() => deletePortfolioItem(item.id)}
+   472→   472→                            className="flex-shrink-0 text-red-400/60 hover:text-red-400 hover:bg-red-400/10"
+   473→   473→                          >
+   474→   474→                            <Trash2 className="h-4 w-4" />
+   475→   475→                          </Button>
+   476→   476→                        </div>
+   477→   477→                      ))}
+   478→   478→                    </div>
+   479→   479→                  )}
+   480→   480→                </div>
+   481→   481→              )}
+   482→   482→
+   483→   483→              {/* Files Tab */}
+   484→   484→              {activeTab === 'files' && (
+   485→   485→                <div className="p-6 space-y-4">
+   486→   486→                  <p className="text-sm text-white/50 mb-2">{t('رفع واستبدال ملفات الموقع', 'Upload and replace site files')}</p>
+   487→   487→
+   488→   488→                  {/* Profile Image */}
+   489→   489→                  <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+   490→   490→                    <div className="flex items-center gap-3 mb-4">
+   491→   491→                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/15">
+   492→   492→                        <ImageIcon className="h-5 w-5 text-gold" />
+   493→   493→                      </div>
+   494→   494→                      <div>
+   495→   495→                        <h4 className="text-sm font-semibold text-white">{t('الصورة الشخصية', 'Profile Image')}</h4>
+   496→   496→                        <p className="text-xs text-white/40">{t('ستظهر في قسم Hero', 'Will appear in Hero section')}</p>
+   497→   497→                      </div>
+   498→   498→                    </div>
+   499→   499→                    {currentProfileImg && (
+   500→   500→                      <div className="mb-3 flex items-center gap-2">
+   501→   501→                        <img src={currentProfileImg} alt="profile" className="h-10 w-10 rounded-full object-cover border border-white/20" />
+   502→   502→                        <span className="text-xs text-green-400/80 flex items-center gap-1">
+   503→   503→                          <Check className="h-3 w-3" /> {t('مرفوعة', 'Uploaded')}
+   504→   504→                        </span>
+   505→   505→                      </div>
+   506→   506→                    )}
+   507→   507→                    <div className="flex items-center gap-3">
+   508→   508→                      <Input
+   509→   509→                        type="file"
+   510→   510→                        accept="image/*"
+   511→   511→                        onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileUpload(file, 'profile_image'); }}
+   512→   512→                        disabled={uploading}
+   513→   513→                        className="flex-1 border-white/15 bg-white/5 text-white text-sm file:text-white/60 file:border-0 file:bg-white/10 file:hover:bg-white/20 file:cursor-pointer"
+   514→   514→                      />
+   515→   515→                      {uploading && <Loader2 className="h-5 w-5 animate-spin text-gold" />}
+   516→   516→                    </div>
+   517→   517→                  </div>
+   518→   518→
+   519→   519→                  {/* CV File */}
+   520→   520→                  <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+   521→   521→                    <div className="flex items-center gap-3 mb-4">
+   522→   522→                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/15">
+   523→   523→                        <FileText className="h-5 w-5 text-gold" />
+   524→   524→                      </div>
+   525→   525→                      <div>
+   526→   526→                        <h4 className="text-sm font-semibold text-white">{t('السيرة الذاتية (PDF)', 'CV File (PDF)')}</h4>
+   527→   527→                        <p className="text-xs text-white/40">{t('يظهر عند الضغط على زر تحميل CV', 'Appears when clicking Download CV')}</p>
+   528→   528→                      </div>
+   529→   529→                    </div>
+   530→   530→                    {currentCvFile && (
+   531→   531→                      <div className="mb-3 flex items-center gap-2">
+   532→   532→                        <a href={currentCvFile} target="_blank" className="text-xs text-blue-400/80 flex items-center gap-1 hover:text-blue-300">
+   533→   533→                          <Eye className="h-3 w-3" /> {t('عرض الملف الحالي', 'View current file')}
+   534→   534→                        </a>
+   535→   535→                      </div>
+   536→   536→                    )}
+   537→   537→                    <div className="flex items-center gap-3">
+   538→   538→                      <Input
+   539→   539→                        type="file"
+   540→   540→                        accept=".pdf"
+   541→   541→                        onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileUpload(file, 'cv_file'); }}
+   542→   542→                        disabled={uploading}
+   543→   543→                        className="flex-1 border-white/15 bg-white/5 text-white text-sm file:text-white/60 file:border-0 file:bg-white/10 file:hover:bg-white/20 file:cursor-pointer"
+   544→   544→                      />
+   545→   545→                      {uploading && <Loader2 className="h-5 w-5 animate-spin text-gold" />}
+   546→   546→                    </div>
+   547→   547→                  </div>
+   548→   548→
+   549→   549→                  {/* Portfolio File */}
+   550→   550→                  <div className="rounded-xl border border-white/10 bg-white/5 p-5">
+   551→   551→                    <div className="flex items-center gap-3 mb-4">
+   552→   552→                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/15">
+   553→   553→                        <Upload className="h-5 w-5 text-gold" />
+   554→   554→                      </div>
+   555→   555→                      <div>
+   556→   556→                        <h4 className="text-sm font-semibold text-white">{t('ملف الأعمال (PDF)', 'Portfolio File (PDF)')}</h4>
+   557→   557→                        <p className="text-xs text-white/40">{t('ملف تعريفي لجميع الأعمال', 'Complete portfolio file')}</p>
+   558→   558→                      </div>
+   559→   559→                    </div>
+   560→   560→                    {currentPortfolioFile && (
+   561→   561→                      <div className="mb-3 flex items-center gap-2">
+   562→   562→                        <a href={currentPortfolioFile} target="_blank" className="text-xs text-blue-400/80 flex items-center gap-1 hover:text-blue-300">
+   563→   563→                          <Eye className="h-3 w-3" /> {t('عرض الملف الحالي', 'View current file')}
+   564→   564→                        </a>
+   565→   565→                      </div>
+   566→   566→                    )}
+   567→   567→                    <div className="flex items-center gap-3">
+   568→   568→                      <Input
+   569→   569→                        type="file"
+   570→   570→                        accept=".pdf,.jpg,.jpeg,.png"
+   571→   571→                        onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileUpload(file, 'portfolio_file'); }}
+   572→   572→                        disabled={uploading}
+   573→   573→                        className="flex-1 border-white/15 bg-white/5 text-white text-sm file:text-white/60 file:border-0 file:bg-white/10 file:hover:bg-white/20 file:cursor-pointer"
+   574→   574→                      />
+   575→   575→                      {uploading && <Loader2 className="h-5 w-5 animate-spin text-gold" />}
+   576→   576→                    </div>
+   577→   577→                  </div>
+   578→   578→                </div>
+   579→   579→              )}
+   580→   580→            </div>
+   581→   581→          </Tabs>
+   582→   582→        )}
+   583→   583→      </div>
+   584→   584→    </div>
+   585→   585→  );
+   586→   586→}
+   587→   587→

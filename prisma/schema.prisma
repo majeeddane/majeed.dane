@@ -3,8 +3,10 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  directUrl    = env("DIRECT_URL")
+  relationMode = "prisma"
 }
 
 model Admin {
@@ -17,8 +19,8 @@ model Admin {
 model SiteContent {
   id        String   @id @default(cuid())
   key       String   @unique
-  valueAr   String?
-  valueEn   String?
+  valueAr   String?  @db.Text
+  valueEn   String?  @db.Text
   type      String   @default("text")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -40,8 +42,8 @@ model Experience {
   id          String   @id @default(cuid())
   companyAr   String
   companyEn   String
-  descAr      String
-  descEn      String
+  descAr      String   @db.Text
+  descEn      String   @db.Text
   order       Int      @default(0)
   visible     Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -63,8 +65,8 @@ model Skill {
   id         String   @id @default(cuid())
   titleAr    String
   titleEn    String
-  descAr     String?
-  descEn     String?
+  descAr     String?  @db.Text
+  descEn     String?  @db.Text
   icon       String?
   level      Int      @default(80)
   category   String   @default("design")
@@ -86,10 +88,10 @@ model Course {
 }
 
 model UploadedFile {
-  id        String   @id @default(cuid())
-  filename  String
+  id          String   @id @default(cuid())
+  filename    String
   originalName String
-  mimetype  String
-  purpose   String?
-  createdAt DateTime @default(now())
+  mimetype    String
+  purpose     String?
+  createdAt   DateTime @default(now())
 }
