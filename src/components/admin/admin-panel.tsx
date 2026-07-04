@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '@/lib/language-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,8 +20,24 @@ import {
   Save,
   Loader2,
   Check,
+  Plus,
+  Trash2,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+interface ContentItem {
+  key: string;
+  valueAr: string;
+  valueEn: string;
+}
+
+interface PortfolioItemData {
+  id: string;
+  titleAr: string;
+  titleEn: string;
+  category: string;
+  imageUrl: string;
+}
 
 export default function AdminPanel() {
   const { t } = useLanguage();
@@ -38,13 +54,28 @@ export default function AdminPanel() {
   const [contentLoaded, setContentLoaded] = useState(false);
 
   // Portfolio state
-  const [portfolioItems, setPortfolioItems] = useState<Array<{ id: string; titleAr: string; titleEn: string; category: string; imageUrl: string }>>([]);
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItemData[]>([]);
   const [portfolioLoaded, setPortfolioLoaded] = useState(false);
 
   // File upload state
   const [uploading, setUploading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  // Keyboard shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        setIsOpen(true);
+      }
+      if (e.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
+  const handleLogin = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginLoading(true);
     try {
@@ -64,15 +95,15 @@ export default function AdminPanel() {
       toast({ title: t('حدث خطأ', 'An error occurred'), variant: 'destructive' });
     }
     setLoginLoading(false);
-  };
+  }, [password, t, toast]);
 
-  const loadContent = async () => {
+  const loadContent = useCallback(async () => {
     if (contentLoaded) return;
     try {
       const res = await fetch('/api/content');
-      const data = await res.json();
+      const data: ContentItem[] = await res.json();
       const map: Record<string, { valueAr: string; valueEn: string }> = {};
-      data.forEach((item: { key: string; valueAr: string | null; valueEn: string | null }) => {
+      data.forEach((item) => {
         map[item.key] = { valueAr: item.valueAr || '', valueEn: item.valueEn || '' };
       });
       setContentData(map);
@@ -80,21 +111,21 @@ export default function AdminPanel() {
     } catch {
       toast({ title: t('فشل تحميل المحتوى', 'Failed to load content'), variant: 'destructive' });
     }
-  };
+  }, [contentLoaded, t, toast]);
 
-  const loadPortfolio = async () => {
+  const loadPortfolio = useCallback(async () => {
     if (portfolioLoaded) return;
     try {
       const res = await fetch('/api/portfolio');
-      const data = await res.json();
+      const data: PortfolioItemData[] = await res.json();
       setPortfolioItems(data);
       setPortfolioLoaded(true);
     } catch {
       toast({ title: t('فشل تحميل الأعمال', 'Failed to load portfolio'), variant: 'destructive' });
     }
-  };
+  }, [portfolioLoaded, t, toast]);
 
-  const saveContent = async (key: string) => {
+  const saveContent = useCallback(async (key: string) => {
     setSaving(true);
     try {
       const item = contentData[key];
@@ -109,9 +140,9 @@ export default function AdminPanel() {
       toast({ title: t('فشل الحفظ', 'Save failed'), variant: 'destructive' });
     }
     setSaving(false);
-  };
+  }, [contentData, t, toast]);
 
-  const handleFileUpload = async (file: File, purpose: string) => {
+  const handleFileUpload = useCallback(async (file: File, purpose: string) => {
     setUploading(true);
     const formData = new FormData();
     formData.append('file', file);
@@ -120,7 +151,6 @@ export default function AdminPanel() {
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (data.url) {
-        // Update content key for the purpose
         await fetch('/api/content', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -132,9 +162,9 @@ export default function AdminPanel() {
       toast({ title: t('فشل رفع الملف', 'File upload failed'), variant: 'destructive' });
     }
     setUploading(false);
-  };
+  }, [t, toast]);
 
-  const addPortfolioItem = async () => {
+  const addPortfolioItem = useCallback(async () => {
     try {
       const res = await fetch('/api/portfolio', {
         method: 'POST',
@@ -147,38 +177,28 @@ export default function AdminPanel() {
         }),
       });
       const data = await res.json();
-      setPortfolioItems([...portfolioItems, data]);
+      setPortfolioItems((prev) => [...prev, data]);
       toast({ title: t('تم إضافة العمل', 'Item added') });
     } catch {
       toast({ title: t('فشل الإضافة', 'Add failed'), variant: 'destructive' });
     }
-  };
+  }, [t, toast]);
 
-  const deletePortfolioItem = async (id: string) => {
+  const deletePortfolioItem = useCallback(async (id: string) => {
     try {
       await fetch(`/api/portfolio/${id}`, { method: 'DELETE' });
-      setPortfolioItems(portfolioItems.filter((item) => item.id !== id));
+      setPortfolioItems((prev) => prev.filter((item) => item.id !== id));
       toast({ title: t('تم الحذف', 'Item deleted') });
     } catch {
       toast({ title: t('فشل الحذف', 'Delete failed'), variant: 'destructive' });
     }
-  };
-
-  // Keyboard shortcut to open admin: Ctrl+Shift+A
-  if (typeof window !== 'undefined') {
-    window.addEventListener('keydown', (e) => {
-      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-        e.preventDefault();
-        setIsOpen(true);
-      }
-    });
-  }
+  }, [t, toast]);
 
   if (!isOpen) {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 left-6 z-50 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-navy-900/80 text-white opacity-30 transition-opacity hover:opacity-100"
+        className="fixed bottom-6 left-6 z-50 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-navy-900/80 text-white opacity-20 transition-all duration-300 hover:opacity-100 hover:scale-110 hover:shadow-lg"
         aria-label="Admin"
         title={t('لوحة التحكم (Ctrl+Shift+A)', 'Admin Panel (Ctrl+Shift+A)')}
       >
@@ -187,9 +207,16 @@ export default function AdminPanel() {
     );
   }
 
+  const contentKeys = Object.keys(contentData).filter(
+    (key) => !['cv_file', 'portfolio_file', 'profile_image'].includes(key)
+  );
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="relative flex h-[90vh] w-[95vw] max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl" dir="rtl">
+      <div
+        className="relative flex h-[90vh] w-[95vw] max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
+        dir="rtl"
+      >
         {/* Close button */}
         <button
           onClick={() => setIsOpen(false)}
@@ -199,7 +226,6 @@ export default function AdminPanel() {
         </button>
 
         {!isLoggedIn ? (
-          /* Login Form */
           <div className="flex flex-1 items-center justify-center p-8">
             <Card className="w-full max-w-sm border-navy-800/10">
               <CardHeader className="text-center">
@@ -235,7 +261,6 @@ export default function AdminPanel() {
             </Card>
           </div>
         ) : (
-          /* Admin Dashboard */
           <div className="flex flex-1 flex-col overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-navy-800/10 px-6 py-4">
@@ -293,79 +318,76 @@ export default function AdminPanel() {
               </div>
 
               <ScrollArea className="flex-1">
-                {/* Content Tab */}
                 <TabsContent value="content" className="p-6">
-                  <div className="flex flex-col gap-6">
+                  <div className="flex flex-col gap-4">
                     {!contentLoaded ? (
-                      <Button onClick={loadContent} variant="outline">
+                      <Button onClick={loadContent} variant="outline" className="w-fit">
                         {t('تحميل المحتوى', 'Load Content')}
                       </Button>
                     ) : (
-                      Object.entries(contentData)
-                        .filter(([key]) => !['cv_file', 'portfolio_file', 'profile_image'].includes(key))
-                        .map(([key, val]) => (
-                          <Card key={key} className="border-navy-800/10">
-                            <CardHeader className="pb-3">
-                              <CardTitle className="text-sm font-medium text-navy-900">
-                                {key}
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent className="flex flex-col gap-3">
-                              <div>
-                                <label className="mb-1 text-xs text-navy-900/60">عربي</label>
-                                <Textarea
-                                  value={val.valueAr}
-                                  onChange={(e) =>
-                                    setContentData({
-                                      ...contentData,
-                                      [key]: { ...val, valueAr: e.target.value },
-                                    })
-                                  }
-                                  className="min-h-[60px] border-navy-800/20 focus:border-navy-800"
-                                  dir="rtl"
-                                />
-                              </div>
-                              <div>
-                                <label className="mb-1 text-xs text-navy-900/60">English</label>
-                                <Textarea
-                                  value={val.valueEn}
-                                  onChange={(e) =>
-                                    setContentData({
-                                      ...contentData,
-                                      [key]: { ...val, valueEn: e.target.value },
-                                    })
-                                  }
-                                  className="min-h-[60px] border-navy-800/20 focus:border-navy-800"
-                                  dir="ltr"
-                                />
-                              </div>
-                              <Button
-                                onClick={() => saveContent(key)}
-                                disabled={saving}
-                                size="sm"
-                                className="w-fit bg-navy-900 text-white hover:bg-navy-800"
-                              >
-                                {saving ? (
-                                  <Loader2 className="ml-2 h-3 w-3 animate-spin" />
-                                ) : (
-                                  <Check className="ml-2 h-3 w-3" />
-                                )}
-                                {t('حفظ', 'Save')}
-                              </Button>
-                            </CardContent>
-                          </Card>
-                        ))
+                      contentKeys.map((key) => (
+                        <Card key={key} className="border-navy-800/10">
+                          <CardHeader className="pb-3">
+                            <CardTitle className="text-xs font-mono font-medium text-navy-900/60">
+                              {key}
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="flex flex-col gap-3">
+                            <div>
+                              <label className="mb-1 text-xs font-medium text-navy-900/50">عربي</label>
+                              <Textarea
+                                value={contentData[key]?.valueAr || ''}
+                                onChange={(e) =>
+                                  setContentData({
+                                    ...contentData,
+                                    [key]: { ...contentData[key], valueAr: e.target.value },
+                                  })
+                                }
+                                className="min-h-[50px] border-navy-800/20 text-sm focus:border-navy-800"
+                                dir="rtl"
+                              />
+                            </div>
+                            <div>
+                              <label className="mb-1 text-xs font-medium text-navy-900/50">English</label>
+                              <Textarea
+                                value={contentData[key]?.valueEn || ''}
+                                onChange={(e) =>
+                                  setContentData({
+                                    ...contentData,
+                                    [key]: { ...contentData[key], valueEn: e.target.value },
+                                  })
+                                }
+                                className="min-h-[50px] border-navy-800/20 text-sm focus:border-navy-800"
+                                dir="ltr"
+                              />
+                            </div>
+                            <Button
+                              onClick={() => saveContent(key)}
+                              disabled={saving}
+                              size="sm"
+                              className="w-fit bg-navy-900 text-white hover:bg-navy-800"
+                            >
+                              {saving ? (
+                                <Loader2 className="ml-2 h-3 w-3 animate-spin" />
+                              ) : (
+                                <Check className="ml-2 h-3 w-3" />
+                              )}
+                              {t('حفظ', 'Save')}
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      ))
                     )}
                   </div>
                 </TabsContent>
 
-                {/* Portfolio Tab */}
                 <TabsContent value="portfolio" className="p-6">
                   <div className="flex flex-col gap-4">
                     <Button
                       onClick={addPortfolioItem}
                       className="w-fit bg-navy-900 text-white hover:bg-navy-800"
                     >
+                      <Plus className="ml-2 h-4 w-4" />
                       {t('إضافة عمل جديد', 'Add New Item')}
                     </Button>
 
@@ -389,6 +411,7 @@ export default function AdminPanel() {
                               )}
                               <div>
                                 <p className="font-medium text-navy-900">{item.titleAr}</p>
+                                <p className="text-xs text-navy-900/50">{item.titleEn}</p>
                                 <Badge variant="secondary" className="mt-1 text-xs">
                                   {item.category}
                                 </Badge>
@@ -396,11 +419,11 @@ export default function AdminPanel() {
                             </div>
                             <Button
                               variant="ghost"
-                              size="sm"
+                              size="icon"
                               onClick={() => deletePortfolioItem(item.id)}
-                              className="text-destructive hover:text-destructive"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
                             >
-                              <X className="h-4 w-4" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </CardContent>
                         </Card>
@@ -409,10 +432,8 @@ export default function AdminPanel() {
                   </div>
                 </TabsContent>
 
-                {/* Files Tab */}
                 <TabsContent value="files" className="p-6">
                   <div className="flex flex-col gap-6">
-                    {/* Profile Image Upload */}
                     <Card className="border-navy-800/10">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-sm font-medium text-navy-900">
@@ -434,7 +455,6 @@ export default function AdminPanel() {
                       </CardContent>
                     </Card>
 
-                    {/* CV Upload */}
                     <Card className="border-navy-800/10">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-sm font-medium text-navy-900">
@@ -456,7 +476,6 @@ export default function AdminPanel() {
                       </CardContent>
                     </Card>
 
-                    {/* Portfolio PDF Upload */}
                     <Card className="border-navy-800/10">
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-sm font-medium text-navy-900">

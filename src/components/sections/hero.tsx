@@ -2,8 +2,9 @@
 
 import { useLanguage } from '@/lib/language-context';
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ArrowRight, ArrowLeft } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
+import { useState, useEffect } from 'react';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -34,7 +35,6 @@ const imageVariants: Variants = {
   },
 };
 
-// Floating particles config
 const particles = [
   { size: 6, top: '15%', left: '10%', delay: 0, duration: 6 },
   { size: 4, top: '70%', left: '85%', delay: 1, duration: 8 },
@@ -45,27 +45,34 @@ const particles = [
 
 export default function HeroSection() {
   const { lang, isRTL, t } = useLanguage();
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch('/api/content')
+      .then(res => res.json())
+      .then(data => {
+        const profileItem = data.find((item: { key: string; valueAr: string | null }) => item.key === 'profile_image');
+        if (profileItem?.valueAr) {
+          setProfileImageUrl(profileItem.valueAr);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const name = t('عبدالمجيد محمد يحيى الضاعني', 'Abdulmajeed Mohammed Yahya Al-Daani');
-  const title = t(
-    'مصمم جرافيك | أخصائي تسويق رقمي | مطوّر مواقع ويب',
-    'Graphic Designer | Digital Marketing Specialist | Web Developer'
-  );
-  const tagline = t(
-    'أبدع بالتصميم، أخطط بالتسويق، وأوظّف الذكاء الاصطناعي لصناعة مخرجات استثنائية',
-    'Creative in Design, Strategic in Marketing, Leveraging AI for Exceptional Results'
-  );
+  const title = t('مصمم جرافيك | أخصائي تسويق رقمي | مطوّر مواقع ويب', 'Graphic Designer | Digital Marketing Specialist | Web Developer');
+  const tagline = t('أبدع بالتصميم، أخطط بالتسويق، وأوظّف الذكاء الاصطناعي لصناعة مخرجات استثنائية', 'Creative in Design, Strategic in Marketing, Leveraging AI for Exceptional Results');
   const cta1 = t('تواصل معي', 'Contact Me');
   const cta2 = t('شاهد أعمالي', 'View Portfolio');
   const initials = t('ع م', 'AM');
 
-  const DirectionalArrow = isRTL ? ArrowLeft : ArrowRight;
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
-    <section
-      className="relative min-h-screen flex items-center overflow-hidden"
-      dir={isRTL ? 'rtl' : 'ltr'}
-    >
+    <section className="relative min-h-screen flex items-center overflow-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Animated gradient background */}
       <div className="absolute inset-0 gradient-hero" />
 
@@ -73,8 +80,7 @@ export default function HeroSection() {
       <div
         className="absolute inset-0 opacity-[0.04]"
         style={{
-          backgroundImage:
-            'radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.8) 1px, transparent 1px)',
           backgroundSize: '24px 24px',
         }}
       />
@@ -92,30 +98,16 @@ export default function HeroSection() {
         <motion.div
           key={i}
           className="absolute rounded-full bg-gold/20"
-          style={{
-            width: p.size,
-            height: p.size,
-            top: p.top,
-            left: p.left,
-          }}
-          animate={{
-            y: [0, -20, 0],
-            x: [0, 10, -10, 0],
-            opacity: [0.2, 0.6, 0.2],
-          }}
-          transition={{
-            duration: p.duration,
-            delay: p.delay,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
+          style={{ width: p.size, height: p.size, top: p.top, left: p.left }}
+          animate={{ y: [0, -20, 0], x: [0, 10, -10, 0], opacity: [0.2, 0.6, 0.2] }}
+          transition={{ duration: p.duration, delay: p.delay, repeat: Infinity, ease: 'easeInOut' }}
         />
       ))}
 
       {/* Content container */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-16">
-          {/* Text content - Left side (RTL: Right) */}
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-16">
+          {/* Text content */}
           <motion.div
             className={`flex-1 text-center lg:text-start ${isRTL ? 'lg:text-right' : 'lg:text-left'}`}
             variants={containerVariants}
@@ -123,7 +115,7 @@ export default function HeroSection() {
             animate="visible"
           >
             <motion.h1
-              className="text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight"
+              className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-bold text-white leading-tight"
               style={{ textShadow: '0 4px 20px rgba(0,0,0,0.3)' }}
               variants={itemVariants}
             >
@@ -131,42 +123,43 @@ export default function HeroSection() {
             </motion.h1>
 
             <motion.p
-              className="mt-4 md:mt-6 text-xl md:text-2xl font-semibold text-gold"
+              className="mt-3 md:mt-5 text-lg md:text-xl lg:text-2xl font-semibold text-gold"
               variants={itemVariants}
             >
               {title}
             </motion.p>
 
             <motion.p
-              className="mt-4 md:mt-5 text-lg text-white/80 max-w-xl mx-auto lg:mx-0 leading-relaxed"
+              className="mt-3 md:mt-4 text-base md:text-lg text-white/80 max-w-xl mx-auto lg:mx-0 leading-relaxed"
               variants={itemVariants}
             >
               {tagline}
             </motion.p>
 
             <motion.div
-              className={`mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start ${isRTL ? 'sm:flex-row-reverse lg:justify-start' : ''}`}
+              className={`mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start`}
               variants={itemVariants}
             >
               <Button
                 size="lg"
-                className="bg-gold text-navy-900 hover:bg-gold-light font-bold text-base px-8 py-6 rounded-lg shadow-lg shadow-gold/20 transition-all hover:shadow-xl hover:shadow-gold/30 hover:-translate-y-0.5"
+                onClick={() => scrollToSection('contact')}
+                className="bg-gold text-navy-900 hover:bg-gold-light font-bold text-base px-6 md:px-8 py-5 md:py-6 rounded-lg shadow-lg shadow-gold/20 transition-all hover:shadow-xl hover:shadow-gold/30 hover:-translate-y-0.5"
               >
                 {cta1}
-                <DirectionalArrow className="size-5" />
               </Button>
 
               <Button
                 variant="outline"
                 size="lg"
-                className="border-2 border-white/40 text-white hover:bg-white/10 hover:border-white/70 font-semibold text-base px-8 py-6 rounded-lg transition-all hover:-translate-y-0.5"
+                onClick={() => scrollToSection('portfolio')}
+                className="border-2 border-white/40 text-white hover:bg-white/10 hover:border-white/70 font-semibold text-base px-6 md:px-8 py-5 md:py-6 rounded-lg transition-all hover:-translate-y-0.5"
               >
                 {cta2}
               </Button>
             </motion.div>
           </motion.div>
 
-          {/* Profile photo area - Right side (RTL: Left) */}
+          {/* Profile photo area */}
           <motion.div
             className="flex-shrink-0 relative"
             variants={imageVariants}
@@ -178,26 +171,30 @@ export default function HeroSection() {
 
             {/* Gradient border circle */}
             <div
-              className="relative w-56 h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 rounded-full p-1"
-              style={{
-                background:
-                  'linear-gradient(135deg, #0B2545 0%, #1E5F9E 50%, #C9A84C 100%)',
-              }}
+              className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80 rounded-full p-1"
+              style={{ background: 'linear-gradient(135deg, #0B2545 0%, #1E5F9E 50%, #C9A84C 100%)' }}
             >
-              {/* Inner circle with initials */}
-              <div className="w-full h-full rounded-full bg-navy-900 flex items-center justify-center">
-                <span
-                  className="text-5xl md:text-6xl lg:text-7xl font-bold text-gradient-gold select-none"
-                  style={{
-                    background:
-                      'linear-gradient(135deg, #C9A84C 0%, #D4BC6A 50%, #E8D48B 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                  }}
-                >
-                  {initials}
-                </span>
+              {/* Inner circle */}
+              <div className="w-full h-full rounded-full bg-navy-900 flex items-center justify-center overflow-hidden">
+                {profileImageUrl ? (
+                  <img
+                    src={profileImageUrl}
+                    alt={name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span
+                    className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold select-none"
+                    style={{
+                      background: 'linear-gradient(135deg, #C9A84C 0%, #D4BC6A 50%, #E8D48B 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                    }}
+                  >
+                    {initials}
+                  </span>
+                )}
               </div>
             </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useSyncExternalStore } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 type Language = 'ar' | 'en';
 
@@ -18,35 +18,27 @@ const LanguageContext = createContext<LanguageContextType>({
   t: (ar: string, en: string) => ar,
 });
 
-function getInitialLang(): Language {
-  if (typeof window === 'undefined') return 'ar';
-  const saved = localStorage.getItem('lang');
-  if (saved === 'ar' || saved === 'en') return saved;
-  return 'ar';
-}
-
-function subscribeToStorage(callback: () => void) {
-  window.addEventListener('storage', callback);
-  return () => window.removeEventListener('storage', callback);
-}
-
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const storedLang = useSyncExternalStore(
-    subscribeToStorage,
-    () => getInitialLang(),
-    () => 'ar' as Language
-  );
+  const [lang, setLang] = useState<Language>('ar');
+  const [mounted, setMounted] = useState(false);
 
-  const [lang, setLang] = useState<Language>(storedLang);
+  useEffect(() => {
+    const saved = localStorage.getItem('lang');
+    if (saved === 'ar' || saved === 'en') {
+      setLang(saved);
+    }
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    localStorage.setItem('lang', lang);
+  }, [lang, mounted]);
 
   const toggleLanguage = useCallback(() => {
-    setLang((prev) => {
-      const next = prev === 'ar' ? 'en' : 'ar';
-      localStorage.setItem('lang', next);
-      document.documentElement.lang = next;
-      document.documentElement.dir = next === 'ar' ? 'rtl' : 'ltr';
-      return next;
-    });
+    setLang((prev) => (prev === 'ar' ? 'en' : 'ar'));
   }, []);
 
   const t = useCallback(

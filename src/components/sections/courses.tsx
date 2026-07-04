@@ -22,72 +22,31 @@ interface Course {
 }
 
 const courses: Course[] = [
-  {
-    icon: Palette,
-    titleAr: 'تصميم الهويات البصرية',
-    titleEn: 'Visual Identity Design',
-  },
-  {
-    icon: Image,
-    titleAr: 'تصميم منشورات السوشيال ميديا',
-    titleEn: 'Social Media Post Design',
-  },
-  {
-    icon: PenTool,
-    titleAr: 'كتابة المحتوى التسويقي',
-    titleEn: 'Marketing Content Writing',
-  },
-  {
-    icon: Megaphone,
-    titleAr: 'إدارة الإعلانات على مواقع التواصل الاجتماعي',
-    titleEn: 'Social Media Ads Management',
-  },
-  {
-    icon: Target,
-    titleAr: 'إعداد الحملات التسويقية والإعلانات الممولة',
-    titleEn: 'Marketing Campaigns & Funded Ads',
-  },
-  {
-    icon: Brush,
-    titleAr: 'Canva للمحترفين',
-    titleEn: 'Canva for Professionals',
-  },
-  {
-    icon: Layers,
-    titleAr: 'Adobe Photoshop & Illustrator',
-    titleEn: 'Adobe Photoshop & Illustrator',
-  },
-  {
-    icon: Sparkles,
-    titleAr: 'طرق استخدام مواقع الذكاء الاصطناعي والاستفادة منها',
-    titleEn: 'Using AI Websites Effectively',
-  },
-  {
-    icon: Brain,
-    titleAr: 'كيف تتعامل مع الذكاء الاصطناعي',
-    titleEn: 'How to Deal with AI',
-  },
+  { icon: Palette, titleAr: 'تصميم الهويات البصرية', titleEn: 'Visual Identity Design' },
+  { icon: Image, titleAr: 'تصميم منشورات السوشيال ميديا', titleEn: 'Social Media Post Design' },
+  { icon: PenTool, titleAr: 'كتابة المحتوى التسويقي', titleEn: 'Marketing Content Writing' },
+  { icon: Megaphone, titleAr: 'إدارة الإعلانات على مواقع التواصل الاجتماعي', titleEn: 'Social Media Ads Management' },
+  { icon: Target, titleAr: 'إعداد الحملات التسويقية والإعلانات الممولة', titleEn: 'Marketing Campaigns & Funded Ads' },
+  { icon: Brush, titleAr: 'Canva للمحترفين', titleEn: 'Canva for Professionals' },
+  { icon: Layers, titleAr: 'Adobe Photoshop & Illustrator', titleEn: 'Adobe Photoshop & Illustrator' },
+  { icon: Sparkles, titleAr: 'طرق استخدام مواقع الذكاء الاصطناعي والاستفادة منها', titleEn: 'Using AI Websites Effectively' },
+  { icon: Brain, titleAr: 'كيف تتعامل مع الذكاء الاصطناعي', titleEn: 'How to Deal with AI' },
 ];
 
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
+    transition: { staggerChildren: 0.08 },
   },
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 25 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      duration: 0.5,
-      ease: 'easeOut',
-    },
+    transition: { duration: 0.5, ease: 'easeOut' },
   },
 };
 
@@ -97,7 +56,7 @@ export default function CoursesSection() {
   return (
     <section
       id="courses"
-      className="section-padding bg-background"
+      className="section-padding bg-muted/30"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
@@ -117,7 +76,7 @@ export default function CoursesSection() {
 
         {/* Courses Grid */}
         <motion.div
-          className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
+          className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -129,31 +88,19 @@ export default function CoursesSection() {
               <motion.div
                 key={index}
                 variants={cardVariants}
-                whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                className={`group relative rounded-xl bg-white/60 p-6 backdrop-blur-sm transition-shadow duration-300 hover:shadow-lg
-                  border ${isRTL ? 'border-r-4 border-r-gold' : 'border-l-4 border-l-gold'} border-t-transparent border-b-transparent border-l-transparent border-r-transparent
-                  ${isRTL ? 'rtl:border-r-gold' : 'ltr:border-l-gold'}
-                `}
+                whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                className="group rounded-xl bg-white p-5 shadow-sm border border-border/50 transition-shadow duration-300 hover:shadow-md"
                 style={{
-                  borderLeftWidth: isRTL ? undefined : '4px',
-                  borderLeftColor: isRTL ? undefined : '#C9A84C',
                   borderRightWidth: isRTL ? '4px' : undefined,
                   borderRightColor: isRTL ? '#C9A84C' : undefined,
-                  borderTopWidth: '1px',
-                  borderTopColor: 'rgba(19, 49, 92, 0.08)',
-                  borderBottomWidth: '1px',
-                  borderBottomColor: 'rgba(19, 49, 92, 0.08)',
-                  borderLeftColor: isRTL ? 'rgba(19, 49, 92, 0.08)' : '#C9A84C',
-                  borderRightColor: isRTL ? '#C9A84C' : 'rgba(19, 49, 92, 0.08)',
-                  background: 'rgba(255, 255, 255, 0.6)',
-                  backdropFilter: 'blur(12px)',
-                  WebkitBackdropFilter: 'blur(12px)',
+                  borderLeftWidth: isRTL ? undefined : '4px',
+                  borderLeftColor: isRTL ? undefined : '#C9A84C',
                 }}
               >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-navy-800/10 transition-colors duration-300 group-hover:bg-gold/15">
-                  <IconComponent className="h-6 w-6 text-navy-800 transition-colors duration-300 group-hover:text-gold" />
+                <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-navy-800/10 transition-colors duration-300 group-hover:bg-gold/15">
+                  <IconComponent className="h-5 w-5 text-navy-800 transition-colors duration-300 group-hover:text-gold" />
                 </div>
-                <h3 className="text-base font-semibold leading-relaxed text-navy-900">
+                <h3 className="text-sm font-semibold leading-relaxed text-navy-900">
                   {t(course.titleAr, course.titleEn)}
                 </h3>
               </motion.div>
