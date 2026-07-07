@@ -84,19 +84,32 @@ export default function CoursesSection() {
         >
           {courses.map((course, index) => {
             const IconComponent = course.icon;
+            const number = String(index + 1).padStart(2, '0');
             return (
               <motion.div
                 key={index}
                 variants={cardVariants}
                 whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                className="group rounded-xl bg-white p-5 shadow-sm border border-border/50 transition-shadow duration-300 hover:shadow-md"
-                style={{
-                  borderRightWidth: isRTL ? '4px' : undefined,
-                  borderRightColor: isRTL ? '#C9A84C' : undefined,
-                  borderLeftWidth: isRTL ? undefined : '4px',
-                  borderLeftColor: isRTL ? undefined : '#C9A84C',
-                }}
+                className="group relative rounded-xl bg-white p-5 shadow-sm border border-border/50 transition-shadow duration-300 hover:shadow-md overflow-hidden"
               >
+                {/* Gradient accent bar on left (LTR) or right (RTL) */}
+                <div
+                  className="absolute top-0 bottom-0 w-1 bg-gradient-to-b from-gold to-gold-light"
+                  style={{
+                    [isRTL ? 'right' : 'left']: 0,
+                  }}
+                />
+
+                {/* Numbered badge in top-right */}
+                <span
+                  className="absolute top-3 text-xs font-bold text-gold/30 select-none"
+                  style={{
+                    [isRTL ? 'left' : 'right']: '12px',
+                  }}
+                >
+                  {number}
+                </span>
+
                 <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-navy-800/10 transition-colors duration-300 group-hover:bg-gold/15">
                   <IconComponent className="h-5 w-5 text-navy-800 transition-colors duration-300 group-hover:text-gold" />
                 </div>

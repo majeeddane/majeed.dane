@@ -1,0 +1,1536 @@
+     1→     1→'use client';
+     2→     2→
+     3→     3→import { useState, useEffect, useCallback, useRef } from 'react';
+     4→     4→import { useLanguage } from '@/lib/language-context';
+     5→     5→import { Button } from '@/components/ui/button';
+     6→     6→import { Input } from '@/components/ui/input';
+     7→     7→import { Textarea } from '@/components/ui/textarea';
+     8→     8→import { Card, CardContent } from '@/components/ui/card';
+     9→     9→import { Badge } from '@/components/ui/badge';
+    10→    10→import {
+    11→    11→  X,
+    12→    12→  Lock,
+    13→    13→  Upload,
+    14→    14→  FileText,
+    15→    15→  Image as ImageIcon,
+    16→    16→  Settings,
+    17→    17→  LogOut,
+    18→    18→  Loader2,
+    19→    19→  Check,
+    20→    20→  Plus,
+    21→    21→  Trash2,
+    22→    22→  Save,
+    23→    23→  Eye,
+    24→    24→  ChevronDown,
+    25→    25→  ChevronUp,
+    26→    26→  Briefcase,
+    27→    27→  Users,
+    28→    28→  Award,
+    29→    29→  BookOpen,
+    30→    30→  BarChart3,
+    31→    31→  Phone,
+    32→    32→  Globe,
+    33→    33→  MapPin,
+    34→    34→  Star,
+    35→    35→  Palette,
+    36→    36→  Megaphone,
+    37→    37→  Headphones,
+    38→    38→  Sparkles,
+    39→    39→  Layers,
+    40→    40→  Target,
+    41→    41→  Brush,
+    42→    42→  Brain,
+    43→    43→  PenTool,
+    44→    44→} from 'lucide-react';
+    45→    45→import { useToast } from '@/hooks/use-toast';
+    46→    46→
+    47→    47→// ── Types ──
+    48→    48→interface ContentItem {
+    49→    49→  key: string;
+    50→    50→  valueAr: string;
+    51→    51→  valueEn: string;
+    52→    52→  type: string;
+    53→    53→}
+    54→    54→
+    55→    55→interface PortfolioItemData {
+    56→    56→  id: string;
+    57→    57→  titleAr: string;
+    58→    58→  titleEn: string;
+    59→    59→  category: string;
+    60→    60→  imageUrl: string;
+    61→    61→  order: number;
+    62→    62→  visible: boolean;
+    63→    63→}
+    64→    64→
+    65→    65→interface ExperienceData {
+    66→    66→  id: string;
+    67→    67→  companyAr: string;
+    68→    68→  companyEn: string;
+    69→    69→  descAr: string;
+    70→    70→  descEn: string;
+    71→    71→  order: number;
+    72→    72→  visible: boolean;
+    73→    73→}
+    74→    74→
+    75→    75→interface ClientData {
+    76→    76→  id: string;
+    77→    77→  nameAr: string;
+    78→    78→  nameEn: string;
+    79→    79→  logoUrl: string | null;
+    80→    80→  order: number;
+    81→    81→  visible: boolean;
+    82→    82→}
+    83→    83→
+    84→    84→interface SkillData {
+    85→    85→  id: string;
+    86→    86→  titleAr: string;
+    87→    87→  titleEn: string;
+    88→    88→  descAr: string | null;
+    89→    89→  descEn: string | null;
+    90→    90→  icon: string | null;
+    91→    91→  level: number;
+    92→    92→  category: string;
+    93→    93→  order: number;
+    94→    94→  visible: boolean;
+    95→    95→}
+    96→    96→
+    97→    97→interface CourseData {
+    98→    98→  id: string;
+    99→    99→  titleAr: string;
+   100→   100→  titleEn: string;
+   101→   101→  icon: string | null;
+   102→   102→  order: number;
+   103→   103→  visible: boolean;
+   104→   104→}
+   105→   105→
+   106→   106→// ── Content Key Labels ──
+   107→   107→const contentSections = [
+   108→   108→  {
+   109→   109→    group: 'hero',
+   110→   110→    labelAr: 'القسم الرئيسي (Hero)',
+   111→   111→    labelEn: 'Hero Section',
+   112→   112→    icon: Star,
+   113→   113→    keys: [
+   114→   114→      { key: 'hero_name_ar', labelAr: 'الاسم الكامل', labelEn: 'Full Name' },
+   115→   115→      { key: 'hero_title_ar', labelAr: 'المسمى الوظيفي', labelEn: 'Job Title' },
+   116→   116→      { key: 'hero_tagline_ar', labelAr: 'الشعار النصي', labelEn: 'Tagline' },
+   117→   117→    ],
+   118→   118→  },
+   119→   119→  {
+   120→   120→    group: 'about',
+   121→   121→    labelAr: 'نبذة عني',
+   122→   122→    labelEn: 'About Me',
+   123→   123→    icon: FileText,
+   124→   124→    keys: [
+   125→   125→      { key: 'about_ar', labelAr: 'النبذة التعريفية', labelEn: 'Bio' },
+   126→   126→      { key: 'about_age', labelAr: 'العمر', labelEn: 'Age' },
+   127→   127→      { key: 'about_nationality', labelAr: 'الجنسية', labelEn: 'Nationality' },
+   128→   128→      { key: 'about_status', labelAr: 'الحالة الاجتماعية', labelEn: 'Status' },
+   129→   129→      { key: 'about_availability', labelAr: 'التفرغ', labelEn: 'Availability' },
+   130→   130→      { key: 'about_license', labelAr: 'رخصة القيادة', labelEn: 'License' },
+   131→   131→      { key: 'about_teamwork', labelAr: 'العمل ضمن فريق', labelEn: 'Teamwork' },
+   132→   132→      { key: 'about_location', labelAr: 'الموقع', labelEn: 'Location' },
+   133→   133→    ],
+   134→   134→  },
+   135→   135→  {
+   136→   136→    group: 'education',
+   137→   137→    labelAr: 'التعليم',
+   138→   138→    labelEn: 'Education',
+   139→   139→    icon: BookOpen,
+   140→   140→    keys: [
+   141→   141→      { key: 'education_ar', labelAr: 'الشهادة الجامعية', labelEn: 'Degree' },
+   142→   142→    ],
+   143→   143→  },
+   144→   144→  {
+   145→   145→    group: 'stats',
+   146→   146→    labelAr: 'الإحصائيات',
+   147→   147→    labelEn: 'Statistics',
+   148→   148→    icon: BarChart3,
+   149→   149→    keys: [
+   150→   150→      { key: 'stats_experience', labelAr: 'سنوات الخبرة (رقم)', labelEn: 'Years (number)' },
+   151→   151→      { key: 'stats_clients', labelAr: 'عدد العملاء (رقم)', labelEn: 'Clients (number)' },
+   152→   152→      { key: 'stats_projects', labelAr: 'عدد المشاريع (رقم)', labelEn: 'Projects (number)' },
+   153→   153→      { key: 'stats_campaigns', labelAr: 'عدد الحملات (رقم)', labelEn: 'Campaigns (number)' },
+   154→   154→      { key: 'stats_experience_label_ar', labelAr: 'وصف سنوات الخبرة', labelEn: 'Years Label' },
+   155→   155→      { key: 'stats_clients_label_ar', labelAr: 'وصف العملاء', labelEn: 'Clients Label' },
+   156→   156→      { key: 'stats_projects_label_ar', labelAr: 'وصف المشاريع', labelEn: 'Projects Label' },
+   157→   157→      { key: 'stats_campaigns_label_ar', labelAr: 'وصف الحملات', labelEn: 'Campaigns Label' },
+   158→   158→    ],
+   159→   159→  },
+   160→   160→  {
+   161→   161→    group: 'contact',
+   162→   162→    labelAr: 'التواصل',
+   163→   163→    labelEn: 'Contact',
+   164→   164→    icon: Phone,
+   165→   165→    keys: [
+   166→   166→      { key: 'contact_phone', labelAr: 'رقم الهاتف', labelEn: 'Phone' },
+   167→   167→      { key: 'contact_email', labelAr: 'البريد الإلكتروني', labelEn: 'Email' },
+   168→   168→      { key: 'contact_location', labelAr: 'الموقع', labelEn: 'Location' },
+   169→   169→    ],
+   170→   170→  },
+   171→   171→];
+   172→   172→
+   173→   173→const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+   174→   174→  Palette, Megaphone, Headphones, FileText, Sparkles, Image: ImageIcon, PenTool, Target, Brush, Brain, Layers, Star, Globe,
+   175→   175→};
+   176→   176→
+   177→   177→// ── Sidebar Navigation Items ──
+   178→   178→const sidebarItems = [
+   179→   179→  { id: 'content', labelAr: 'المحتوى النصي', labelEn: 'Text Content', icon: FileText },
+   180→   180→  { id: 'experiences', labelAr: 'الخبرات', labelEn: 'Experiences', icon: Briefcase },
+   181→   181→  { id: 'clients', labelAr: 'العملاء', labelEn: 'Clients', icon: Users },
+   182→   182→  { id: 'skills', labelAr: 'المهارات', labelEn: 'Skills', icon: Award },
+   183→   183→  { id: 'courses', labelAr: 'الدورات', labelEn: 'Courses', icon: BookOpen },
+   184→   184→  { id: 'portfolio', labelAr: 'معرض الأعمال', labelEn: 'Portfolio', icon: ImageIcon },
+   185→   185→  { id: 'files', labelAr: 'الملفات والصور', labelEn: 'Files & Images', icon: Upload },
+   186→   186→];
+   187→   187→
+   188→   188→export default function AdminPanel() {
+   189→   189→  const { lang, t } = useLanguage();
+   190→   190→  const isRTL = lang === 'ar';
+   191→   191→  const [isOpen, setIsOpen] = useState(false);
+   192→   192→  const [isLoggedIn, setIsLoggedIn] = useState(false);
+   193→   193→  const [password, setPassword] = useState('');
+   194→   194→  const [loginLoading, setLoginLoading] = useState(false);
+   195→   195→  const [activeSection, setActiveSection] = useState('content');
+   196→   196→  const [saving, setSaving] = useState(false);
+   197→   197→  const { toast } = useToast();
+   198→   198→  const scrollRef = useRef<HTMLDivElement>(null);
+   199→   199→
+   200→   200→  // Data states
+   201→   201→  const [contentData, setContentData] = useState<Record<string, { valueAr: string; valueEn: string }>>({});
+   202→   202→  const [contentLoaded, setContentLoaded] = useState(false);
+   203→   203→  const [portfolioItems, setPortfolioItems] = useState<PortfolioItemData[]>([]);
+   204→   204→  const [portfolioLoaded, setPortfolioLoaded] = useState(false);
+   205→   205→  const [experiences, setExperiences] = useState<ExperienceData[]>([]);
+   206→   206→  const [experiencesLoaded, setExperiencesLoaded] = useState(false);
+   207→   207→  const [clients, setClients] = useState<ClientData[]>([]);
+   208→   208→  const [clientsLoaded, setClientsLoaded] = useState(false);
+   209→   209→  const [skills, setSkills] = useState<SkillData[]>([]);
+   210→   210→  const [skillsLoaded, setSkillsLoaded] = useState(false);
+   211→   211→  const [courses, setCourses] = useState<CourseData[]>([]);
+   212→   212→  const [coursesLoaded, setCoursesLoaded] = useState(false);
+   213→   213→  const [uploading, setUploading] = useState(false);
+   214→   214→
+   215→   215→  // Expanded sections
+   216→   216→  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['hero']));
+   217→   217→  const [editingItem, setEditingItem] = useState<string | null>(null);
+   218→   218→
+   219→   219→  // Current file states
+   220→   220→  const [currentProfileImg, setCurrentProfileImg] = useState<string>('');
+   221→   221→  const [currentCvFile, setCurrentCvFile] = useState<string>('');
+   222→   222→  const [currentPortfolioFile, setCurrentPortfolioFile] = useState<string>('');
+   223→   223→
+   224→   224→  // Pending file states (for save button)
+   225→   225→  const [pendingProfileImg, setPendingProfileImg] = useState<File | null>(null);
+   226→   226→  const [pendingCvFile, setPendingCvFile] = useState<File | null>(null);
+   227→   227→  const [pendingPortfolioFile, setPendingPortfolioFile] = useState<File | null>(null);
+   228→   228→  const [profilePreview, setProfilePreview] = useState<string>('');
+   229→   229→  const [cvFileName, setCvFileName] = useState<string>('');
+   230→   230→  const [portfolioFileName, setPortfolioFileName] = useState<string>('');
+   231→   231→
+   232→   232→  // ── Keyboard shortcuts ──
+   233→   233→  useEffect(() => {
+   234→   234→    const handleKeyDown = (e: KeyboardEvent) => {
+   235→   235→      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+   236→   236→        e.preventDefault();
+   237→   237→        setIsOpen(true);
+   238→   238→      }
+   239→   239→      if (e.key === 'Escape' && isOpen) setIsOpen(false);
+   240→   240→    };
+   241→   241→    window.addEventListener('keydown', handleKeyDown);
+   242→   242→    return () => window.removeEventListener('keydown', handleKeyDown);
+   243→   243→  }, [isOpen]);
+   244→   244→
+   245→   245→  // ── Login ──
+   246→   246→  const handleLogin = useCallback(async (e: React.FormEvent) => {
+   247→   247→    e.preventDefault();
+   248→   248→    setLoginLoading(true);
+   249→   249→    try {
+   250→   250→      const res = await fetch('/api/auth', {
+   251→   251→        method: 'POST',
+   252→   252→        headers: { 'Content-Type': 'application/json' },
+   253→   253→        body: JSON.stringify({ password }),
+   254→   254→      });
+   255→   255→      const data = await res.json();
+   256→   256→      if (data.success) {
+   257→   257→        setIsLoggedIn(true);
+   258→   258→        setContentLoaded(false); // force reload on next section visit
+   259→   259→        toast({ title: t('تم تسجيل الدخول بنجاح', 'Login successful') });
+   260→   260→      } else {
+   261→   261→        toast({ title: t('كلمة المرور غير صحيحة', 'Incorrect password'), variant: 'destructive' });
+   262→   262→      }
+   263→   263→    } catch {
+   264→   264→      toast({ title: t('حدث خطأ', 'An error occurred'), variant: 'destructive' });
+   265→   265→    }
+   266→   266→    setLoginLoading(false);
+   267→   267→  }, [password, t, toast]);
+   268→   268→
+   269→   269→  // ── Data Loaders ──
+   270→   270→  const loadContent = useCallback(async () => {
+   271→   271→    try {
+   272→   272→      const res = await fetch('/api/content');
+   273→   273→      const data: ContentItem[] = await res.json();
+   274→   274→      const map: Record<string, { valueAr: string; valueEn: string }> = {};
+   275→   275→      data.forEach((item) => {
+   276→   276→        map[item.key] = { valueAr: item.valueAr || '', valueEn: item.valueEn || '' };
+   277→   277→        if (item.key === 'profile_image' && item.valueAr) setCurrentProfileImg(item.valueAr);
+   278→   278→        if (item.key === 'cv_file' && item.valueAr) setCurrentCvFile(item.valueAr);
+   279→   279→        if (item.key === 'portfolio_file' && item.valueAr) setCurrentPortfolioFile(item.valueAr);
+   280→   280→      });
+   281→   281→      setContentData(map);
+   282→   282→      setContentLoaded(true);
+   283→   283→    } catch {
+   284→   284→      toast({ title: t('فشل تحميل المحتوى', 'Failed to load content'), variant: 'destructive' });
+   285→   285→    }
+   286→   286→  }, [t, toast]);
+   287→   287→
+   288→   288→  const loadPortfolio = useCallback(async () => {
+   289→   289→    try {
+   290→   290→      const res = await fetch('/api/portfolio');
+   291→   291→      const data = await res.json();
+   292→   292→      setPortfolioItems(data);
+   293→   293→      setPortfolioLoaded(true);
+   294→   294→    } catch {
+   295→   295→      toast({ title: t('فشل تحميل الأعمال', 'Failed to load portfolio'), variant: 'destructive' });
+   296→   296→    }
+   297→   297→  }, [t, toast]);
+   298→   298→
+   299→   299→  const loadExperiences = useCallback(async () => {
+   300→   300→    try {
+   301→   301→      const res = await fetch('/api/experience');
+   302→   302→      const data = await res.json();
+   303→   303→      setExperiences(data);
+   304→   304→      setExperiencesLoaded(true);
+   305→   305→    } catch {
+   306→   306→      toast({ title: t('فشل تحميل الخبرات', 'Failed to load experiences'), variant: 'destructive' });
+   307→   307→    }
+   308→   308→  }, [t, toast]);
+   309→   309→
+   310→   310→  const loadClients = useCallback(async () => {
+   311→   311→    try {
+   312→   312→      const res = await fetch('/api/clients');
+   313→   313→      const data = await res.json();
+   314→   314→      setClients(data);
+   315→   315→      setClientsLoaded(true);
+   316→   316→    } catch {
+   317→   317→      toast({ title: t('فشل تحميل العملاء', 'Failed to load clients'), variant: 'destructive' });
+   318→   318→    }
+   319→   319→  }, [t, toast]);
+   320→   320→
+   321→   321→  const loadSkills = useCallback(async () => {
+   322→   322→    try {
+   323→   323→      const res = await fetch('/api/skills');
+   324→   324→      const data = await res.json();
+   325→   325→      setSkills(data);
+   326→   326→      setSkillsLoaded(true);
+   327→   327→    } catch {
+   328→   328→      toast({ title: t('فشل تحميل المهارات', 'Failed to load skills'), variant: 'destructive' });
+   329→   329→    }
+   330→   330→  }, [t, toast]);
+   331→   331→
+   332→   332→  const loadCourses = useCallback(async () => {
+   333→   333→    try {
+   334→   334→      const res = await fetch('/api/courses');
+   335→   335→      const data = await res.json();
+   336→   336→      setCourses(data);
+   337→   337→      setCoursesLoaded(true);
+   338→   338→    } catch {
+   339→   339→      toast({ title: t('فشل تحميل الدورات', 'Failed to load courses'), variant: 'destructive' });
+   340→   340→    }
+   341→   341→  }, [t, toast]);
+   342→   342→
+   343→   343→  // ── Load data on section change (via click handler) ──
+   344→   344→  const handleSectionChange = useCallback((section: string) => {
+   345→   345→    setActiveSection(section);
+   346→   346→    setEditingItem(null);
+   347→   347→    if (section === 'content' && !contentLoaded) loadContent();
+   348→   348→    if (section === 'portfolio' && !portfolioLoaded) loadPortfolio();
+   349→   349→    if (section === 'experiences' && !experiencesLoaded) loadExperiences();
+   350→   350→    if (section === 'clients' && !clientsLoaded) loadClients();
+   351→   351→    if (section === 'skills' && !skillsLoaded) loadSkills();
+   352→   352→    if (section === 'courses' && !coursesLoaded) loadCourses();
+   353→   353→    scrollRef.current?.scrollTo(0, 0);
+   354→   354→  }, [contentLoaded, portfolioLoaded, experiencesLoaded, clientsLoaded, skillsLoaded, coursesLoaded, loadContent, loadPortfolio, loadExperiences, loadClients, loadSkills, loadCourses]);
+   355→   355→
+   356→   356→  // ── Save Content ──
+   357→   357→  const saveContent = useCallback(async (key: string) => {
+   358→   358→    setSaving(true);
+   359→   359→    try {
+   360→   360→      const item = contentData[key];
+   361→   361→      if (!item) return;
+   362→   362→      await fetch('/api/content', {
+   363→   363→        method: 'PUT',
+   364→   364→        headers: { 'Content-Type': 'application/json' },
+   365→   365→        body: JSON.stringify({ key, valueAr: item.valueAr, valueEn: item.valueEn }),
+   366→   366→      });
+   367→   367→      toast({ title: t('✓ تم الحفظ بنجاح', '✓ Saved successfully') });
+   368→   368→    } catch {
+   369→   369→      toast({ title: t('فشل الحفظ', 'Save failed'), variant: 'destructive' });
+   370→   370→    }
+   371→   371→    setSaving(false);
+   372→   372→  }, [contentData, t, toast]);
+   373→   373→
+   374→   374→  // ── Save All Content ──
+   375→   375→  const saveAllContent = useCallback(async () => {
+   376→   376→    setSaving(true);
+   377→   377→    try {
+   378→   378→      const items = Object.entries(contentData).map(([key, val]) => ({
+   379→   379→        key,
+   380→   380→        valueAr: val.valueAr,
+   381→   381→        valueEn: val.valueEn,
+   382→   382→      }));
+   383→   383→      await fetch('/api/content/batch', {
+   384→   384→        method: 'PUT',
+   385→   385→        headers: { 'Content-Type': 'application/json' },
+   386→   386→        body: JSON.stringify(items),
+   387→   387→      });
+   388→   388→      toast({ title: t('✓ تم حفظ جميع المحتوى', '✓ All content saved') });
+   389→   389→    } catch {
+   390→   390→      toast({ title: t('فشل حفظ المحتوى', 'Content save failed'), variant: 'destructive' });
+   391→   391→    }
+   392→   392→    setSaving(false);
+   393→   393→  }, [contentData, t, toast]);
+   394→   394→
+   395→   395→  // ── File Upload (with explicit save) ──
+   396→   396→  const uploadFile = useCallback(async (file: File, purpose: string) => {
+   397→   397→    setUploading(true);
+   398→   398→    const formData = new FormData();
+   399→   399→    formData.append('file', file);
+   400→   400→    formData.append('purpose', purpose);
+   401→   401→    try {
+   402→   402→      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+   403→   403→      const data = await res.json();
+   404→   404→      if (data.success && data.file?.url) {
+   405→   405→        await fetch('/api/content', {
+   406→   406→          method: 'PUT',
+   407→   407→          headers: { 'Content-Type': 'application/json' },
+   408→   408→          body: JSON.stringify({ key: purpose, valueAr: data.file.url, valueEn: data.file.url }),
+   409→   409→        });
+   410→   410→        if (purpose === 'profile_image') { setCurrentProfileImg(data.file.url); setPendingProfileImg(null); setProfilePreview(''); }
+   411→   411→        if (purpose === 'cv_file') { setCurrentCvFile(data.file.url); setPendingCvFile(null); setCvFileName(''); }
+   412→   412→        if (purpose === 'portfolio_file') { setCurrentPortfolioFile(data.file.url); setPendingPortfolioFile(null); setPortfolioFileName(''); }
+   413→   413→        toast({ title: t('✓ تم رفع الملف وحفظه بنجاح', '✓ File uploaded and saved') });
+   414→   414→      } else {
+   415→   415→        toast({ title: t('فشل رفع الملف', 'Upload failed'), variant: 'destructive' });
+   416→   416→      }
+   417→   417→    } catch {
+   418→   418→      toast({ title: t('فشل رفع الملف', 'File upload failed'), variant: 'destructive' });
+   419→   419→    }
+   420→   420→    setUploading(false);
+   421→   421→  }, [t, toast]);
+   422→   422→
+   423→   423→  // ── CRUD: Experience ──
+   424→   424→  const saveExperience = useCallback(async (exp: ExperienceData) => {
+   425→   425→    setSaving(true);
+   426→   426→    try {
+   427→   427→      const res = await fetch(`/api/experience/${exp.id}`, {
+   428→   428→        method: 'PUT',
+   429→   429→        headers: { 'Content-Type': 'application/json' },
+   430→   430→        body: JSON.stringify(exp),
+   431→   431→      });
+   432→   432→      if (res.ok) {
+   433→   433→        toast({ title: t('✓ تم الحفظ', '✓ Saved') });
+   434→   434→        setEditingItem(null);
+   435→   435→      }
+   436→   436→    } catch {
+   437→   437→      toast({ title: t('فشل الحفظ', 'Save failed'), variant: 'destructive' });
+   438→   438→    }
+   439→   439→    setSaving(false);
+   440→   440→  }, [t, toast]);
+   441→   441→
+   442→   442→  const addExperience = useCallback(async () => {
+   443→   443→    try {
+   444→   444→      const res = await fetch('/api/experience', {
+   445→   445→        method: 'POST',
+   446→   446→        headers: { 'Content-Type': 'application/json' },
+   447→   447→        body: JSON.stringify({ companyAr: 'شركة جديدة', companyEn: 'New Company', descAr: '', descEn: '', order: experiences.length + 1 }),
+   448→   448→      });
+   449→   449→      const data = await res.json();
+   450→   450→      setExperiences(prev => [...prev, data]);
+   451→   451→      toast({ title: t('تم إضافة خبرة', 'Experience added') });
+   452→   452→    } catch {
+   453→   453→      toast({ title: t('فشل الإضافة', 'Add failed'), variant: 'destructive' });
+   454→   454→    }
+   455→   455→  }, [experiences.length, t, toast]);
+   456→   456→
+   457→   457→  const deleteExperience = useCallback(async (id: string) => {
+   458→   458→    try {
+   459→   459→      await fetch(`/api/experience/${id}`, { method: 'DELETE' });
+   460→   460→      setExperiences(prev => prev.filter(e => e.id !== id));
+   461→   461→      toast({ title: t('تم الحذف', 'Deleted') });
+   462→   462→    } catch {
+   463→   463→      toast({ title: t('فشل الحذف', 'Delete failed'), variant: 'destructive' });
+   464→   464→    }
+   465→   465→  }, [t, toast]);
+   466→   466→
+   467→   467→  // ── CRUD: Client ──
+   468→   468→  const saveClient = useCallback(async (client: ClientData) => {
+   469→   469→    setSaving(true);
+   470→   470→    try {
+   471→   471→      const res = await fetch(`/api/clients/${client.id}`, {
+   472→   472→        method: 'PUT',
+   473→   473→        headers: { 'Content-Type': 'application/json' },
+   474→   474→        body: JSON.stringify(client),
+   475→   475→      });
+   476→   476→      if (res.ok) {
+   477→   477→        toast({ title: t('✓ تم الحفظ', '✓ Saved') });
+   478→   478→        setEditingItem(null);
+   479→   479→      }
+   480→   480→    } catch {
+   481→   481→      toast({ title: t('فشل الحفظ', 'Save failed'), variant: 'destructive' });
+   482→   482→    }
+   483→   483→    setSaving(false);
+   484→   484→  }, [t, toast]);
+   485→   485→
+   486→   486→  const addClient = useCallback(async () => {
+   487→   487→    try {
+   488→   488→      const res = await fetch('/api/clients', {
+   489→   489→        method: 'POST',
+   490→   490→        headers: { 'Content-Type': 'application/json' },
+   491→   491→        body: JSON.stringify({ nameAr: 'عميل جديد', nameEn: 'New Client', order: clients.length + 1 }),
+   492→   492→      });
+   493→   493→      const data = await res.json();
+   494→   494→      setClients(prev => [...prev, data]);
+   495→   495→      toast({ title: t('تم إضافة عميل', 'Client added') });
+   496→   496→    } catch {
+   497→   497→      toast({ title: t('فشل الإضافة', 'Add failed'), variant: 'destructive' });
+   498→   498→    }
+   499→   499→  }, [clients.length, t, toast]);
+   500→   500→
+   501→   501→  const deleteClient = useCallback(async (id: string) => {
+   502→   502→    try {
+   503→   503→      await fetch(`/api/clients/${id}`, { method: 'DELETE' });
+   504→   504→      setClients(prev => prev.filter(c => c.id !== id));
+   505→   505→      toast({ title: t('تم الحذف', 'Deleted') });
+   506→   506→    } catch {
+   507→   507→      toast({ title: t('فشل الحذف', 'Delete failed'), variant: 'destructive' });
+   508→   508→    }
+   509→   509→  }, [t, toast]);
+   510→   510→
+   511→   511→  // ── CRUD: Skill ──
+   512→   512→  const saveSkill = useCallback(async (skill: SkillData) => {
+   513→   513→    setSaving(true);
+   514→   514→    try {
+   515→   515→      const res = await fetch(`/api/skills/${skill.id}`, {
+   516→   516→        method: 'PUT',
+   517→   517→        headers: { 'Content-Type': 'application/json' },
+   518→   518→        body: JSON.stringify(skill),
+   519→   519→      });
+   520→   520→      if (res.ok) {
+   521→   521→        toast({ title: t('✓ تم الحفظ', '✓ Saved') });
+   522→   522→        setEditingItem(null);
+   523→   523→      }
+   524→   524→    } catch {
+   525→   525→      toast({ title: t('فشل الحفظ', 'Save failed'), variant: 'destructive' });
+   526→   526→    }
+   527→   527→    setSaving(false);
+   528→   528→  }, [t, toast]);
+   529→   529→
+   530→   530→  const addSkill = useCallback(async () => {
+   531→   531→    try {
+   532→   532→      const res = await fetch('/api/skills', {
+   533→   533→        method: 'POST',
+   534→   534→        headers: { 'Content-Type': 'application/json' },
+   535→   535→        body: JSON.stringify({ titleAr: 'مهارة جديدة', titleEn: 'New Skill', level: 80, category: 'design', order: skills.length + 1 }),
+   536→   536→      });
+   537→   537→      const data = await res.json();
+   538→   538→      setSkills(prev => [...prev, data]);
+   539→   539→      toast({ title: t('تم إضافة مهارة', 'Skill added') });
+   540→   540→    } catch {
+   541→   541→      toast({ title: t('فشل الإضافة', 'Add failed'), variant: 'destructive' });
+   542→   542→    }
+   543→   543→  }, [skills.length, t, toast]);
+   544→   544→
+   545→   545→  const deleteSkill = useCallback(async (id: string) => {
+   546→   546→    try {
+   547→   547→      await fetch(`/api/skills/${id}`, { method: 'DELETE' });
+   548→   548→      setSkills(prev => prev.filter(s => s.id !== id));
+   549→   549→      toast({ title: t('تم الحذف', 'Deleted') });
+   550→   550→    } catch {
+   551→   551→      toast({ title: t('فشل الحذف', 'Delete failed'), variant: 'destructive' });
+   552→   552→    }
+   553→   553→  }, [t, toast]);
+   554→   554→
+   555→   555→  // ── CRUD: Course ──
+   556→   556→  const saveCourse = useCallback(async (course: CourseData) => {
+   557→   557→    setSaving(true);
+   558→   558→    try {
+   559→   559→      const res = await fetch(`/api/courses/${course.id}`, {
+   560→   560→        method: 'PUT',
+   561→   561→        headers: { 'Content-Type': 'application/json' },
+   562→   562→        body: JSON.stringify(course),
+   563→   563→      });
+   564→   564→      if (res.ok) {
+   565→   565→        toast({ title: t('✓ تم الحفظ', '✓ Saved') });
+   566→   566→        setEditingItem(null);
+   567→   567→      }
+   568→   568→    } catch {
+   569→   569→      toast({ title: t('فشل الحفظ', 'Save failed'), variant: 'destructive' });
+   570→   570→    }
+   571→   571→    setSaving(false);
+   572→   572→  }, [t, toast]);
+   573→   573→
+   574→   574→  const addCourse = useCallback(async () => {
+   575→   575→    try {
+   576→   576→      const res = await fetch('/api/courses', {
+   577→   577→        method: 'POST',
+   578→   578→        headers: { 'Content-Type': 'application/json' },
+   579→   579→        body: JSON.stringify({ titleAr: 'دورة جديدة', titleEn: 'New Course', icon: 'BookOpen', order: courses.length + 1 }),
+   580→   580→      });
+   581→   581→      const data = await res.json();
+   582→   582→      setCourses(prev => [...prev, data]);
+   583→   583→      toast({ title: t('تم إضافة دورة', 'Course added') });
+   584→   584→    } catch {
+   585→   585→      toast({ title: t('فشل الإضافة', 'Add failed'), variant: 'destructive' });
+   586→   586→    }
+   587→   587→  }, [courses.length, t, toast]);
+   588→   588→
+   589→   589→  const deleteCourse = useCallback(async (id: string) => {
+   590→   590→    try {
+   591→   591→      await fetch(`/api/courses/${id}`, { method: 'DELETE' });
+   592→   592→      setCourses(prev => prev.filter(c => c.id !== id));
+   593→   593→      toast({ title: t('تم الحذف', 'Deleted') });
+   594→   594→    } catch {
+   595→   595→      toast({ title: t('فشل الحذف', 'Delete failed'), variant: 'destructive' });
+   596→   596→    }
+   597→   597→  }, [t, toast]);
+   598→   598→
+   599→   599→  // ── CRUD: Portfolio ──
+   600→   600→  const savePortfolioItem = useCallback(async (item: PortfolioItemData) => {
+   601→   601→    setSaving(true);
+   602→   602→    try {
+   603→   603→      const res = await fetch(`/api/portfolio/${item.id}`, {
+   604→   604→        method: 'PUT',
+   605→   605→        headers: { 'Content-Type': 'application/json' },
+   606→   606→        body: JSON.stringify(item),
+   607→   607→      });
+   608→   608→      if (res.ok) {
+   609→   609→        toast({ title: t('✓ تم الحفظ', '✓ Saved') });
+   610→   610→        setEditingItem(null);
+   611→   611→      }
+   612→   612→    } catch {
+   613→   613→      toast({ title: t('فشل الحفظ', 'Save failed'), variant: 'destructive' });
+   614→   614→    }
+   615→   615→    setSaving(false);
+   616→   616→  }, [t, toast]);
+   617→   617→
+   618→   618→  const addPortfolioItem = useCallback(async () => {
+   619→   619→    try {
+   620→   620→      const res = await fetch('/api/portfolio', {
+   621→   621→        method: 'POST',
+   622→   622→        headers: { 'Content-Type': 'application/json' },
+   623→   623→        body: JSON.stringify({ titleAr: 'عمل جديد', titleEn: 'New Work', category: 'posts', imageUrl: '/placeholder.jpg', order: portfolioItems.length + 1 }),
+   624→   624→      });
+   625→   625→      const data = await res.json();
+   626→   626→      setPortfolioItems(prev => [...prev, data]);
+   627→   627→      toast({ title: t('تم إضافة العمل', 'Item added') });
+   628→   628→    } catch {
+   629→   629→      toast({ title: t('فشل الإضافة', 'Add failed'), variant: 'destructive' });
+   630→   630→    }
+   631→   631→  }, [portfolioItems.length, t, toast]);
+   632→   632→
+   633→   633→  const deletePortfolioItem = useCallback(async (id: string) => {
+   634→   634→    try {
+   635→   635→      await fetch(`/api/portfolio/${id}`, { method: 'DELETE' });
+   636→   636→      setPortfolioItems(prev => prev.filter(p => p.id !== id));
+   637→   637→      toast({ title: t('تم الحذف', 'Deleted') });
+   638→   638→    } catch {
+   639→   639→      toast({ title: t('فشل الحذف', 'Delete failed'), variant: 'destructive' });
+   640→   640→    }
+   641→   641→  }, [t, toast]);
+   642→   642→
+   643→   643→  // ── File selection handlers ──
+   644→   644→  const handleProfileSelect = (file: File) => {
+   645→   645→    setPendingProfileImg(file);
+   646→   646→    const reader = new FileReader();
+   647→   647→    reader.onload = (e) => setProfilePreview(e.target?.result as string);
+   648→   648→    reader.readAsDataURL(file);
+   649→   649→  };
+   650→   650→
+   651→   651→  const handleCvSelect = (file: File) => {
+   652→   652→    setPendingCvFile(file);
+   653→   653→    setCvFileName(file.name);
+   654→   654→  };
+   655→   655→
+   656→   656→  const handlePortfolioSelect = (file: File) => {
+   657→   657→    setPendingPortfolioFile(file);
+   658→   658→    setPortfolioFileName(file.name);
+   659→   659→  };
+   660→   660→
+   661→   661→  // ── Toggle section expand ──
+   662→   662→  const toggleSection = (group: string) => {
+   663→   663→    setExpandedSections(prev => {
+   664→   664→      const next = new Set(prev);
+   665→   665→      if (next.has(group)) next.delete(group);
+   666→   666→      else next.add(group);
+   667→   667→      return next;
+   668→   668→    });
+   669→   669→  };
+   670→   670→
+   671→   671→  // ── Render: Admin gear button ──
+   672→   672→  if (!isOpen) {
+   673→   673→    return (
+   674→   674→      <button
+   675→   675→        onClick={() => setIsOpen(true)}
+   676→   676→        className="fixed bottom-6 right-6 z-[60] flex h-12 w-12 cursor-pointer items-center justify-center rounded-full bg-gradient-to-br from-navy-900 to-navy-800 text-gold shadow-lg shadow-navy-900/30 transition-all duration-300 hover:scale-110 hover:shadow-xl hover:shadow-gold/20 border border-gold/30"
+   677→   677→        aria-label="Admin"
+   678→   678→        title={t('لوحة التحكم (Ctrl+Shift+A)', 'Admin Panel (Ctrl+Shift+A)')}
+   679→   679→      >
+   680→   680→        <Settings className="h-5 w-5" />
+   681→   681→      </button>
+   682→   682→    );
+   683→   683→  }
+   684→   684→
+   685→   685→  // ── Render: Login Screen ──
+   686→   686→  if (!isLoggedIn) {
+   687→   687→    return (
+   688→   688→      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4" dir={isRTL ? 'rtl' : 'ltr'}>
+   689→   689→        <div className="w-full max-w-sm rounded-2xl border border-white/10 bg-gradient-to-b from-navy-900 to-[#0A1D3A] p-8 backdrop-blur-sm text-center shadow-2xl">
+   690→   690→          <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-navy-800 border-2 border-gold/40 shadow-lg shadow-gold/10">
+   691→   691→            <Lock className="h-9 w-9 text-gold" />
+   692→   692→          </div>
+   693→   693→          <h3 className="text-xl font-bold text-white mb-2">{t('لوحة التحكم', 'Admin Panel')}</h3>
+   694→   694→          <p className="text-sm text-white/50 mb-6">{t('أدخل كلمة المرور للدخول', 'Enter password to login')}</p>
+   695→   695→          <form onSubmit={handleLogin} className="flex flex-col gap-4">
+   696→   696→            <Input
+   697→   697→              type="password"
+   698→   698→              placeholder={t('كلمة المرور', 'Password')}
+   699→   699→              value={password}
+   700→   700→              onChange={(e) => setPassword(e.target.value)}
+   701→   701→              className="border-white/20 bg-white/10 text-white placeholder:text-white/40 focus:border-gold focus:ring-gold/30 h-11"
+   702→   702→            />
+   703→   703→            <Button
+   704→   704→              type="submit"
+   705→   705→              disabled={loginLoading}
+   706→   706→              className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold h-11"
+   707→   707→            >
+   708→   708→              {loginLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : t('دخول', 'Login')}
+   709→   709→            </Button>
+   710→   710→          </form>
+   711→   711→          <button
+   712→   712→            onClick={() => setIsOpen(false)}
+   713→   713→            className="mt-4 text-sm text-white/40 hover:text-white/70 transition-colors cursor-pointer"
+   714→   714→          >
+   715→   715→            {t('إلغاء', 'Cancel')}
+   716→   716→          </button>
+   717→   717→        </div>
+   718→   718→      </div>
+   719→   719→    );
+   720→   720→  }
+   721→   721→
+   722→   722→  // ── Render: Dashboard ──
+   723→   723→  return (
+   724→   724→    <div className="fixed inset-0 z-[100] flex bg-black/70 backdrop-blur-md" dir={isRTL ? 'rtl' : 'ltr'}>
+   725→   725→      <div className="flex h-full w-full max-w-[1400px] mx-auto my-4 rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+   726→   726→        style={{ background: 'linear-gradient(180deg, #0B2545 0%, #0A1D3A 100%)' }}
+   727→   727→      >
+   728→   728→        {/* ── Sidebar ── */}
+   729→   729→        <div className="flex w-64 flex-col border-r border-white/10 bg-[#081B36]/50">
+   730→   730→          {/* Sidebar Header */}
+   731→   731→          <div className="flex items-center gap-3 px-5 py-5 border-b border-white/10">
+   732→   732→            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gold/20">
+   733→   733→              <Settings className="h-5 w-5 text-gold" />
+   734→   734→            </div>
+   735→   735→            <div>
+   736→   736→              <h2 className="text-sm font-bold text-white">{t('لوحة التحكم', 'Dashboard')}</h2>
+   737→   737→              <p className="text-[10px] text-white/40">{t('إدارة الموقع', 'Site Manager')}</p>
+   738→   738→            </div>
+   739→   739→          </div>
+   740→   740→
+   741→   741→          {/* Nav Items */}
+   742→   742→          <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-1" style={{ scrollbarWidth: 'thin', scrollbarColor: '#13315C transparent' }}>
+   743→   743→            {sidebarItems.map((item) => {
+   744→   744→              const Icon = item.icon;
+   745→   745→              const isActive = activeSection === item.id;
+   746→   746→              return (
+   747→   747→                <button
+   748→   748→                  key={item.id}
+   749→   749→                  onClick={() => { setActiveSection(item.id); setEditingItem(null); scrollRef.current?.scrollTo(0, 0); }}
+   750→   750→                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 cursor-pointer ${
+   751→   751→                    isActive
+   752→   752→                      ? 'bg-gold/15 text-gold border border-gold/20'
+   753→   753→                      : 'text-white/60 hover:text-white/90 hover:bg-white/5 border border-transparent'
+   754→   754→                  }`}
+   755→   755→                >
+   756→   756→                  <Icon className={`h-4 w-4 flex-shrink-0 ${isActive ? 'text-gold' : ''}`} />
+   757→   757→                  {t(item.labelAr, item.labelEn)}
+   758→   758→                </button>
+   759→   759→              );
+   760→   760→            })}
+   761→   761→          </nav>
+   762→   762→
+   763→   763→          {/* Sidebar Footer */}
+   764→   764→          <div className="border-t border-white/10 p-3 space-y-2">
+   765→   765→            <Button
+   766→   766→              variant="ghost"
+   767→   767→              size="sm"
+   768→   768→              onClick={() => {
+   769→   769→                setIsLoggedIn(false);
+   770→   770→                setPassword('');
+   771→   771→                setContentLoaded(false);
+   772→   772→                setPortfolioLoaded(false);
+   773→   773→                setExperiencesLoaded(false);
+   774→   774→                setClientsLoaded(false);
+   775→   775→                setSkillsLoaded(false);
+   776→   776→                setCoursesLoaded(false);
+   777→   777→              }}
+   778→   778→              className="w-full justify-start text-white/50 hover:text-white hover:bg-white/10"
+   779→   779→            >
+   780→   780→              <LogOut className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />
+   781→   781→              {t('تسجيل الخروج', 'Logout')}
+   782→   782→            </Button>
+   783→   783→            <button
+   784→   784→              onClick={() => setIsOpen(false)}
+   785→   785→              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white/40 hover:text-white/70 hover:bg-white/5 transition-colors cursor-pointer"
+   786→   786→            >
+   787→   787→              <X className="h-4 w-4" />
+   788→   788→              {t('إغلاق', 'Close')}
+   789→   789→            </button>
+   790→   790→          </div>
+   791→   791→        </div>
+   792→   792→
+   793→   793→        {/* ── Main Content Area ── */}
+   794→   794→        <div className="flex flex-1 flex-col overflow-hidden">
+   795→   795→          {/* Top Bar */}
+   796→   796→          <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+   797→   797→            <div className="flex items-center gap-3">
+   798→   798→              {(() => {
+   799→   799→                const currentItem = sidebarItems.find(i => i.id === activeSection);
+   800→   800→                const Icon = currentItem?.icon || FileText;
+   801→   801→                return (
+   802→   802→                  <>
+   803→   803→                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold/15">
+   804→   804→                      <Icon className="h-4 w-4 text-gold" />
+   805→   805→                    </div>
+   806→   806→                    <h3 className="text-base font-bold text-white">
+   807→   807→                      {t(currentItem?.labelAr || '', currentItem?.labelEn || '')}
+   808→   808→                    </h3>
+   809→   809→                  </>
+   810→   810→                );
+   811→   811→              })()}
+   812→   812→            </div>
+   813→   813→            {activeSection === 'content' && contentLoaded && (
+   814→   814→              <Button
+   815→   815→                onClick={saveAllContent}
+   816→   816→                disabled={saving}
+   817→   817→                size="sm"
+   818→   818→                className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold"
+   819→   819→              >
+   820→   820→                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />}
+   821→   821→                {t('حفظ الكل', 'Save All')}
+   822→   822→              </Button>
+   823→   823→            )}
+   824→   824→          </div>
+   825→   825→
+   826→   826→          {/* Scrollable Content */}
+   827→   827→          <div
+   828→   828→            ref={scrollRef}
+   829→   829→            className="flex-1 overflow-y-auto"
+   830→   830→            style={{ scrollbarWidth: 'thin', scrollbarColor: '#13315C transparent' }}
+   831→   831→          >
+   832→   832→            {/* ────── CONTENT SECTION ────── */}
+   833→   833→            {activeSection === 'content' && (
+   834→   834→              <div className="p-6 space-y-4">
+   835→   835→                {!contentLoaded ? (
+   836→   836→                  <div className="flex flex-col items-center justify-center py-20 gap-4">
+   837→   837→                    <Loader2 className="h-10 w-10 animate-spin text-gold" />
+   838→   838→                    <p className="text-white/60">{t('جارٍ تحميل المحتوى...', 'Loading content...')}</p>
+   839→   839→                  </div>
+   840→   840→                ) : (
+   841→   841→                  contentSections.map((section) => {
+   842→   842→                    const isExpanded = expandedSections.has(section.group);
+   843→   843→                    const SectionIcon = section.icon;
+   844→   844→                    return (
+   845→   845→                      <div key={section.group} className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
+   846→   846→                        <button
+   847→   847→                          onClick={() => toggleSection(section.group)}
+   848→   848→                          className="w-full flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-white/[0.03] transition-colors"
+   849→   849→                        >
+   850→   850→                          <div className="flex items-center gap-3">
+   851→   851→                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold/15">
+   852→   852→                              <SectionIcon className="h-4 w-4 text-gold" />
+   853→   853→                            </div>
+   854→   854→                            <span className="text-sm font-semibold text-white">{t(section.labelAr, section.labelEn)}</span>
+   855→   855→                            <Badge className="text-[10px] bg-white/10 text-white/50 border-0">{section.keys.length}</Badge>
+   856→   856→                          </div>
+   857→   857→                          {isExpanded ? <ChevronUp className="h-4 w-4 text-white/40" /> : <ChevronDown className="h-4 w-4 text-white/40" />}
+   858→   858→                        </button>
+   859→   859→
+   860→   860→                        {isExpanded && (
+   861→   861→                          <div className="border-t border-white/10 px-5 py-4 space-y-4">
+   862→   862→                            {section.keys.map((keyItem) => (
+   863→   863→                              <div key={keyItem.key} className="space-y-2">
+   864→   864→                                <label className="text-xs font-medium text-white/50">
+   865→   865→                                  {t(keyItem.labelAr, keyItem.labelEn)}
+   866→   866→                                </label>
+   867→   867→                                <div className="grid grid-cols-2 gap-3">
+   868→   868→                                  <div>
+   869→   869→                                    <div className="flex items-center gap-1.5 mb-1">
+   870→   870→                                      <span className="text-[10px] text-gold/60 font-medium">عربي</span>
+   871→   871→                                    </div>
+   872→   872→                                    {['about_ar', 'hero_tagline_ar', 'education_ar'].includes(keyItem.key) ? (
+   873→   873→                                      <Textarea
+   874→   874→                                        value={contentData[keyItem.key]?.valueAr || ''}
+   875→   875→                                        onChange={(e) => setContentData({ ...contentData, [keyItem.key]: { ...contentData[keyItem.key], valueAr: e.target.value } })}
+   876→   876→                                        className="min-h-[80px] border-white/15 bg-white/5 text-white text-sm placeholder:text-white/30 focus:border-gold focus:ring-gold/20 resize-none"
+   877→   877→                                        dir="rtl"
+   878→   878→                                      />
+   879→   879→                                    ) : (
+   880→   880→                                      <Input
+   881→   881→                                        value={contentData[keyItem.key]?.valueAr || ''}
+   882→   882→                                        onChange={(e) => setContentData({ ...contentData, [keyItem.key]: { ...contentData[keyItem.key], valueAr: e.target.value } })}
+   883→   883→                                        className="border-white/15 bg-white/5 text-white text-sm placeholder:text-white/30 focus:border-gold focus:ring-gold/20 h-9"
+   884→   884→                                        dir="rtl"
+   885→   885→                                      />
+   886→   886→                                    )}
+   887→   887→                                  </div>
+   888→   888→                                  <div>
+   889→   889→                                    <div className="flex items-center gap-1.5 mb-1">
+   890→   890→                                      <span className="text-[10px] text-blue-400/60 font-medium">English</span>
+   891→   891→                                    </div>
+   892→   892→                                    {['about_ar', 'hero_tagline_ar', 'education_ar'].includes(keyItem.key) ? (
+   893→   893→                                      <Textarea
+   894→   894→                                        value={contentData[keyItem.key]?.valueEn || ''}
+   895→   895→                                        onChange={(e) => setContentData({ ...contentData, [keyItem.key]: { ...contentData[keyItem.key], valueEn: e.target.value } })}
+   896→   896→                                        className="min-h-[80px] border-white/15 bg-white/5 text-white text-sm placeholder:text-white/30 focus:border-gold focus:ring-gold/20 resize-none"
+   897→   897→                                        dir="ltr"
+   898→   898→                                      />
+   899→   899→                                    ) : (
+   900→   900→                                      <Input
+   901→   901→                                        value={contentData[keyItem.key]?.valueEn || ''}
+   902→   902→                                        onChange={(e) => setContentData({ ...contentData, [keyItem.key]: { ...contentData[keyItem.key], valueEn: e.target.value } })}
+   903→   903→                                        className="border-white/15 bg-white/5 text-white text-sm placeholder:text-white/30 focus:border-gold focus:ring-gold/20 h-9"
+   904→   904→                                        dir="ltr"
+   905→   905→                                      />
+   906→   906→                                    )}
+   907→   907→                                  </div>
+   908→   908→                                </div>
+   909→   909→                                <div className="flex justify-end">
+   910→   910→                                  <Button
+   911→   911→                                    onClick={() => saveContent(keyItem.key)}
+   912→   912→                                    disabled={saving}
+   913→   913→                                    size="sm"
+   914→   914→                                    className="bg-gold/20 text-gold hover:bg-gold/30 border-0 font-semibold text-xs h-7"
+   915→   915→                                  >
+   916→   916→                                    {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className={`${isRTL ? 'ml-1.5' : 'mr-1.5'} h-3 w-3`} />}
+   917→   917→                                    {t('حفظ', 'Save')}
+   918→   918→                                  </Button>
+   919→   919→                                </div>
+   920→   920→                              </div>
+   921→   921→                            ))}
+   922→   922→                          </div>
+   923→   923→                        )}
+   924→   924→                      </div>
+   925→   925→                    );
+   926→   926→                  })
+   927→   927→                )}
+   928→   928→              </div>
+   929→   929→            )}
+   930→   930→
+   931→   931→            {/* ────── EXPERIENCES SECTION ────── */}
+   932→   932→            {activeSection === 'experiences' && (
+   933→   933→              <div className="p-6 space-y-4">
+   934→   934→                <div className="flex items-center justify-between">
+   935→   935→                  <p className="text-sm text-white/50">{t('إدارة الخبرات العملية', 'Manage work experiences')}</p>
+   936→   936→                  <Button onClick={addExperience} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
+   937→   937→                    <Plus className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />
+   938→   938→                    {t('إضافة خبرة', 'Add Experience')}
+   939→   939→                  </Button>
+   940→   940→                </div>
+   941→   941→                {!experiencesLoaded ? (
+   942→   942→                  <div className="flex flex-col items-center justify-center py-20 gap-4">
+   943→   943→                    <Loader2 className="h-10 w-10 animate-spin text-gold" />
+   944→   944→                    <p className="text-white/60">{t('جارٍ التحميل...', 'Loading...')}</p>
+   945→   945→                  </div>
+   946→   946→                ) : (
+   947→   947→                  experiences.map((exp, idx) => (
+   948→   948→                    <div key={exp.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-5 space-y-3">
+   949→   949→                      <div className="flex items-center justify-between">
+   950→   950→                        <div className="flex items-center gap-2">
+   951→   951→                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gold/20 text-gold text-xs font-bold">{idx + 1}</div>
+   952→   952→                          <span className="text-sm font-semibold text-white">{exp.companyAr}</span>
+   953→   953→                        </div>
+   954→   954→                        <div className="flex items-center gap-2">
+   955→   955→                          <Button
+   956→   956→                            onClick={() => setEditingItem(editingItem === exp.id ? null : exp.id)}
+   957→   957→                            variant="ghost"
+   958→   958→                            size="sm"
+   959→   959→                            className="text-white/50 hover:text-white hover:bg-white/10"
+   960→   960→                          >
+   961→   961→                            {editingItem === exp.id ? t('إلغاء', 'Cancel') : t('تعديل', 'Edit')}
+   962→   962→                          </Button>
+   963→   963→                          <Button
+   964→   964→                            onClick={() => deleteExperience(exp.id)}
+   965→   965→                            variant="ghost"
+   966→   966→                            size="sm"
+   967→   967→                            className="text-red-400/60 hover:text-red-400 hover:bg-red-400/10"
+   968→   968→                          >
+   969→   969→                            <Trash2 className="h-4 w-4" />
+   970→   970→                          </Button>
+   971→   971→                        </div>
+   972→   972→                      </div>
+   973→   973→                      {editingItem === exp.id && (
+   974→   974→                        <div className="space-y-3 border-t border-white/10 pt-4">
+   975→   975→                          <div className="grid grid-cols-2 gap-3">
+   976→   976→                            <div>
+   977→   977→                              <label className="text-xs text-white/50 mb-1 block">اسم الشركة (عربي)</label>
+   978→   978→                              <Input value={exp.companyAr} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, companyAr: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="rtl" />
+   979→   979→                            </div>
+   980→   980→                            <div>
+   981→   981→                              <label className="text-xs text-white/50 mb-1 block">Company Name (EN)</label>
+   982→   982→                              <Input value={exp.companyEn} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, companyEn: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="ltr" />
+   983→   983→                            </div>
+   984→   984→                          </div>
+   985→   985→                          <div className="grid grid-cols-2 gap-3">
+   986→   986→                            <div>
+   987→   987→                              <label className="text-xs text-white/50 mb-1 block">الوصف (عربي)</label>
+   988→   988→                              <Textarea value={exp.descAr} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, descAr: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm min-h-[60px] resize-none" dir="rtl" />
+   989→   989→                            </div>
+   990→   990→                            <div>
+   991→   991→                              <label className="text-xs text-white/50 mb-1 block">Description (EN)</label>
+   992→   992→                              <Textarea value={exp.descEn} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, descEn: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm min-h-[60px] resize-none" dir="ltr" />
+   993→   993→                            </div>
+   994→   994→                          </div>
+   995→   995→                          <div className="flex items-center gap-3">
+   996→   996→                            <div className="flex items-center gap-2">
+   997→   997→                              <label className="text-xs text-white/50">ترتيب</label>
+   998→   998→                              <Input type="number" value={exp.order} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, order: parseInt(e.target.value) || 0 } : x))} className="border-white/15 bg-white/5 text-white text-sm w-20 h-9" />
+   999→   999→                            </div>
+  1000→  1000→                            <label className="flex items-center gap-2 cursor-pointer">
+  1001→  1001→                              <input type="checkbox" checked={exp.visible} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, visible: e.target.checked } : x))} className="rounded border-white/30 bg-white/10 text-gold focus:ring-gold/30" />
+  1002→  1002→                              <span className="text-xs text-white/50">{t('مرئي', 'Visible')}</span>
+  1003→  1003→                            </label>
+  1004→  1004→                          </div>
+  1005→  1005→                          <div className="flex justify-end">
+  1006→  1006→                            <Button onClick={() => saveExperience(exp)} disabled={saving} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
+  1007→  1007→                              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />}
+  1008→  1008→                              {t('حفظ التغييرات', 'Save Changes')}
+  1009→  1009→                            </Button>
+  1010→  1010→                          </div>
+  1011→  1011→                        </div>
+  1012→  1012→                      )}
+  1013→  1013→                    </div>
+  1014→  1014→                  ))
+  1015→  1015→                )}
+  1016→  1016→              </div>
+  1017→  1017→            )}
+  1018→  1018→
+  1019→  1019→            {/* ────── CLIENTS SECTION ────── */}
+  1020→  1020→            {activeSection === 'clients' && (
+  1021→  1021→              <div className="p-6 space-y-4">
+  1022→  1022→                <div className="flex items-center justify-between">
+  1023→  1023→                  <p className="text-sm text-white/50">{t('إدارة قائمة العملاء', 'Manage client list')}</p>
+  1024→  1024→                  <Button onClick={addClient} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
+  1025→  1025→                    <Plus className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />
+  1026→  1026→                    {t('إضافة عميل', 'Add Client')}
+  1027→  1027→                  </Button>
+  1028→  1028→                </div>
+  1029→  1029→                {!clientsLoaded ? (
+  1030→  1030→                  <div className="flex flex-col items-center justify-center py-20 gap-4">
+  1031→  1031→                    <Loader2 className="h-10 w-10 animate-spin text-gold" />
+  1032→  1032→                    <p className="text-white/60">{t('جارٍ التحميل...', 'Loading...')}</p>
+  1033→  1033→                  </div>
+  1034→  1034→                ) : (
+  1035→  1035→                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+  1036→  1036→                    {clients.map((client) => (
+  1037→  1037→                      <div key={client.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+  1038→  1038→                        {editingItem === client.id ? (
+  1039→  1039→                          <div className="space-y-3">
+  1040→  1040→                            <div className="grid grid-cols-2 gap-3">
+  1041→  1041→                              <div>
+  1042→  1042→                                <label className="text-xs text-white/50 mb-1 block">الاسم (عربي)</label>
+  1043→  1043→                                <Input value={client.nameAr} onChange={(e) => setClients(prev => prev.map(x => x.id === client.id ? { ...x, nameAr: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="rtl" />
+  1044→  1044→                              </div>
+  1045→  1045→                              <div>
+  1046→  1046→                                <label className="text-xs text-white/50 mb-1 block">Name (EN)</label>
+  1047→  1047→                                <Input value={client.nameEn} onChange={(e) => setClients(prev => prev.map(x => x.id === client.id ? { ...x, nameEn: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="ltr" />
+  1048→  1048→                              </div>
+  1049→  1049→                            </div>
+  1050→  1050→                            <div>
+  1051→  1051→                              <label className="text-xs text-white/50 mb-1 block">{t('رابط الشعار (اختياري)', 'Logo URL (optional)')}</label>
+  1052→  1052→                              <Input value={client.logoUrl || ''} onChange={(e) => setClients(prev => prev.map(x => x.id === client.id ? { ...x, logoUrl: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="ltr" placeholder="https://..." />
+  1053→  1053→                            </div>
+  1054→  1054→                            <div className="flex items-center gap-3">
+  1055→  1055→                              <label className="flex items-center gap-2 cursor-pointer">
+  1056→  1056→                                <input type="checkbox" checked={client.visible} onChange={(e) => setClients(prev => prev.map(x => x.id === client.id ? { ...x, visible: e.target.checked } : x))} className="rounded border-white/30 bg-white/10 text-gold focus:ring-gold/30" />
+  1057→  1057→                                <span className="text-xs text-white/50">{t('مرئي', 'Visible')}</span>
+  1058→  1058→                              </label>
+  1059→  1059→                            </div>
+  1060→  1060→                            <div className="flex items-center gap-2 justify-end">
+  1061→  1061→                              <Button onClick={() => saveClient(client)} disabled={saving} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
+  1062→  1062→                                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+  1063→  1063→                                {t('حفظ', 'Save')}
+  1064→  1064→                              </Button>
+  1065→  1065→                              <Button onClick={() => setEditingItem(null)} variant="ghost" size="sm" className="text-white/50 hover:text-white hover:bg-white/10">
+  1066→  1066→                                {t('إلغاء', 'Cancel')}
+  1067→  1067→                              </Button>
+  1068→  1068→                            </div>
+  1069→  1069→                          </div>
+  1070→  1070→                        ) : (
+  1071→  1071→                          <div className="flex items-center justify-between">
+  1072→  1072→                            <div className="flex items-center gap-3">
+  1073→  1073→                              <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-white/10 flex items-center justify-center">
+  1074→  1074→                                {client.logoUrl ? (
+  1075→  1075→                                  <img src={client.logoUrl} alt={client.nameAr} className="h-full w-full object-cover" />
+  1076→  1076→                                ) : (
+  1077→  1077→                                  <Users className="h-4 w-4 text-white/30" />
+  1078→  1078→                                )}
+  1079→  1079→                              </div>
+  1080→  1080→                              <div>
+  1081→  1081→                                <p className="font-medium text-white/90 text-sm">{client.nameAr}</p>
+  1082→  1082→                                <p className="text-xs text-white/50">{client.nameEn}</p>
+  1083→  1083→                              </div>
+  1084→  1084→                            </div>
+  1085→  1085→                            <div className="flex items-center gap-1">
+  1086→  1086→                              <Button onClick={() => setEditingItem(client.id)} variant="ghost" size="icon" className="text-white/40 hover:text-white h-8 w-8">
+  1087→  1087→                                <Settings className="h-3.5 w-3.5" />
+  1088→  1088→                              </Button>
+  1089→  1089→                              <Button onClick={() => deleteClient(client.id)} variant="ghost" size="icon" className="text-red-400/60 hover:text-red-400 h-8 w-8">
+  1090→  1090→                                <Trash2 className="h-3.5 w-3.5" />
+  1091→  1091→                              </Button>
+  1092→  1092→                            </div>
+  1093→  1093→                          </div>
+  1094→  1094→                        )}
+  1095→  1095→                      </div>
+  1096→  1096→                    ))}
+  1097→  1097→                  </div>
+  1098→  1098→                )}
+  1099→  1099→              </div>
+  1100→  1100→            )}
+  1101→  1101→
+  1102→  1102→            {/* ────── SKILLS SECTION ────── */}
+  1103→  1103→            {activeSection === 'skills' && (
+  1104→  1104→              <div className="p-6 space-y-4">
+  1105→  1105→                <div className="flex items-center justify-between">
+  1106→  1106→                  <p className="text-sm text-white/50">{t('إدارة المهارات', 'Manage skills')}</p>
+  1107→  1107→                  <Button onClick={addSkill} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
+  1108→  1108→                    <Plus className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />
+  1109→  1109→                    {t('إضافة مهارة', 'Add Skill')}
+  1110→  1110→                  </Button>
+  1111→  1111→                </div>
+  1112→  1112→                {!skillsLoaded ? (
+  1113→  1113→                  <div className="flex flex-col items-center justify-center py-20 gap-4">
+  1114→  1114→                    <Loader2 className="h-10 w-10 animate-spin text-gold" />
+  1115→  1115→                    <p className="text-white/60">{t('جارٍ التحميل...', 'Loading...')}</p>
+  1116→  1116→                  </div>
+  1117→  1117→                ) : (
+  1118→  1118→                  skills.map((skill) => (
+  1119→  1119→                    <div key={skill.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+  1120→  1120→                      {editingItem === skill.id ? (
+  1121→  1121→                        <div className="space-y-3">
+  1122→  1122→                          <div className="grid grid-cols-2 gap-3">
+  1123→  1123→                            <div>
+  1124→  1124→                              <label className="text-xs text-white/50 mb-1 block">المهارة (عربي)</label>
+  1125→  1125→                              <Input value={skill.titleAr} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, titleAr: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="rtl" />
+  1126→  1126→                            </div>
+  1127→  1127→                            <div>
+  1128→  1128→                              <label className="text-xs text-white/50 mb-1 block">Skill (EN)</label>
+  1129→  1129→                              <Input value={skill.titleEn} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, titleEn: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="ltr" />
+  1130→  1130→                            </div>
+  1131→  1131→                          </div>
+  1132→  1132→                          <div className="grid grid-cols-2 gap-3">
+  1133→  1133→                            <div>
+  1134→  1134→                              <label className="text-xs text-white/50 mb-1 block">الوصف (عربي)</label>
+  1135→  1135→                              <Textarea value={skill.descAr || ''} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, descAr: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm min-h-[50px] resize-none" dir="rtl" />
+  1136→  1136→                            </div>
+  1137→  1137→                            <div>
+  1138→  1138→                              <label className="text-xs text-white/50 mb-1 block">Description (EN)</label>
+  1139→  1139→                              <Textarea value={skill.descEn || ''} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, descEn: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm min-h-[50px] resize-none" dir="ltr" />
+  1140→  1140→                            </div>
+  1141→  1141→                          </div>
+  1142→  1142→                          <div className="flex items-center gap-4 flex-wrap">
+  1143→  1143→                            <div className="flex items-center gap-2">
+  1144→  1144→                              <label className="text-xs text-white/50">{t('المستوى', 'Level')}</label>
+  1145→  1145→                              <Input type="number" min={0} max={100} value={skill.level} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, level: parseInt(e.target.value) || 0 } : x))} className="border-white/15 bg-white/5 text-white text-sm w-20 h-9" />
+  1146→  1146→                              <span className="text-xs text-white/40">%</span>
+  1147→  1147→                            </div>
+  1148→  1148→                            <div className="flex items-center gap-2">
+  1149→  1149→                              <label className="text-xs text-white/50">{t('الفئة', 'Category')}</label>
+  1150→  1150→                              <select value={skill.category} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, category: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm rounded-md h-9 px-3">
+  1151→  1151→                                <option value="design">تصميم / Design</option>
+  1152→  1152→                                <option value="marketing">تسويق / Marketing</option>
+  1153→  1153→                                <option value="soft">مهارات شخصية / Soft Skills</option>
+  1154→  1154→                                <option value="tools">أدوات / Tools</option>
+  1155→  1155→                                <option value="ai">ذكاء اصطناعي / AI</option>
+  1156→  1156→                              </select>
+  1157→  1157→                            </div>
+  1158→  1158→                            <label className="flex items-center gap-2 cursor-pointer">
+  1159→  1159→                              <input type="checkbox" checked={skill.visible} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, visible: e.target.checked } : x))} className="rounded border-white/30 bg-white/10 text-gold focus:ring-gold/30" />
+  1160→  1160→                              <span className="text-xs text-white/50">{t('مرئي', 'Visible')}</span>
+  1161→  1161→                            </label>
+  1162→  1162→                          </div>
+  1163→  1163→                          <div className="flex items-center gap-2 justify-end">
+  1164→  1164→                            <Button onClick={() => saveSkill(skill)} disabled={saving} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
+  1165→  1165→                              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+  1166→  1166→                              {t('حفظ', 'Save')}
+  1167→  1167→                            </Button>
+  1168→  1168→                            <Button onClick={() => setEditingItem(null)} variant="ghost" size="sm" className="text-white/50 hover:text-white hover:bg-white/10">
+  1169→  1169→                              {t('إلغاء', 'Cancel')}
+  1170→  1170→                            </Button>
+  1171→  1171→                          </div>
+  1172→  1172→                        </div>
+  1173→  1173→                      ) : (
+  1174→  1174→                        <div className="flex items-center justify-between">
+  1175→  1175→                          <div className="flex items-center gap-3">
+  1176→  1176→                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/15">
+  1177→  1177→                              {(() => { const Ic = iconMap[skill.icon || ''] || Award; return <Ic className="h-5 w-5 text-gold" />; })()}
+  1178→  1178→                            </div>
+  1179→  1179→                            <div>
+  1180→  1180→                              <p className="font-medium text-white/90 text-sm">{skill.titleAr}</p>
+  1181→  1181→                              <p className="text-xs text-white/50">{skill.titleEn} — {skill.level}%</p>
+  1182→  1182→                            </div>
+  1183→  1183→                          </div>
+  1184→  1184→                          <div className="flex items-center gap-1">
+  1185→  1185→                            <Button onClick={() => setEditingItem(skill.id)} variant="ghost" size="icon" className="text-white/40 hover:text-white h-8 w-8">
+  1186→  1186→                              <Settings className="h-3.5 w-3.5" />
+  1187→  1187→                            </Button>
+  1188→  1188→                            <Button onClick={() => deleteSkill(skill.id)} variant="ghost" size="icon" className="text-red-400/60 hover:text-red-400 h-8 w-8">
+  1189→  1189→                              <Trash2 className="h-3.5 w-3.5" />
+  1190→  1190→                            </Button>
+  1191→  1191→                          </div>
+  1192→  1192→                        </div>
+  1193→  1193→                      )}
+  1194→  1194→                    </div>
+  1195→  1195→                  ))
+  1196→  1196→                )}
+  1197→  1197→              </div>
+  1198→  1198→            )}
+  1199→  1199→
+  1200→  1200→            {/* ────── COURSES SECTION ────── */}
+  1201→  1201→            {activeSection === 'courses' && (
+  1202→  1202→              <div className="p-6 space-y-4">
+  1203→  1203→                <div className="flex items-center justify-between">
+  1204→  1204→                  <p className="text-sm text-white/50">{t('إدارة الدورات والشهادات', 'Manage courses & certificates')}</p>
+  1205→  1205→                  <Button onClick={addCourse} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
+  1206→  1206→                    <Plus className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />
+  1207→  1207→                    {t('إضافة دورة', 'Add Course')}
+  1208→  1208→                  </Button>
+  1209→  1209→                </div>
+  1210→  1210→                {!coursesLoaded ? (
+  1211→  1211→                  <div className="flex flex-col items-center justify-center py-20 gap-4">
+  1212→  1212→                    <Loader2 className="h-10 w-10 animate-spin text-gold" />
+  1213→  1213→                    <p className="text-white/60">{t('جارٍ التحميل...', 'Loading...')}</p>
+  1214→  1214→                  </div>
+  1215→  1215→                ) : (
+  1216→  1216→                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+  1217→  1217→                    {courses.map((course) => (
+  1218→  1218→                      <div key={course.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+  1219→  1219→                        {editingItem === course.id ? (
+  1220→  1220→                          <div className="space-y-3">
+  1221→  1221→                            <div className="grid grid-cols-2 gap-3">
+  1222→  1222→                              <div>
+  1223→  1223→                                <label className="text-xs text-white/50 mb-1 block">الدورة (عربي)</label>
+  1224→  1224→                                <Input value={course.titleAr} onChange={(e) => setCourses(prev => prev.map(x => x.id === course.id ? { ...x, titleAr: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="rtl" />
+  1225→  1225→                              </div>
+  1226→  1226→                              <div>
+  1227→  1227→                                <label className="text-xs text-white/50 mb-1 block">Course (EN)</label>
+  1228→  1228→                                <Input value={course.titleEn} onChange={(e) => setCourses(prev => prev.map(x => x.id === course.id ? { ...x, titleEn: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="ltr" />
+  1229→  1229→                              </div>
+  1230→  1230→                            </div>
+  1231→  1231→                            <div className="flex items-center gap-3">
+  1232→  1232→                              <label className="flex items-center gap-2 cursor-pointer">
+  1233→  1233→                                <input type="checkbox" checked={course.visible} onChange={(e) => setCourses(prev => prev.map(x => x.id === course.id ? { ...x, visible: e.target.checked } : x))} className="rounded border-white/30 bg-white/10 text-gold focus:ring-gold/30" />
+  1234→  1234→                                <span className="text-xs text-white/50">{t('مرئي', 'Visible')}</span>
+  1235→  1235→                              </label>
+  1236→  1236→                            </div>
+  1237→  1237→                            <div className="flex items-center gap-2 justify-end">
+  1238→  1238→                              <Button onClick={() => saveCourse(course)} disabled={saving} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
+  1239→  1239→                                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+  1240→  1240→                                {t('حفظ', 'Save')}
+  1241→  1241→                              </Button>
+  1242→  1242→                              <Button onClick={() => setEditingItem(null)} variant="ghost" size="sm" className="text-white/50 hover:text-white hover:bg-white/10">
+  1243→  1243→                                {t('إلغاء', 'Cancel')}
+  1244→  1244→                              </Button>
+  1245→  1245→                            </div>
+  1246→  1246→                          </div>
+  1247→  1247→                        ) : (
+  1248→  1248→                          <div className="flex items-center justify-between">
+  1249→  1249→                            <div className="flex items-center gap-3">
+  1250→  1250→                              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold/15">
+  1251→  1251→                                {(() => { const Ic = iconMap[course.icon || ''] || BookOpen; return <Ic className="h-4 w-4 text-gold" />; })()}
+  1252→  1252→                              </div>
+  1253→  1253→                              <div>
+  1254→  1254→                                <p className="font-medium text-white/90 text-sm">{course.titleAr}</p>
+  1255→  1255→                                <p className="text-xs text-white/50">{course.titleEn}</p>
+  1256→  1256→                              </div>
+  1257→  1257→                            </div>
+  1258→  1258→                            <div className="flex items-center gap-1">
+  1259→  1259→                              <Button onClick={() => setEditingItem(course.id)} variant="ghost" size="icon" className="text-white/40 hover:text-white h-8 w-8">
+  1260→  1260→                                <Settings className="h-3.5 w-3.5" />
+  1261→  1261→                              </Button>
+  1262→  1262→                              <Button onClick={() => deleteCourse(course.id)} variant="ghost" size="icon" className="text-red-400/60 hover:text-red-400 h-8 w-8">
+  1263→  1263→                                <Trash2 className="h-3.5 w-3.5" />
+  1264→  1264→                              </Button>
+  1265→  1265→                            </div>
+  1266→  1266→                          </div>
+  1267→  1267→                        )}
+  1268→  1268→                      </div>
+  1269→  1269→                    ))}
+  1270→  1270→                  </div>
+  1271→  1271→                )}
+  1272→  1272→              </div>
+  1273→  1273→            )}
+  1274→  1274→
+  1275→  1275→            {/* ────── PORTFOLIO SECTION ────── */}
+  1276→  1276→            {activeSection === 'portfolio' && (
+  1277→  1277→              <div className="p-6 space-y-4">
+  1278→  1278→                <div className="flex items-center justify-between">
+  1279→  1279→                  <p className="text-sm text-white/50">{t('إدارة أعمال معرض الأعمال', 'Manage portfolio items')}</p>
+  1280→  1280→                  <Button onClick={addPortfolioItem} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
+  1281→  1281→                    <Plus className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />
+  1282→  1282→                    {t('إضافة عمل', 'Add Item')}
+  1283→  1283→                  </Button>
+  1284→  1284→                </div>
+  1285→  1285→                {!portfolioLoaded ? (
+  1286→  1286→                  <div className="flex flex-col items-center justify-center py-20 gap-4">
+  1287→  1287→                    <Loader2 className="h-10 w-10 animate-spin text-gold" />
+  1288→  1288→                    <p className="text-white/60">{t('جارٍ التحميل...', 'Loading...')}</p>
+  1289→  1289→                  </div>
+  1290→  1290→                ) : portfolioItems.length === 0 ? (
+  1291→  1291→                  <div className="flex flex-col items-center justify-center py-20 gap-3">
+  1292→  1292→                    <ImageIcon className="h-12 w-12 text-white/20" />
+  1293→  1293→                    <p className="text-white/40">{t('لا توجد أعمال بعد', 'No portfolio items yet')}</p>
+  1294→  1294→                  </div>
+  1295→  1295→                ) : (
+  1296→  1296→                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+  1297→  1297→                    {portfolioItems.map((item) => (
+  1298→  1298→                      <div key={item.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+  1299→  1299→                        {editingItem === item.id ? (
+  1300→  1300→                          <div className="space-y-3">
+  1301→  1301→                            <div className="grid grid-cols-2 gap-3">
+  1302→  1302→                              <div>
+  1303→  1303→                                <label className="text-xs text-white/50 mb-1 block">العنوان (عربي)</label>
+  1304→  1304→                                <Input value={item.titleAr} onChange={(e) => setPortfolioItems(prev => prev.map(x => x.id === item.id ? { ...x, titleAr: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="rtl" />
+  1305→  1305→                              </div>
+  1306→  1306→                              <div>
+  1307→  1307→                                <label className="text-xs text-white/50 mb-1 block">Title (EN)</label>
+  1308→  1308→                                <Input value={item.titleEn} onChange={(e) => setPortfolioItems(prev => prev.map(x => x.id === item.id ? { ...x, titleEn: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="ltr" />
+  1309→  1309→                              </div>
+  1310→  1310→                            </div>
+  1311→  1311→                            <div className="flex items-center gap-3">
+  1312→  1312→                              <div>
+  1313→  1313→                                <label className="text-xs text-white/50 mb-1 block">{t('الفئة', 'Category')}</label>
+  1314→  1314→                                <select value={item.category} onChange={(e) => setPortfolioItems(prev => prev.map(x => x.id === item.id ? { ...x, category: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm rounded-md h-9 px-3">
+  1315→  1315→                                  <option value="posts">{t('بوستات', 'Posts')}</option>
+  1316→  1316→                                  <option value="profiles">{t('بروفايلات', 'Profiles')}</option>
+  1317→  1317→                                  <option value="websites">{t('مواقع', 'Websites')}</option>
+  1318→  1318→                                </select>
+  1319→  1319→                              </div>
+  1320→  1320→                              <div className="flex-1">
+  1321→  1321→                                <label className="text-xs text-white/50 mb-1 block">رابط الصورة</label>
+  1322→  1322→                                <Input value={item.imageUrl} onChange={(e) => setPortfolioItems(prev => prev.map(x => x.id === item.id ? { ...x, imageUrl: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="ltr" />
+  1323→  1323→                              </div>
+  1324→  1324→                            </div>
+  1325→  1325→                            {item.imageUrl && item.imageUrl !== '/placeholder.jpg' && (
+  1326→  1326→                              <div className="mt-2">
+  1327→  1327→                                <img src={item.imageUrl} alt={item.titleAr} className="h-20 w-auto rounded-lg object-cover border border-white/10" />
+  1328→  1328→                              </div>
+  1329→  1329→                            )}
+  1330→  1330→                            <div className="flex items-center gap-2 justify-end">
+  1331→  1331→                              <Button onClick={() => savePortfolioItem(item)} disabled={saving} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
+  1332→  1332→                                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+  1333→  1333→                                {t('حفظ', 'Save')}
+  1334→  1334→                              </Button>
+  1335→  1335→                              <Button onClick={() => setEditingItem(null)} variant="ghost" size="sm" className="text-white/50 hover:text-white hover:bg-white/10">
+  1336→  1336→                                {t('إلغاء', 'Cancel')}
+  1337→  1337→                              </Button>
+  1338→  1338→                            </div>
+  1339→  1339→                          </div>
+  1340→  1340→                        ) : (
+  1341→  1341→                          <div className="flex items-center justify-between">
+  1342→  1342→                            <div className="flex items-center gap-3 min-w-0">
+  1343→  1343→                              <div className="h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-white/10 flex items-center justify-center">
+  1344→  1344→                                {item.imageUrl && item.imageUrl !== '/placeholder.jpg' ? (
+  1345→  1345→                                  <img src={item.imageUrl} alt={item.titleAr} className="h-full w-full object-cover" />
+  1346→  1346→                                ) : (
+  1347→  1347→                                  <ImageIcon className="h-5 w-5 text-white/30" />
+  1348→  1348→                                )}
+  1349→  1349→                              </div>
+  1350→  1350→                              <div className="min-w-0">
+  1351→  1351→                                <p className="font-medium text-white/90 text-sm truncate">{item.titleAr}</p>
+  1352→  1352→                                <p className="text-xs text-white/50 truncate">{item.titleEn}</p>
+  1353→  1353→                                <Badge className="mt-1 text-[10px] bg-white/10 text-white/60 border-0 hover:bg-white/15">
+  1354→  1354→                                  {item.category === 'posts' ? t('بوستات', 'Posts') : item.category === 'profiles' ? t('بروفايلات', 'Profiles') : t('مواقع', 'Websites')}
+  1355→  1355→                                </Badge>
+  1356→  1356→                              </div>
+  1357→  1357→                            </div>
+  1358→  1358→                            <div className="flex items-center gap-1">
+  1359→  1359→                              <Button onClick={() => setEditingItem(item.id)} variant="ghost" size="icon" className="text-white/40 hover:text-white h-8 w-8">
+  1360→  1360→                                <Settings className="h-3.5 w-3.5" />
+  1361→  1361→                              </Button>
+  1362→  1362→                              <Button onClick={() => deletePortfolioItem(item.id)} variant="ghost" size="icon" className="text-red-400/60 hover:text-red-400 h-8 w-8">
+  1363→  1363→                                <Trash2 className="h-3.5 w-3.5" />
+  1364→  1364→                              </Button>
+  1365→  1365→                            </div>
+  1366→  1366→                          </div>
+  1367→  1367→                        )}
+  1368→  1368→                      </div>
+  1369→  1369→                    ))}
+  1370→  1370→                  </div>
+  1371→  1371→                )}
+  1372→  1372→              </div>
+  1373→  1373→            )}
+  1374→  1374→
+  1375→  1375→            {/* ────── FILES SECTION ────── */}
+  1376→  1376→            {activeSection === 'files' && (
+  1377→  1377→              <div className="p-6 space-y-4">
+  1378→  1378→                <p className="text-sm text-white/50 mb-2">{t('رفع واستبدال ملفات الموقع', 'Upload and replace site files')}</p>
+  1379→  1379→
+  1380→  1380→                {/* Profile Image */}
+  1381→  1381→                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+  1382→  1382→                  <div className="flex items-center gap-3 mb-4">
+  1383→  1383→                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/15">
+  1384→  1384→                      <ImageIcon className="h-5 w-5 text-gold" />
+  1385→  1385→                    </div>
+  1386→  1386→                    <div>
+  1387→  1387→                      <h4 className="text-sm font-semibold text-white">{t('الصورة الشخصية', 'Profile Image')}</h4>
+  1388→  1388→                      <p className="text-xs text-white/40">{t('ستظهر في قسم Hero', 'Appears in Hero section')}</p>
+  1389→  1389→                    </div>
+  1390→  1390→                  </div>
+  1391→  1391→                  {/* Current image preview */}
+  1392→  1392→                  {(profilePreview || currentProfileImg) && (
+  1393→  1393→                    <div className="mb-4 flex items-center gap-3">
+  1394→  1394→                      <img
+  1395→  1395→                        src={profilePreview || currentProfileImg}
+  1396→  1396→                        alt="profile"
+  1397→  1397→                        className="h-16 w-16 rounded-full object-cover border-2 border-gold/30"
+  1398→  1398→                      />
+  1399→  1399→                      <span className="text-xs text-green-400/80 flex items-center gap-1">
+  1400→  1400→                        <Check className="h-3 w-3" /> {t('صورة حالية', 'Current image')}
+  1401→  1401→                      </span>
+  1402→  1402→                    </div>
+  1403→  1403→                  )}
+  1404→  1404→                  <div className="flex items-center gap-3">
+  1405→  1405→                    <Input
+  1406→  1406→                      type="file"
+  1407→  1407→                      accept="image/*"
+  1408→  1408→                      onChange={(e) => { const file = e.target.files?.[0]; if (file) handleProfileSelect(file); }}
+  1409→  1409→                      className="flex-1 border-white/15 bg-white/5 text-white text-sm file:text-white/60 file:border-0 file:bg-white/10 file:hover:bg-white/20 file:cursor-pointer"
+  1410→  1410→                    />
+  1411→  1411→                    <Button
+  1412→  1412→                      onClick={() => { if (pendingProfileImg) uploadFile(pendingProfileImg, 'profile_image'); }}
+  1413→  1413→                      disabled={!pendingProfileImg || uploading}
+  1414→  1414→                      size="sm"
+  1415→  1415→                      className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold min-w-[100px]"
+  1416→  1416→                    >
+  1417→  1417→                      {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />}
+  1418→  1418→                      {t('حفظ الصورة', 'Save Image')}
+  1419→  1419→                    </Button>
+  1420→  1420→                  </div>
+  1421→  1421→                </div>
+  1422→  1422→
+  1423→  1423→                {/* CV File */}
+  1424→  1424→                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+  1425→  1425→                  <div className="flex items-center gap-3 mb-4">
+  1426→  1426→                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/15">
+  1427→  1427→                      <FileText className="h-5 w-5 text-gold" />
+  1428→  1428→                    </div>
+  1429→  1429→                    <div>
+  1430→  1430→                      <h4 className="text-sm font-semibold text-white">{t('السيرة الذاتية (PDF)', 'CV File (PDF)')}</h4>
+  1431→  1431→                      <p className="text-xs text-white/40">{t('يظهر عند الضغط على زر تحميل CV', 'Appears on Download CV click')}</p>
+  1432→  1432→                    </div>
+  1433→  1433→                  </div>
+  1434→  1434→                  {currentCvFile && (
+  1435→  1435→                    <div className="mb-3 flex items-center gap-2">
+  1436→  1436→                      <a href={currentCvFile} target="_blank" className="text-xs text-blue-400/80 flex items-center gap-1 hover:text-blue-300">
+  1437→  1437→                        <Eye className="h-3 w-3" /> {t('عرض الملف الحالي', 'View current file')}
+  1438→  1438→                      </a>
+  1439→  1439→                    </div>
+  1440→  1440→                  )}
+  1441→  1441→                  {cvFileName && (
+  1442→  1442→                    <div className="mb-3 flex items-center gap-2">
+  1443→  1443→                      <FileText className="h-4 w-4 text-gold/60" />
+  1444→  1444→                      <span className="text-xs text-white/70">{cvFileName}</span>
+  1445→  1445→                      <span className="text-[10px] text-gold/60 bg-gold/10 px-2 py-0.5 rounded">{t('جاهز للحفظ', 'Ready to save')}</span>
+  1446→  1446→                    </div>
+  1447→  1447→                  )}
+  1448→  1448→                  <div className="flex items-center gap-3">
+  1449→  1449→                    <Input
+  1450→  1450→                      type="file"
+  1451→  1451→                      accept=".pdf"
+  1452→  1452→                      onChange={(e) => { const file = e.target.files?.[0]; if (file) handleCvSelect(file); }}
+  1453→  1453→                      className="flex-1 border-white/15 bg-white/5 text-white text-sm file:text-white/60 file:border-0 file:bg-white/10 file:hover:bg-white/20 file:cursor-pointer"
+  1454→  1454→                    />
+  1455→  1455→                    <Button
+  1456→  1456→                      onClick={() => { if (pendingCvFile) uploadFile(pendingCvFile, 'cv_file'); }}
+  1457→  1457→                      disabled={!pendingCvFile || uploading}
+  1458→  1458→                      size="sm"
+  1459→  1459→                      className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold min-w-[100px]"
+  1460→  1460→                    >
+  1461→  1461→                      {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />}
+  1462→  1462→                      {t('حفظ الملف', 'Save File')}
+  1463→  1463→                    </Button>
+  1464→  1464→                  </div>
+  1465→  1465→                </div>
+  1466→  1466→
+  1467→  1467→                {/* Portfolio File */}
+  1468→  1468→                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+  1469→  1469→                  <div className="flex items-center gap-3 mb-4">
+  1470→  1470→                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/15">
+  1471→  1471→                      <Upload className="h-5 w-5 text-gold" />
+  1472→  1472→                    </div>
+  1473→  1473→                    <div>
+  1474→  1474→                      <h4 className="text-sm font-semibold text-white">{t('ملف الأعمال (PDF)', 'Portfolio File (PDF)')}</h4>
+  1475→  1475→                      <p className="text-xs text-white/40">{t('ملف تعريفي لجميع الأعمال', 'Complete portfolio file')}</p>
+  1476→  1476→                    </div>
+  1477→  1477→                  </div>
+  1478→  1478→                  {currentPortfolioFile && (
+  1479→  1479→                    <div className="mb-3 flex items-center gap-2">
+  1480→  1480→                      <a href={currentPortfolioFile} target="_blank" className="text-xs text-blue-400/80 flex items-center gap-1 hover:text-blue-300">
+  1481→  1481→                        <Eye className="h-3 w-3" /> {t('عرض الملف الحالي', 'View current file')}
+  1482→  1482→                      </a>
+  1483→  1483→                    </div>
+  1484→  1484→                  )}
+  1485→  1485→                  {portfolioFileName && (
+  1486→  1486→                    <div className="mb-3 flex items-center gap-2">
+  1487→  1487→                      <FileText className="h-4 w-4 text-gold/60" />
+  1488→  1488→                      <span className="text-xs text-white/70">{portfolioFileName}</span>
+  1489→  1489→                      <span className="text-[10px] text-gold/60 bg-gold/10 px-2 py-0.5 rounded">{t('جاهز للحفظ', 'Ready to save')}</span>
+  1490→  1490→                    </div>
+  1491→  1491→                  )}
+  1492→  1492→                  <div className="flex items-center gap-3">
+  1493→  1493→                    <Input
+  1494→  1494→                      type="file"
+  1495→  1495→                      accept=".pdf,.jpg,.jpeg,.png"
+  1496→  1496→                      onChange={(e) => { const file = e.target.files?.[0]; if (file) handlePortfolioSelect(file); }}
+  1497→  1497→                      className="flex-1 border-white/15 bg-white/5 text-white text-sm file:text-white/60 file:border-0 file:bg-white/10 file:hover:bg-white/20 file:cursor-pointer"
+  1498→  1498→                    />
+  1499→  1499→                    <Button
+  1500→  1500→                      onClick={() => { if (pendingPortfolioFile) uploadFile(pendingPortfolioFile, 'portfolio_file'); }}
+  1501→  1501→                      disabled={!pendingPortfolioFile || uploading}
+  1502→  1502→                      size="sm"
+  1503→  1503→                      className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold min-w-[100px]"
+  1504→  1504→                    >
+  1505→  1505→                      {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />}
+  1506→  1506→                      {t('حفظ الملف', 'Save File')}
+  1507→  1507→                    </Button>
+  1508→  1508→                  </div>
+  1509→  1509→                </div>
+  1510→  1510→
+  1511→  1511→                {/* Supabase Info */}
+  1512→  1512→                <div className="rounded-xl border border-gold/20 bg-gold/[0.05] p-5">
+  1513→  1513→                  <div className="flex items-center gap-3 mb-3">
+  1514→  1514→                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/15">
+  1515→  1515→                      <Globe className="h-5 w-5 text-gold" />
+  1516→  1516→                    </div>
+  1517→  1517→                    <div>
+  1518→  1518→                      <h4 className="text-sm font-semibold text-white">{t('ربط Supabase', 'Connect Supabase')}</h4>
+  1519→  1519→                      <p className="text-xs text-white/40">{t('لربط حسابك في Supabase', 'To connect your Supabase account')}</p>
+  1520→  1520→                    </div>
+  1521→  1521→                  </div>
+  1522→  1522→                  <div className="text-xs text-white/50 space-y-1">
+  1523→  1523→                    <p>1. {t('اذهب إلى', 'Go to')} <a href="https://supabase.com/dashboard/project/adnqpnsyiatdohljwquz/settings/api" target="_blank" className="text-blue-400 hover:text-blue-300 underline">Supabase Dashboard → Settings → API</a></p>
+  1524→  1524→                    <p>2. {t('انسخ المفاتيح وضعها في ملف .env', 'Copy the keys and add them to .env file')}</p>
+  1525→  1525→                    <p>3. {t('أعد تشغيل السيرفر', 'Restart the server')}</p>
+  1526→  1526→                  </div>
+  1527→  1527→                </div>
+  1528→  1528→              </div>
+  1529→  1529→            )}
+  1530→  1530→          </div>
+  1531→  1531→        </div>
+  1532→  1532→      </div>
+  1533→  1533→    </div>
+  1534→  1534→  );
+  1535→  1535→}
+  1536→  1536→

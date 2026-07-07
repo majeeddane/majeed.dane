@@ -152,7 +152,7 @@ export default function HeroSection() {
                 variant="outline"
                 size="lg"
                 onClick={() => scrollToSection('portfolio')}
-                className="border-2 border-white/40 text-white hover:bg-white/10 hover:border-white/70 font-semibold text-base px-6 md:px-8 py-5 md:py-6 rounded-lg transition-all hover:-translate-y-0.5"
+                className="border-2 border-gold/60 text-gold bg-navy-900/30 backdrop-blur-sm hover:bg-gold/10 hover:border-gold font-semibold text-base px-6 md:px-8 py-5 md:py-6 rounded-lg transition-all hover:-translate-y-0.5"
               >
                 {cta2}
               </Button>

@@ -41,8 +41,125 @@ import {
   Brush,
   Brain,
   PenTool,
+  Crop,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import ReactCrop, { type Crop as CropType, type PixelCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
+
+// ── Image Crop Dialog Component ──
+function ImageCropDialog({
+  imageSrc,
+  onCropComplete,
+  onCancel,
+  aspectRatio = 1,
+  t,
+}: {
+  imageSrc: string;
+  onCropComplete: (croppedBlob: Blob) => void;
+  onCancel: () => void;
+  aspectRatio?: number;
+  t: (ar: string, en: string) => string;
+}) {
+  const [crop, setCrop] = useState<CropType>();
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [processing, setProcessing] = useState(false);
+
+  const handleCropAndSave = useCallback(() => {
+    if (!completedCrop || !imgRef.current) return;
+    setProcessing(true);
+
+    const image = imgRef.current;
+    const canvas = document.createElement('canvas');
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    const cropX = completedCrop.x * scaleX;
+    const cropY = completedCrop.y * scaleY;
+    const cropWidth = completedCrop.width * scaleX;
+    const cropHeight = completedCrop.height * scaleY;
+
+    canvas.width = cropWidth;
+    canvas.height = cropHeight;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    ctx.drawImage(
+      image,
+      cropX,
+      cropY,
+      cropWidth,
+      cropHeight,
+      0,
+      0,
+      cropWidth,
+      cropHeight
+    );
+
+    canvas.toBlob(
+      (blob) => {
+        if (blob) {
+          onCropComplete(blob);
+        }
+        setProcessing(false);
+      },
+      'image/jpeg',
+      0.92
+    );
+  }, [completedCrop, onCropComplete]);
+
+  return (
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#0B2545] p-6 shadow-2xl">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-white">
+            {t('قص الصورة', 'Crop Image')}
+          </h3>
+          <button onClick={onCancel} className="text-white/50 hover:text-white cursor-pointer">
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+        <div className="max-h-[60vh] overflow-auto rounded-lg bg-black/20 mb-4">
+          <ReactCrop
+            crop={crop}
+            onChange={(c) => setCrop(c)}
+            onComplete={(c) => setCompletedCrop(c)}
+            aspect={aspectRatio}
+          >
+            <img
+              ref={imgRef}
+              src={imageSrc}
+              alt="Crop"
+              className="max-w-full"
+              style={{ maxHeight: '50vh' }}
+            />
+          </ReactCrop>
+        </div>
+        <div className="flex items-center justify-end gap-3">
+          <Button
+            onClick={onCancel}
+            variant="ghost"
+            className="text-white/50 hover:text-white hover:bg-white/10"
+          >
+            {t('إلغاء', 'Cancel')}
+          </Button>
+          <Button
+            onClick={handleCropAndSave}
+            disabled={!completedCrop || processing}
+            className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold"
+          >
+            {processing ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Crop className="h-4 w-4 mr-2 ml-2" />
+            )}
+            {t('قص وحفظ', 'Crop & Save')}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ── Types ──
 interface ContentItem {
@@ -218,16 +335,26 @@ export default function AdminPanel() {
 
   // Current file states
   const [currentProfileImg, setCurrentProfileImg] = useState<string>('');
+  const [currentAboutImg, setCurrentAboutImg] = useState<string>('');
   const [currentCvFile, setCurrentCvFile] = useState<string>('');
   const [currentPortfolioFile, setCurrentPortfolioFile] = useState<string>('');
 
   // Pending file states (for save button)
   const [pendingProfileImg, setPendingProfileImg] = useState<File | null>(null);
+  const [pendingAboutImg, setPendingAboutImg] = useState<File | null>(null);
   const [pendingCvFile, setPendingCvFile] = useState<File | null>(null);
   const [pendingPortfolioFile, setPendingPortfolioFile] = useState<File | null>(null);
   const [profilePreview, setProfilePreview] = useState<string>('');
+  const [aboutPreview, setAboutPreview] = useState<string>('');
   const [cvFileName, setCvFileName] = useState<string>('');
   const [portfolioFileName, setPortfolioFileName] = useState<string>('');
+
+  // Image crop dialog state
+  const [cropDialog, setCropDialog] = useState<{
+    imageSrc: string;
+    purpose: string;
+    aspectRatio: number;
+  } | null>(null);
 
   // ── Keyboard shortcuts ──
   useEffect(() => {
@@ -255,7 +382,7 @@ export default function AdminPanel() {
       const data = await res.json();
       if (data.success) {
         setIsLoggedIn(true);
-        setContentLoaded(false); // force reload on next section visit
+        setContentLoaded(false);
         toast({ title: t('تم تسجيل الدخول بنجاح', 'Login successful') });
       } else {
         toast({ title: t('كلمة المرور غير صحيحة', 'Incorrect password'), variant: 'destructive' });
@@ -275,6 +402,7 @@ export default function AdminPanel() {
       data.forEach((item) => {
         map[item.key] = { valueAr: item.valueAr || '', valueEn: item.valueEn || '' };
         if (item.key === 'profile_image' && item.valueAr) setCurrentProfileImg(item.valueAr);
+        if (item.key === 'about_image' && item.valueAr) setCurrentAboutImg(item.valueAr);
         if (item.key === 'cv_file' && item.valueAr) setCurrentCvFile(item.valueAr);
         if (item.key === 'portfolio_file' && item.valueAr) setCurrentPortfolioFile(item.valueAr);
       });
@@ -393,10 +521,10 @@ export default function AdminPanel() {
   }, [contentData, t, toast]);
 
   // ── File Upload (with explicit save) ──
-  const uploadFile = useCallback(async (file: File, purpose: string) => {
+  const uploadFile = useCallback(async (file: File | Blob, purpose: string) => {
     setUploading(true);
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', file, `cropped-${purpose}.jpg`);
     formData.append('purpose', purpose);
     try {
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
@@ -408,6 +536,7 @@ export default function AdminPanel() {
           body: JSON.stringify({ key: purpose, valueAr: data.file.url, valueEn: data.file.url }),
         });
         if (purpose === 'profile_image') { setCurrentProfileImg(data.file.url); setPendingProfileImg(null); setProfilePreview(''); }
+        if (purpose === 'about_image') { setCurrentAboutImg(data.file.url); setPendingAboutImg(null); setAboutPreview(''); }
         if (purpose === 'cv_file') { setCurrentCvFile(data.file.url); setPendingCvFile(null); setCvFileName(''); }
         if (purpose === 'portfolio_file') { setCurrentPortfolioFile(data.file.url); setPendingPortfolioFile(null); setPortfolioFileName(''); }
         toast({ title: t('✓ تم رفع الملف وحفظه بنجاح', '✓ File uploaded and saved') });
@@ -640,13 +769,32 @@ export default function AdminPanel() {
     }
   }, [t, toast]);
 
-  // ── File selection handlers ──
-  const handleProfileSelect = (file: File) => {
-    setPendingProfileImg(file);
+  // ── File selection handlers (with crop) ──
+  const handleImageSelectWithCrop = (file: File, purpose: string, aspectRatio: number = 1) => {
     const reader = new FileReader();
-    reader.onload = (e) => setProfilePreview(e.target?.result as string);
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      setCropDialog({ imageSrc: dataUrl, purpose, aspectRatio });
+    };
     reader.readAsDataURL(file);
   };
+
+  const handleCropComplete = useCallback(async (croppedBlob: Blob) => {
+    if (!cropDialog) return;
+    const purpose = cropDialog.purpose;
+    setCropDialog(null);
+    const file = new File([croppedBlob], `cropped-${purpose}.jpg`, { type: 'image/jpeg' });
+
+    if (purpose === 'profile_image') {
+      setPendingProfileImg(file);
+      const url = URL.createObjectURL(croppedBlob);
+      setProfilePreview(url);
+    } else if (purpose === 'about_image') {
+      setPendingAboutImg(file);
+      const url = URL.createObjectURL(croppedBlob);
+      setAboutPreview(url);
+    }
+  }, [cropDialog]);
 
   const handleCvSelect = (file: File) => {
     setPendingCvFile(file);
@@ -722,6 +870,17 @@ export default function AdminPanel() {
   // ── Render: Dashboard ──
   return (
     <div className="fixed inset-0 z-[100] flex bg-black/70 backdrop-blur-md" dir={isRTL ? 'rtl' : 'ltr'}>
+      {/* Image Crop Dialog */}
+      {cropDialog && (
+        <ImageCropDialog
+          imageSrc={cropDialog.imageSrc}
+          onCropComplete={handleCropComplete}
+          onCancel={() => setCropDialog(null)}
+          aspectRatio={cropDialog.aspectRatio}
+          t={t}
+        />
+      )}
+
       <div className="flex h-full w-full max-w-[1400px] mx-auto my-4 rounded-2xl overflow-hidden shadow-2xl border border-white/10"
         style={{ background: 'linear-gradient(180deg, #0B2545 0%, #0A1D3A 100%)' }}
       >
@@ -835,85 +994,57 @@ export default function AdminPanel() {
                 {!contentLoaded ? (
                   <div className="flex flex-col items-center justify-center py-20 gap-4">
                     <Loader2 className="h-10 w-10 animate-spin text-gold" />
-                    <p className="text-white/60">{t('جارٍ تحميل المحتوى...', 'Loading content...')}</p>
+                    <p className="text-white/60">{t('جارٍ التحميل...', 'Loading...')}</p>
                   </div>
                 ) : (
                   contentSections.map((section) => {
-                    const isExpanded = expandedSections.has(section.group);
                     const SectionIcon = section.icon;
+                    const isExpanded = expandedSections.has(section.group);
                     return (
-                      <div key={section.group} className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
+                      <div key={section.group} className="rounded-xl border border-white/10 bg-white/[0.03]">
                         <button
                           onClick={() => toggleSection(section.group)}
-                          className="w-full flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-white/[0.03] transition-colors"
+                          className="w-full flex items-center justify-between px-5 py-4 cursor-pointer hover:bg-white/5 transition-colors"
                         >
                           <div className="flex items-center gap-3">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gold/15">
-                              <SectionIcon className="h-4 w-4 text-gold" />
-                            </div>
+                            <SectionIcon className="h-4 w-4 text-gold" />
                             <span className="text-sm font-semibold text-white">{t(section.labelAr, section.labelEn)}</span>
-                            <Badge className="text-[10px] bg-white/10 text-white/50 border-0">{section.keys.length}</Badge>
                           </div>
                           {isExpanded ? <ChevronUp className="h-4 w-4 text-white/40" /> : <ChevronDown className="h-4 w-4 text-white/40" />}
                         </button>
-
                         {isExpanded && (
-                          <div className="border-t border-white/10 px-5 py-4 space-y-4">
-                            {section.keys.map((keyItem) => (
-                              <div key={keyItem.key} className="space-y-2">
-                                <label className="text-xs font-medium text-white/50">
-                                  {t(keyItem.labelAr, keyItem.labelEn)}
-                                </label>
-                                <div className="grid grid-cols-2 gap-3">
-                                  <div>
-                                    <div className="flex items-center gap-1.5 mb-1">
-                                      <span className="text-[10px] text-gold/60 font-medium">عربي</span>
-                                    </div>
-                                    {['about_ar', 'hero_tagline_ar', 'education_ar'].includes(keyItem.key) ? (
-                                      <Textarea
-                                        value={contentData[keyItem.key]?.valueAr || ''}
-                                        onChange={(e) => setContentData({ ...contentData, [keyItem.key]: { ...contentData[keyItem.key], valueAr: e.target.value } })}
-                                        className="min-h-[80px] border-white/15 bg-white/5 text-white text-sm placeholder:text-white/30 focus:border-gold focus:ring-gold/20 resize-none"
-                                        dir="rtl"
-                                      />
-                                    ) : (
-                                      <Input
-                                        value={contentData[keyItem.key]?.valueAr || ''}
-                                        onChange={(e) => setContentData({ ...contentData, [keyItem.key]: { ...contentData[keyItem.key], valueAr: e.target.value } })}
-                                        className="border-white/15 bg-white/5 text-white text-sm placeholder:text-white/30 focus:border-gold focus:ring-gold/20 h-9"
-                                        dir="rtl"
-                                      />
-                                    )}
+                          <div className="px-5 pb-5 space-y-4">
+                            {section.keys.map((keyObj) => (
+                              <div key={keyObj.key}>
+                                <label className="text-xs text-white/50 mb-1 block">{t(keyObj.labelAr, keyObj.labelEn)}</label>
+                                {keyObj.key.includes('_ar') || keyObj.key === 'about_ar' || keyObj.key === 'education_ar' ? (
+                                  <Textarea
+                                    value={contentData[keyObj.key]?.valueAr || ''}
+                                    onChange={(e) => setContentData(prev => ({ ...prev, [keyObj.key]: { ...prev[keyObj.key], valueAr: e.target.value } }))}
+                                    className="border-white/15 bg-white/5 text-white text-sm min-h-[80px]"
+                                    dir="rtl"
+                                  />
+                                ) : (
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <Input
+                                      value={contentData[keyObj.key]?.valueAr || ''}
+                                      onChange={(e) => setContentData(prev => ({ ...prev, [keyObj.key]: { ...prev[keyObj.key], valueAr: e.target.value } }))}
+                                      className="border-white/15 bg-white/5 text-white text-sm"
+                                      dir="rtl"
+                                      placeholder="عربي"
+                                    />
+                                    <Input
+                                      value={contentData[keyObj.key]?.valueEn || ''}
+                                      onChange={(e) => setContentData(prev => ({ ...prev, [keyObj.key]: { ...prev[keyObj.key], valueEn: e.target.value } }))}
+                                      className="border-white/15 bg-white/5 text-white text-sm"
+                                      dir="ltr"
+                                      placeholder="English"
+                                    />
                                   </div>
-                                  <div>
-                                    <div className="flex items-center gap-1.5 mb-1">
-                                      <span className="text-[10px] text-blue-400/60 font-medium">English</span>
-                                    </div>
-                                    {['about_ar', 'hero_tagline_ar', 'education_ar'].includes(keyItem.key) ? (
-                                      <Textarea
-                                        value={contentData[keyItem.key]?.valueEn || ''}
-                                        onChange={(e) => setContentData({ ...contentData, [keyItem.key]: { ...contentData[keyItem.key], valueEn: e.target.value } })}
-                                        className="min-h-[80px] border-white/15 bg-white/5 text-white text-sm placeholder:text-white/30 focus:border-gold focus:ring-gold/20 resize-none"
-                                        dir="ltr"
-                                      />
-                                    ) : (
-                                      <Input
-                                        value={contentData[keyItem.key]?.valueEn || ''}
-                                        onChange={(e) => setContentData({ ...contentData, [keyItem.key]: { ...contentData[keyItem.key], valueEn: e.target.value } })}
-                                        className="border-white/15 bg-white/5 text-white text-sm placeholder:text-white/30 focus:border-gold focus:ring-gold/20 h-9"
-                                        dir="ltr"
-                                      />
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="flex justify-end">
-                                  <Button
-                                    onClick={() => saveContent(keyItem.key)}
-                                    disabled={saving}
-                                    size="sm"
-                                    className="bg-gold/20 text-gold hover:bg-gold/30 border-0 font-semibold text-xs h-7"
-                                  >
-                                    {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className={`${isRTL ? 'ml-1.5' : 'mr-1.5'} h-3 w-3`} />}
+                                )}
+                                <div className="flex justify-end mt-2">
+                                  <Button onClick={() => saveContent(keyObj.key)} disabled={saving} size="sm" variant="ghost" className="text-gold/60 hover:text-gold text-xs">
+                                    {saving ? <Loader2 className="h-3 w-3 animate-spin" /> : <Save className="h-3 w-3 mr-1 ml-1" />}
                                     {t('حفظ', 'Save')}
                                   </Button>
                                 </div>
@@ -944,74 +1075,60 @@ export default function AdminPanel() {
                     <p className="text-white/60">{t('جارٍ التحميل...', 'Loading...')}</p>
                   </div>
                 ) : (
-                  experiences.map((exp, idx) => (
-                    <div key={exp.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-5 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gold/20 text-gold text-xs font-bold">{idx + 1}</div>
-                          <span className="text-sm font-semibold text-white">{exp.companyAr}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            onClick={() => setEditingItem(editingItem === exp.id ? null : exp.id)}
-                            variant="ghost"
-                            size="sm"
-                            className="text-white/50 hover:text-white hover:bg-white/10"
-                          >
-                            {editingItem === exp.id ? t('إلغاء', 'Cancel') : t('تعديل', 'Edit')}
-                          </Button>
-                          <Button
-                            onClick={() => deleteExperience(exp.id)}
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-400/60 hover:text-red-400 hover:bg-red-400/10"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
+                  <div className="space-y-3">
+                    {experiences.map((exp) => (
+                      <div key={exp.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                        {editingItem === exp.id ? (
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs text-white/50 mb-1 block">الشركة (عربي)</label>
+                                <Input value={exp.companyAr} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, companyAr: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="rtl" />
+                              </div>
+                              <div>
+                                <label className="text-xs text-white/50 mb-1 block">Company (EN)</label>
+                                <Input value={exp.companyEn} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, companyEn: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="ltr" />
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs text-white/50 mb-1 block">الوصف (عربي)</label>
+                                <Textarea value={exp.descAr} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, descAr: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm min-h-[60px]" dir="rtl" />
+                              </div>
+                              <div>
+                                <label className="text-xs text-white/50 mb-1 block">Description (EN)</label>
+                                <Textarea value={exp.descEn} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, descEn: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm min-h-[60px]" dir="ltr" />
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 justify-end">
+                              <Button onClick={() => saveExperience(exp)} disabled={saving} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
+                                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                                {t('حفظ', 'Save')}
+                              </Button>
+                              <Button onClick={() => setEditingItem(null)} variant="ghost" size="sm" className="text-white/50 hover:text-white hover:bg-white/10">
+                                {t('إلغاء', 'Cancel')}
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            <div className="min-w-0">
+                              <p className="font-medium text-white/90 text-sm">{exp.companyAr}</p>
+                              <p className="text-xs text-white/50">{exp.companyEn}</p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Button onClick={() => setEditingItem(exp.id)} variant="ghost" size="icon" className="text-white/40 hover:text-white h-8 w-8">
+                                <Settings className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button onClick={() => deleteExperience(exp.id)} variant="ghost" size="icon" className="text-red-400/60 hover:text-red-400 h-8 w-8">
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      {editingItem === exp.id && (
-                        <div className="space-y-3 border-t border-white/10 pt-4">
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <label className="text-xs text-white/50 mb-1 block">اسم الشركة (عربي)</label>
-                              <Input value={exp.companyAr} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, companyAr: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="rtl" />
-                            </div>
-                            <div>
-                              <label className="text-xs text-white/50 mb-1 block">Company Name (EN)</label>
-                              <Input value={exp.companyEn} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, companyEn: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="ltr" />
-                            </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <label className="text-xs text-white/50 mb-1 block">الوصف (عربي)</label>
-                              <Textarea value={exp.descAr} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, descAr: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm min-h-[60px] resize-none" dir="rtl" />
-                            </div>
-                            <div>
-                              <label className="text-xs text-white/50 mb-1 block">Description (EN)</label>
-                              <Textarea value={exp.descEn} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, descEn: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm min-h-[60px] resize-none" dir="ltr" />
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-2">
-                              <label className="text-xs text-white/50">ترتيب</label>
-                              <Input type="number" value={exp.order} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, order: parseInt(e.target.value) || 0 } : x))} className="border-white/15 bg-white/5 text-white text-sm w-20 h-9" />
-                            </div>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input type="checkbox" checked={exp.visible} onChange={(e) => setExperiences(prev => prev.map(x => x.id === exp.id ? { ...x, visible: e.target.checked } : x))} className="rounded border-white/30 bg-white/10 text-gold focus:ring-gold/30" />
-                              <span className="text-xs text-white/50">{t('مرئي', 'Visible')}</span>
-                            </label>
-                          </div>
-                          <div className="flex justify-end">
-                            <Button onClick={() => saveExperience(exp)} disabled={saving} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
-                              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />}
-                              {t('حفظ التغييرات', 'Save Changes')}
-                            </Button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 )}
               </div>
             )}
@@ -1020,7 +1137,7 @@ export default function AdminPanel() {
             {activeSection === 'clients' && (
               <div className="p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-white/50">{t('إدارة قائمة العملاء', 'Manage client list')}</p>
+                  <p className="text-sm text-white/50">{t('إدارة العملاء', 'Manage clients')}</p>
                   <Button onClick={addClient} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
                     <Plus className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />
                     {t('إضافة عميل', 'Add Client')}
@@ -1047,16 +1164,6 @@ export default function AdminPanel() {
                                 <Input value={client.nameEn} onChange={(e) => setClients(prev => prev.map(x => x.id === client.id ? { ...x, nameEn: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="ltr" />
                               </div>
                             </div>
-                            <div>
-                              <label className="text-xs text-white/50 mb-1 block">{t('رابط الشعار (اختياري)', 'Logo URL (optional)')}</label>
-                              <Input value={client.logoUrl || ''} onChange={(e) => setClients(prev => prev.map(x => x.id === client.id ? { ...x, logoUrl: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="ltr" placeholder="https://..." />
-                            </div>
-                            <div className="flex items-center gap-3">
-                              <label className="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" checked={client.visible} onChange={(e) => setClients(prev => prev.map(x => x.id === client.id ? { ...x, visible: e.target.checked } : x))} className="rounded border-white/30 bg-white/10 text-gold focus:ring-gold/30" />
-                                <span className="text-xs text-white/50">{t('مرئي', 'Visible')}</span>
-                              </label>
-                            </div>
                             <div className="flex items-center gap-2 justify-end">
                               <Button onClick={() => saveClient(client)} disabled={saving} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
                                 {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
@@ -1069,18 +1176,9 @@ export default function AdminPanel() {
                           </div>
                         ) : (
                           <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-lg bg-white/10 flex items-center justify-center">
-                                {client.logoUrl ? (
-                                  <img src={client.logoUrl} alt={client.nameAr} className="h-full w-full object-cover" />
-                                ) : (
-                                  <Users className="h-4 w-4 text-white/30" />
-                                )}
-                              </div>
-                              <div>
-                                <p className="font-medium text-white/90 text-sm">{client.nameAr}</p>
-                                <p className="text-xs text-white/50">{client.nameEn}</p>
-                              </div>
+                            <div className="min-w-0">
+                              <p className="font-medium text-white/90 text-sm">{client.nameAr}</p>
+                              <p className="text-xs text-white/50">{client.nameEn}</p>
                             </div>
                             <div className="flex items-center gap-1">
                               <Button onClick={() => setEditingItem(client.id)} variant="ghost" size="icon" className="text-white/40 hover:text-white h-8 w-8">
@@ -1115,84 +1213,71 @@ export default function AdminPanel() {
                     <p className="text-white/60">{t('جارٍ التحميل...', 'Loading...')}</p>
                   </div>
                 ) : (
-                  skills.map((skill) => (
-                    <div key={skill.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
-                      {editingItem === skill.id ? (
-                        <div className="space-y-3">
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <label className="text-xs text-white/50 mb-1 block">المهارة (عربي)</label>
-                              <Input value={skill.titleAr} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, titleAr: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="rtl" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {skills.map((skill) => (
+                      <div key={skill.id} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                        {editingItem === skill.id ? (
+                          <div className="space-y-3">
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="text-xs text-white/50 mb-1 block">المهارة (عربي)</label>
+                                <Input value={skill.titleAr} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, titleAr: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="rtl" />
+                              </div>
+                              <div>
+                                <label className="text-xs text-white/50 mb-1 block">Skill (EN)</label>
+                                <Input value={skill.titleEn} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, titleEn: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="ltr" />
+                              </div>
                             </div>
-                            <div>
-                              <label className="text-xs text-white/50 mb-1 block">Skill (EN)</label>
-                              <Input value={skill.titleEn} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, titleEn: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm h-9" dir="ltr" />
+                            <div className="flex items-center gap-3">
+                              <label className="text-xs text-white/50">{t('المستوى', 'Level')}:</label>
+                              <input type="range" min="10" max="100" value={skill.level} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, level: Number(e.target.value) } : x))} className="flex-1 accent-[#C9A84C]" />
+                              <span className="text-xs text-gold font-bold w-8">{skill.level}%</span>
                             </div>
-                          </div>
-                          <div className="grid grid-cols-2 gap-3">
-                            <div>
-                              <label className="text-xs text-white/50 mb-1 block">الوصف (عربي)</label>
-                              <Textarea value={skill.descAr || ''} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, descAr: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm min-h-[50px] resize-none" dir="rtl" />
-                            </div>
-                            <div>
-                              <label className="text-xs text-white/50 mb-1 block">Description (EN)</label>
-                              <Textarea value={skill.descEn || ''} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, descEn: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm min-h-[50px] resize-none" dir="ltr" />
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-4 flex-wrap">
-                            <div className="flex items-center gap-2">
-                              <label className="text-xs text-white/50">{t('المستوى', 'Level')}</label>
-                              <Input type="number" min={0} max={100} value={skill.level} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, level: parseInt(e.target.value) || 0 } : x))} className="border-white/15 bg-white/5 text-white text-sm w-20 h-9" />
-                              <span className="text-xs text-white/40">%</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <label className="text-xs text-white/50">{t('الفئة', 'Category')}</label>
+                            <div className="flex items-center gap-3">
+                              <label className="text-xs text-white/50">{t('الفئة', 'Category')}:</label>
                               <select value={skill.category} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, category: e.target.value } : x))} className="border-white/15 bg-white/5 text-white text-sm rounded-md h-9 px-3">
-                                <option value="design">تصميم / Design</option>
-                                <option value="marketing">تسويق / Marketing</option>
-                                <option value="soft">مهارات شخصية / Soft Skills</option>
-                                <option value="tools">أدوات / Tools</option>
-                                <option value="ai">ذكاء اصطناعي / AI</option>
+                                <option value="design">{t('تصميم', 'Design')}</option>
+                                <option value="marketing">{t('تسويق', 'Marketing')}</option>
+                                <option value="tech">{t('تقنية', 'Tech')}</option>
                               </select>
                             </div>
-                            <label className="flex items-center gap-2 cursor-pointer">
-                              <input type="checkbox" checked={skill.visible} onChange={(e) => setSkills(prev => prev.map(x => x.id === skill.id ? { ...x, visible: e.target.checked } : x))} className="rounded border-white/30 bg-white/10 text-gold focus:ring-gold/30" />
-                              <span className="text-xs text-white/50">{t('مرئي', 'Visible')}</span>
-                            </label>
-                          </div>
-                          <div className="flex items-center gap-2 justify-end">
-                            <Button onClick={() => saveSkill(skill)} disabled={saving} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
-                              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                              {t('حفظ', 'Save')}
-                            </Button>
-                            <Button onClick={() => setEditingItem(null)} variant="ghost" size="sm" className="text-white/50 hover:text-white hover:bg-white/10">
-                              {t('إلغاء', 'Cancel')}
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/15">
-                              {(() => { const Ic = iconMap[skill.icon || ''] || Award; return <Ic className="h-5 w-5 text-gold" />; })()}
-                            </div>
-                            <div>
-                              <p className="font-medium text-white/90 text-sm">{skill.titleAr}</p>
-                              <p className="text-xs text-white/50">{skill.titleEn} — {skill.level}%</p>
+                            <div className="flex items-center gap-2 justify-end">
+                              <Button onClick={() => saveSkill(skill)} disabled={saving} size="sm" className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold">
+                                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                                {t('حفظ', 'Save')}
+                              </Button>
+                              <Button onClick={() => setEditingItem(null)} variant="ghost" size="sm" className="text-white/50 hover:text-white hover:bg-white/10">
+                                {t('إلغاء', 'Cancel')}
+                              </Button>
                             </div>
                           </div>
-                          <div className="flex items-center gap-1">
-                            <Button onClick={() => setEditingItem(skill.id)} variant="ghost" size="icon" className="text-white/40 hover:text-white h-8 w-8">
-                              <Settings className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button onClick={() => deleteSkill(skill.id)} variant="ghost" size="icon" className="text-red-400/60 hover:text-red-400 h-8 w-8">
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gold/15">
+                                {(() => { const Ic = iconMap[skill.icon || ''] || Award; return <Ic className="h-4 w-4 text-gold" />; })()}
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-medium text-white/90 text-sm">{skill.titleAr}</p>
+                                <p className="text-xs text-white/50">{skill.titleEn}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Badge className="text-[10px] bg-white/10 text-white/60 border-0 hover:bg-white/15">
+                                {skill.level}%
+                              </Badge>
+                              <Button onClick={() => setEditingItem(skill.id)} variant="ghost" size="icon" className="text-white/40 hover:text-white h-8 w-8">
+                                <Settings className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button onClick={() => deleteSkill(skill.id)} variant="ghost" size="icon" className="text-red-400/60 hover:text-red-400 h-8 w-8">
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  ))
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
             )}
@@ -1405,12 +1490,55 @@ export default function AdminPanel() {
                     <Input
                       type="file"
                       accept="image/*"
-                      onChange={(e) => { const file = e.target.files?.[0]; if (file) handleProfileSelect(file); }}
+                      onChange={(e) => { const file = e.target.files?.[0]; if (file) handleImageSelectWithCrop(file, 'profile_image', 1); }}
                       className="flex-1 border-white/15 bg-white/5 text-white text-sm file:text-white/60 file:border-0 file:bg-white/10 file:hover:bg-white/20 file:cursor-pointer"
                     />
                     <Button
                       onClick={() => { if (pendingProfileImg) uploadFile(pendingProfileImg, 'profile_image'); }}
                       disabled={!pendingProfileImg || uploading}
+                      size="sm"
+                      className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold min-w-[100px]"
+                    >
+                      {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className={`${isRTL ? 'ml-2' : 'mr-2'} h-4 w-4`} />}
+                      {t('حفظ الصورة', 'Save Image')}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* About Image */}
+                <div className="rounded-xl border border-white/10 bg-white/[0.03] p-5">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gold/15">
+                      <ImageIcon className="h-5 w-5 text-gold" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-white">{t('صورة قسم نبذة عني', 'About Section Image')}</h4>
+                      <p className="text-xs text-white/40">{t('ستظهر في قسم نبذة عني', 'Appears in About Me section')}</p>
+                    </div>
+                  </div>
+                  {/* Current image preview */}
+                  {(aboutPreview || currentAboutImg) && (
+                    <div className="mb-4 flex items-center gap-3">
+                      <img
+                        src={aboutPreview || currentAboutImg}
+                        alt="about"
+                        className="h-16 w-16 rounded-full object-cover border-2 border-gold/30"
+                      />
+                      <span className="text-xs text-green-400/80 flex items-center gap-1">
+                        <Check className="h-3 w-3" /> {t('صورة حالية', 'Current image')}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-3">
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => { const file = e.target.files?.[0]; if (file) handleImageSelectWithCrop(file, 'about_image', 1); }}
+                      className="flex-1 border-white/15 bg-white/5 text-white text-sm file:text-white/60 file:border-0 file:bg-white/10 file:hover:bg-white/20 file:cursor-pointer"
+                    />
+                    <Button
+                      onClick={() => { if (pendingAboutImg) uploadFile(pendingAboutImg, 'about_image'); }}
+                      disabled={!pendingAboutImg || uploading}
                       size="sm"
                       className="bg-gradient-to-r from-gold to-gold-light text-navy-900 hover:opacity-90 font-bold min-w-[100px]"
                     >
