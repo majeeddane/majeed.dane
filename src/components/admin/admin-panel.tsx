@@ -361,12 +361,32 @@ export default function AdminPanel() {
       formData.append('file', file);
       formData.append('purpose', purpose);
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      if (!res.ok) throw new Error('Upload failed');
+      
+      // Try to get the actual error message from the response
+      if (!res.ok) {
+        let errorMsg = 'Upload failed';
+        try {
+          const errorData = await res.json();
+          errorMsg = errorData.error || `Server error (${res.status})`;
+        } catch {
+          errorMsg = `Server error (${res.status})`;
+        }
+        throw new Error(errorMsg);
+      }
+      
       const data = await res.json();
+      if (!data.url) {
+        throw new Error('No URL returned from server');
+      }
       return data.url;
     } catch (err) {
-      console.error('Upload error:', err);
-      toast({ title: t('خطأ في الرفع', 'Upload Error'), description: t('فشل رفع الملف', 'Failed to upload file'), variant: 'destructive' });
+      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
+      console.error('Upload error:', errorMsg);
+      toast({ 
+        title: t('خطأ في الرفع', 'Upload Error'), 
+        description: errorMsg, 
+        variant: 'destructive' 
+      });
       return null;
     }
   }, [toast, t]);

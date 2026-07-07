@@ -23,9 +23,9 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { titleAr, titleEn, category, imageUrl, descriptionAr, descriptionEn, projectUrl, order, visible } = body;
 
-    if (!titleAr || !titleEn || !imageUrl) {
+    if (!titleAr || !titleEn) {
       return NextResponse.json(
-        { error: 'titleAr, titleEn, and imageUrl are required' },
+        { error: 'titleAr and titleEn are required' },
         { status: 400 }
       );
     }
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
         titleAr,
         titleEn,
         category: category ?? 'posts',
-        imageUrl,
+        imageUrl: imageUrl || '',
         descriptionAr: descriptionAr ?? null,
         descriptionEn: descriptionEn ?? null,
         projectUrl: projectUrl ?? null,

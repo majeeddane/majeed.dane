@@ -114,8 +114,10 @@ async function main() {
   console.log('Seed completed successfully!');
 }
 
+import crypto from 'crypto';
+
 function hashPassword(password: string): string {
-  return require('crypto').createHash('sha256').update(password).digest('hex');
+  return crypto.createHash('sha256').update(password).digest('hex');
 }
 
 main()

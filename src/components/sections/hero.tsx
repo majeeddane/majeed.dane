@@ -210,6 +210,7 @@ export default function HeroSection() {
                     src={profileImageUrl}
                     alt={name}
                     className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                   />
                 ) : (
                   <span

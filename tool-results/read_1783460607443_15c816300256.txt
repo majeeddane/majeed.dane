@@ -1,0 +1,502 @@
+     1→   800→   800→  const CONTENT_FIELDS = [
+     2→   801→   801→    { key: 'hero_title', labelAr: 'العنوان الرئيسي', labelEn: 'Hero Title', type: 'text' },
+     3→   802→   802→    { key: 'hero_subtitle', labelAr: 'العنوان الفرعي', labelEn: 'Hero Subtitle', type: 'text' },
+     4→   803→   803→    { key: 'hero_description', labelAr: 'وصف البطل', labelEn: 'Hero Description', type: 'textarea' },
+     5→   804→   804→    { key: 'about_text', labelAr: 'نص نبذة عني', labelEn: 'About Text', type: 'textarea' },
+     6→   805→   805→    { key: 'about_title', labelAr: 'عنوان نبذة عني', labelEn: 'About Title', type: 'text' },
+     7→   806→   806→    { key: 'contact_email', labelAr: 'البريد الإلكتروني', labelEn: 'Contact Email', type: 'text' },
+     8→   807→   807→    { key: 'contact_phone', labelAr: 'رقم الهاتف', labelEn: 'Contact Phone', type: 'text' },
+     9→   808→   808→    { key: 'contact_whatsapp', labelAr: 'واتساب', labelEn: 'WhatsApp', type: 'text' },
+    10→   809→   809→    { key: 'contact_location', labelAr: 'الموقع', labelEn: 'Location', type: 'text' },
+    11→   810→   810→    { key: 'contact_linkedin', labelAr: 'لينكدإن', labelEn: 'LinkedIn', type: 'text' },
+    12→   811→   811→    { key: 'contact_github', labelAr: 'جيت هب', labelEn: 'GitHub', type: 'text' },
+    13→   812→   812→    { key: 'contact_twitter', labelAr: 'تويتر', labelEn: 'Twitter', type: 'text' },
+    14→   813→   813→    { key: 'name_ar', labelAr: 'الاسم (عربي)', labelEn: 'Name (Arabic)', type: 'text' },
+    15→   814→   814→    { key: 'name_en', labelAr: 'الاسم (إنجليزي)', labelEn: 'Name (English)', type: 'text' },
+    16→   815→   815→    { key: 'job_title_ar', labelAr: 'المسمى الوظيفي (عربي)', labelEn: 'Job Title (Arabic)', type: 'text' },
+    17→   816→   816→    { key: 'job_title_en', labelAr: 'المسمى الوظيفي (إنجليزي)', labelEn: 'Job Title (English)', type: 'text' },
+    18→   817→   817→    { key: 'stats_projects', labelAr: 'عدد المشاريع', labelEn: 'Projects Count', type: 'text' },
+    19→   818→   818→    { key: 'stats_clients', labelAr: 'عدد العملاء', labelEn: 'Clients Count', type: 'text' },
+    20→   819→   819→    { key: 'stats_experience', labelAr: 'سنوات الخبرة', labelEn: 'Years Experience', type: 'text' },
+    21→   820→   820→  ];
+    22→   821→   821→
+    23→   822→   822→  // ─── Get current file URL from content ───
+    24→   823→   823→  const getFileUrl = (key: string) => {
+    25→   824→   824→    const item = content.find((c) => c.key === key);
+    26→   825→   825→    return item?.valueAr || '';
+    27→   826→   826→  };
+    28→   827→   827→
+    29→   828→   828→  // ─── Render: Login Screen ───
+    30→   829→   829→  const renderLogin = () => (
+    31→   830→   830→    <div className="flex items-center justify-center h-full p-6">
+    32→   831→   831→      <div className="w-full max-w-sm text-center space-y-6">
+    33→   832→   832→        <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center" style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})` }}>
+    34→   833→   833→          <Lock className="h-8 w-8" style={{ color: NAVY_900 }} />
+    35→   834→   834→        </div>
+    36→   835→   835→        <h2 className="text-2xl font-bold text-white">{t('لوحة الإدارة', 'Admin Panel')}</h2>
+    37→   836→   836→        <p className="text-white/50 text-sm">{t('أدخل كلمة المرور للدخول', 'Enter password to login')}</p>
+    38→   837→   837→        <div className="space-y-3">
+    39→   838→   838→          <Input
+    40→   839→   839→            type="password"
+    41→   840→   840→            value={password}
+    42→   841→   841→            onChange={(e) => setPassword(e.target.value)}
+    43→   842→   842→            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+    44→   843→   843→            placeholder={t('كلمة المرور', 'Password')}
+    45→   844→   844→            className="bg-white/5 border-white/10 text-white placeholder:text-white/30 text-center"
+    46→   845→   845→          />
+    47→   846→   846→          <Button
+    48→   847→   847→            onClick={handleLogin}
+    49→   848→   848→            disabled={authLoading}
+    50→   849→   849→            className="w-full font-bold cursor-pointer"
+    51→   850→   850→            style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_900 }}
+    52→   851→   851→          >
+    53→   852→   852→            {authLoading ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : t('دخول', 'Login')}
+    54→   853→   853→          </Button>
+    55→   854→   854→        </div>
+    56→   855→   855→      </div>
+    57→   856→   856→    </div>
+    58→   857→   857→  );
+    59→   858→   858→
+    60→   859→   859→  // ─── Render: Sidebar ───
+    61→   860→   860→  const renderSidebar = () => (
+    62→   861→   861→    <div
+    63→   862→   862→      className="w-56 flex-shrink-0 flex flex-col h-full border-e border-white/10"
+    64→   863→   863→      style={{ background: NAVY_900 }}
+    65→   864→   864→    >
+    66→   865→   865→      <div className="p-4 border-b border-white/10">
+    67→   866→   866→        <h2 className="text-lg font-bold" style={{ color: GOLD }}>{t('لوحة الإدارة', 'Admin Panel')}</h2>
+    68→   867→   867→      </div>
+    69→   868→   868→      <nav className="flex-1 overflow-y-auto py-2 custom-scrollbar">
+    70→   869→   869→        {NAV_ITEMS.map((item) => (
+    71→   870→   870→          <button
+    72→   871→   871→            key={item.key}
+    73→   872→   872→            onClick={() => setActiveSection(item.key)}
+    74→   873→   873→            className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all cursor-pointer ${
+    75→   874→   874→              activeSection === item.key
+    76→   875→   875→                ? 'text-white border-e-2'
+    77→   876→   876→                : 'text-white/60 hover:text-white hover:bg-white/5'
+    78→   877→   877→            }`}
+    79→   878→   878→            style={activeSection === item.key ? { borderColor: GOLD, background: 'rgba(201, 168, 76, 0.1)' } : {}}
+    80→   879→   879→          >
+    81→   880→   880→            {item.icon}
+    82→   881→   881→            <span>{t(item.labelAr, item.labelEn)}</span>
+    83→   882→   882→          </button>
+    84→   883→   883→        ))}
+    85→   884→   884→      </nav>
+    86→   885→   885→      <div className="p-4 border-t border-white/10">
+    87→   886→   886→        <Button
+    88→   887→   887→          onClick={handleLogout}
+    89→   888→   888→          variant="ghost"
+    90→   889→   889→          className="w-full text-white/50 hover:text-white hover:bg-white/10 cursor-pointer"
+    91→   890→   890→        >
+    92→   891→   891→          <LogOut className="h-4 w-4 me-2" />
+    93→   892→   892→          {t('تسجيل الخروج', 'Logout')}
+    94→   893→   893→        </Button>
+    95→   894→   894→      </div>
+    96→   895→   895→    </div>
+    97→   896→   896→  );
+    98→   897→   897→
+    99→   898→   898→  // ─── Render: Files Section ───
+   100→   899→   899→  const renderFilesSection = () => {
+   101→   900→   900→    const files = [
+   102→   901→   901→      {
+   103→   902→   902→        key: 'profile_image',
+   104→   903→   903→        labelAr: 'صورة الملف الشخصي (البطل)',
+   105→   904→   904→        labelEn: 'Profile Image (Hero)',
+   106→   905→   905→        purpose: 'profile_image',
+   107→   906→   906→        ref: profileImageRef,
+   108→   907→   907→        isImage: true,
+   109→   908→   908→        hasCrop: true,
+   110→   909→   909→        icon: <Camera className="h-5 w-5" style={{ color: GOLD }} />,
+   111→   910→   910→      },
+   112→   911→   911→      {
+   113→   912→   912→        key: 'about_image',
+   114→   913→   913→        labelAr: 'صورة قسم نبذة عني',
+   115→   914→   914→        labelEn: 'About Section Image',
+   116→   915→   915→        purpose: 'about_image',
+   117→   916→   916→        ref: aboutImageRef,
+   118→   917→   917→        isImage: true,
+   119→   918→   918→        hasCrop: true,
+   120→   919→   919→        icon: <ImageIcon className="h-5 w-5" style={{ color: GOLD }} />,
+   121→   920→   920→      },
+   122→   921→   921→      {
+   123→   922→   922→        key: 'cv_file',
+   124→   923→   923→        labelAr: 'ملف السيرة الذاتية (PDF)',
+   125→   924→   924→        labelEn: 'CV File (PDF)',
+   126→   925→   925→        purpose: 'cv_file',
+   127→   926→   926→        ref: cvFileRef,
+   128→   927→   927→        isImage: false,
+   129→   928→   928→        hasCrop: false,
+   130→   929→   929→        icon: <FileText className="h-5 w-5" style={{ color: GOLD }} />,
+   131→   930→   930→      },
+   132→   931→   931→      {
+   133→   932→   932→        key: 'portfolio_file',
+   134→   933→   933→        labelAr: 'ملف أعمالي (PDF)',
+   135→   934→   934→        labelEn: 'Portfolio File (PDF)',
+   136→   935→   935→        purpose: 'portfolio_file',
+   137→   936→   936→        ref: portfolioFileRef,
+   138→   937→   937→        isImage: false,
+   139→   938→   938→        hasCrop: false,
+   140→   939→   939→        icon: <FileText className="h-5 w-5" style={{ color: GOLD }} />,
+   141→   940→   940→      },
+   142→   941→   941→    ];
+   143→   942→   942→
+   144→   943→   943→    return (
+   145→   944→   944→      <div className="space-y-4">
+   146→   945→   945→        <h3 className="text-xl font-bold text-white mb-6">{t('إدارة الملفات', 'File Management')}</h3>
+   147→   946→   946→        {files.map((file) => {
+   148→   947→   947→          const currentUrl = getFileUrl(file.key);
+   149→   948→   948→          const isUploading = uploadingFile === file.key;
+   150→   949→   949→          return (
+   151→   950→   950→            <Card key={file.key} className="border-white/10" style={{ background: NAVY_800 }}>
+   152→   951→   951→              <CardContent className="p-6">
+   153→   952→   952→                <div className="flex items-start gap-4">
+   154→   953→   953→                  <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${GOLD}15` }}>
+   155→   954→   954→                    {file.icon}
+   156→   955→   955→                  </div>
+   157→   956→   956→                  <div className="flex-1 min-w-0 space-y-3">
+   158→   957→   957→                    <div>
+   159→   958→   958→                      <Label className="text-white font-medium">{t(file.labelAr, file.labelEn)}</Label>
+   160→   959→   959→                      <p className="text-white/40 text-xs mt-1">
+   161→   960→   960→                        {file.hasCrop ? t('سيتم قص الصورة بنسبة 1:1', 'Image will be cropped at 1:1 ratio') : file.isImage ? t('ارفع صورة', 'Upload an image') : t('ارفع ملف PDF', 'Upload a PDF file')}
+   162→   961→   961→                      </p>
+   163→   962→   962→                    </div>
+   164→   963→   963→
+   165→   964→   964→                    {/* Current file preview */}
+   166→   965→   965→                    {currentUrl && (
+   167→   966→   966→                      <div className="rounded-lg overflow-hidden border border-white/10">
+   168→   967→   967→                        {file.isImage ? (
+   169→   968→   968→                          <img src={currentUrl} alt={file.key} className="w-24 h-24 object-cover" />
+   170→   969→   969→                        ) : (
+   171→   970→   970→                          <div className="flex items-center gap-2 p-3 bg-white/5">
+   172→   971→   971→                            <FileText className="h-5 w-5" style={{ color: GOLD }} />
+   173→   972→   972→                            <a href={currentUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-white/70 hover:underline truncate">
+   174→   973→   973→                              {t('عرض الملف', 'View File')}
+   175→   974→   974→                            </a>
+   176→   975→   975→                          </div>
+   177→   976→   976→                        )}
+   178→   977→   977→                      </div>
+   179→   978→   978→                    )}
+   180→   979→   979→
+   181→   980→   980→                    {/* Upload button */}
+   182→   981→   981→                    <div className="flex items-center gap-3">
+   183→   982→   982→                      <input
+   184→   983→   983→                        ref={file.ref}
+   185→   984→   984→                        type="file"
+   186→   985→   985→                        className="hidden"
+   187→   986→   986→                        accept={file.isImage ? 'image/*' : '.pdf'}
+   188→   987→   987→                        onChange={(e) => {
+   189→   988→   988→                          if (file.hasCrop) {
+   190→   989→   989→                            handleImageSelect(e, file.key, file.purpose);
+   191→   990→   990→                          } else {
+   192→   991→   991→                            handleDirectUpload(e, file.key, file.purpose);
+   193→   992→   992→                          }
+   194→   993→   993→                        }}
+   195→   994→   994→                      />
+   196→   995→   995→                      <Button
+   197→   996→   996→                        onClick={() => file.ref.current?.click()}
+   198→   997→   997→                        disabled={isUploading || savingContentKey === file.key}
+   199→   998→   998→                        className="cursor-pointer"
+   200→   999→   999→                        variant="outline"
+   201→  1000→  1000→                        style={{ borderColor: GOLD, color: GOLD }}
+   202→  1001→  1001→                      >
+   203→  1002→  1002→                        {isUploading || savingContentKey === file.key ? (
+   204→  1003→  1003→                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+   205→  1004→  1004→                        ) : (
+   206→  1005→  1005→                          <Upload className="h-4 w-4 mr-2" />
+   207→  1006→  1006→                        )}
+   208→  1007→  1007→                        {t('اختيار ملف', 'Choose File')}
+   209→  1008→  1008→                      </Button>
+   210→  1009→  1009→                      {currentUrl && (
+   211→  1010→  1010→                        <Badge variant="outline" className="border-green-500/30 text-green-400 text-xs">
+   212→  1011→  1011→                          {t('ملف محفوظ', 'File Saved')}
+   213→  1012→  1012→                        </Badge>
+   214→  1013→  1013→                      )}
+   215→  1014→  1014→                    </div>
+   216→  1015→  1015→                  </div>
+   217→  1016→  1016→                </div>
+   218→  1017→  1017→              </CardContent>
+   219→  1018→  1018→            </Card>
+   220→  1019→  1019→          );
+   221→  1020→  1020→        })}
+   222→  1021→  1021→      </div>
+   223→  1022→  1022→    );
+   224→  1023→  1023→  };
+   225→  1024→  1024→
+   226→  1025→  1025→  // ─── Render: Content Section ───
+   227→  1026→  1026→  const renderContentSection = () => (
+   228→  1027→  1027→    <div className="space-y-4">
+   229→  1028→  1028→      <h3 className="text-xl font-bold text-white mb-6">{t('تحرير المحتوى', 'Edit Content')}</h3>
+   230→  1029→  1029→      {CONTENT_FIELDS.map((field) => {
+   231→  1030→  1030→        const currentAr = getContentValue(field.key, 'ar');
+   232→  1031→  1031→        const currentEn = getContentValue(field.key, 'en');
+   233→  1032→  1032→        const hasEdits = contentEdits[field.key] !== undefined;
+   234→  1033→  1033→        const isSaving = savingContentKey === field.key;
+   235→  1034→  1034→        return (
+   236→  1035→  1035→          <Card key={field.key} className="border-white/10" style={{ background: NAVY_800 }}>
+   237→  1036→  1036→            <CardContent className="p-5 space-y-3">
+   238→  1037→  1037→              <Label className="text-white font-medium">{t(field.labelAr, field.labelEn)}</Label>
+   239→  1038→  1038→              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+   240→  1039→  1039→                <div className="space-y-1">
+   241→  1040→  1040→                  <span className="text-xs text-white/40">{t('عربي', 'Arabic')}</span>
+   242→  1041→  1041→                  {field.type === 'textarea' ? (
+   243→  1042→  1042→                    <Textarea
+   244→  1043→  1043→                      value={currentAr}
+   245→  1044→  1044→                      onChange={(e) => setContentEdit(field.key, 'ar', e.target.value)}
+   246→  1045→  1045→                      className="bg-white/5 border-white/10 text-white placeholder:text-white/20 min-h-[80px]"
+   247→  1046→  1046→                      dir="rtl"
+   248→  1047→  1047→                    />
+   249→  1048→  1048→                  ) : (
+   250→  1049→  1049→                    <Input
+   251→  1050→  1050→                      value={currentAr}
+   252→  1051→  1051→                      onChange={(e) => setContentEdit(field.key, 'ar', e.target.value)}
+   253→  1052→  1052→                      className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
+   254→  1053→  1053→                      dir="rtl"
+   255→  1054→  1054→                    />
+   256→  1055→  1055→                  )}
+   257→  1056→  1056→                </div>
+   258→  1057→  1057→                <div className="space-y-1">
+   259→  1058→  1058→                  <span className="text-xs text-white/40">{t('إنجليزي', 'English')}</span>
+   260→  1059→  1059→                  {field.type === 'textarea' ? (
+   261→  1060→  1060→                    <Textarea
+   262→  1061→  1061→                      value={currentEn}
+   263→  1062→  1062→                      onChange={(e) => setContentEdit(field.key, 'en', e.target.value)}
+   264→  1063→  1063→                      className="bg-white/5 border-white/10 text-white placeholder:text-white/20 min-h-[80px]"
+   265→  1064→  1064→                      dir="ltr"
+   266→  1065→  1065→                    />
+   267→  1066→  1066→                  ) : (
+   268→  1067→  1067→                    <Input
+   269→  1068→  1068→                      value={currentEn}
+   270→  1069→  1069→                      onChange={(e) => setContentEdit(field.key, 'en', e.target.value)}
+   271→  1070→  1070→                      className="bg-white/5 border-white/10 text-white placeholder:text-white/20"
+   272→  1071→  1071→                      dir="ltr"
+   273→  1072→  1072→                    />
+   274→  1073→  1073→                  )}
+   275→  1074→  1074→                </div>
+   276→  1075→  1075→              </div>
+   277→  1076→  1076→              <div className="flex justify-end">
+   278→  1077→  1077→                <GoldSaveButton
+   279→  1078→  1078→                  onClick={() => saveContent(field.key, currentAr, currentEn, field.type)}
+   280→  1079→  1079→                  loading={isSaving}
+   281→  1080→  1080→                  t={t}
+   282→  1081→  1081→                />
+   283→  1082→  1082→              </div>
+   284→  1083→  1083→            </CardContent>
+   285→  1084→  1084→          </Card>
+   286→  1085→  1085→        );
+   287→  1086→  1086→      })}
+   288→  1087→  1087→    </div>
+   289→  1088→  1088→  );
+   290→  1089→  1089→
+   291→  1090→  1090→  // ─── Render: Experience Section ───
+   292→  1091→  1091→  const renderExperienceSection = () => {
+   293→  1092→  1092→    if (!experiencesLoaded) return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" style={{ color: GOLD }} /></div>;
+   294→  1093→  1093→
+   295→  1094→  1094→    return (
+   296→  1095→  1095→      <div className="space-y-4">
+   297→  1096→  1096→        <div className="flex items-center justify-between mb-6">
+   298→  1097→  1097→          <h3 className="text-xl font-bold text-white">{t('إدارة الخبرات', 'Experience Management')}</h3>
+   299→  1098→  1098→          <Button
+   300→  1099→  1099→            onClick={() => setEditingExperience({ id: '', companyAr: '', companyEn: '', descAr: '', descEn: '', order: 0, visible: true })}
+   301→  1100→  1100→            className="cursor-pointer font-bold"
+   302→  1101→  1101→            style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_900 }}
+   303→  1102→  1102→          >
+   304→  1103→  1103→            <Plus className="h-4 w-4 me-2" />
+   305→  1104→  1104→            {t('إضافة خبرة', 'Add Experience')}
+   306→  1105→  1105→          </Button>
+   307→  1106→  1106→        </div>
+   308→  1107→  1107→
+   309→  1108→  1108→        {/* Edit Form */}
+   310→  1109→  1109→        {editingExperience && (
+   311→  1110→  1110→          <Card className="border-white/20" style={{ background: NAVY_800 }}>
+   312→  1111→  1111→            <CardHeader className="pb-3">
+   313→  1112→  1112→              <CardTitle className="text-white">{editingExperience.id ? t('تعديل خبرة', 'Edit Experience') : t('إضافة خبرة جديدة', 'Add New Experience')}</CardTitle>
+   314→  1113→  1113→            </CardHeader>
+   315→  1114→  1114→            <CardContent className="space-y-4">
+   316→  1115→  1115→              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+   317→  1116→  1116→                <div className="space-y-1">
+   318→  1117→  1117→                  <Label className="text-white/70">{t('اسم الشركة (عربي)', 'Company Name (Arabic)')}</Label>
+   319→  1118→  1118→                  <Input
+   320→  1119→  1119→                    value={editingExperience.companyAr}
+   321→  1120→  1120→                    onChange={(e) => setEditingExperience({ ...editingExperience, companyAr: e.target.value })}
+   322→  1121→  1121→                    className="bg-white/5 border-white/10 text-white"
+   323→  1122→  1122→                    dir="rtl"
+   324→  1123→  1123→                  />
+   325→  1124→  1124→                </div>
+   326→  1125→  1125→                <div className="space-y-1">
+   327→  1126→  1126→                  <Label className="text-white/70">{t('اسم الشركة (إنجليزي)', 'Company Name (English)')}</Label>
+   328→  1127→  1127→                  <Input
+   329→  1128→  1128→                    value={editingExperience.companyEn}
+   330→  1129→  1129→                    onChange={(e) => setEditingExperience({ ...editingExperience, companyEn: e.target.value })}
+   331→  1130→  1130→                    className="bg-white/5 border-white/10 text-white"
+   332→  1131→  1131→                    dir="ltr"
+   333→  1132→  1132→                  />
+   334→  1133→  1133→                </div>
+   335→  1134→  1134→              </div>
+   336→  1135→  1135→              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+   337→  1136→  1136→                <div className="space-y-1">
+   338→  1137→  1137→                  <Label className="text-white/70">{t('الوصف (عربي)', 'Description (Arabic)')}</Label>
+   339→  1138→  1138→                  <Textarea
+   340→  1139→  1139→                    value={editingExperience.descAr}
+   341→  1140→  1140→                    onChange={(e) => setEditingExperience({ ...editingExperience, descAr: e.target.value })}
+   342→  1141→  1141→                    className="bg-white/5 border-white/10 text-white min-h-[80px]"
+   343→  1142→  1142→                    dir="rtl"
+   344→  1143→  1143→                  />
+   345→  1144→  1144→                </div>
+   346→  1145→  1145→                <div className="space-y-1">
+   347→  1146→  1146→                  <Label className="text-white/70">{t('الوصف (إنجليزي)', 'Description (English)')}</Label>
+   348→  1147→  1147→                  <Textarea
+   349→  1148→  1148→                    value={editingExperience.descEn}
+   350→  1149→  1149→                    onChange={(e) => setEditingExperience({ ...editingExperience, descEn: e.target.value })}
+   351→  1150→  1150→                    className="bg-white/5 border-white/10 text-white min-h-[80px]"
+   352→  1151→  1151→                    dir="ltr"
+   353→  1152→  1152→                  />
+   354→  1153→  1153→                </div>
+   355→  1154→  1154→              </div>
+   356→  1155→  1155→              <div className="flex items-center gap-3">
+   357→  1156→  1156→                <Switch
+   358→  1157→  1157→                  checked={editingExperience.visible}
+   359→  1158→  1158→                  onCheckedChange={(v) => setEditingExperience({ ...editingExperience, visible: v })}
+   360→  1159→  1159→                />
+   361→  1160→  1160→                <Label className="text-white/70">{t('مرئي', 'Visible')}</Label>
+   362→  1161→  1161→              </div>
+   363→  1162→  1162→              <div className="flex items-center gap-3 justify-end">
+   364→  1163→  1163→                <Button onClick={() => setEditingExperience(null)} variant="ghost" className="text-white/50 hover:text-white cursor-pointer">
+   365→  1164→  1164→                  {t('إلغاء', 'Cancel')}
+   366→  1165→  1165→                </Button>
+   367→  1166→  1166→                <GoldSaveButton
+   368→  1167→  1167→                  onClick={() => saveExperience(editingExperience)}
+   369→  1168→  1168→                  loading={savingExperience === (editingExperience.id || 'new')}
+   370→  1169→  1169→                  t={t}
+   371→  1170→  1170→                />
+   372→  1171→  1171→              </div>
+   373→  1172→  1172→            </CardContent>
+   374→  1173→  1173→          </Card>
+   375→  1174→  1174→        )}
+   376→  1175→  1175→
+   377→  1176→  1176→        {/* List */}
+   378→  1177→  1177→        <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+   379→  1178→  1178→          {experiences.length === 0 && (
+   380→  1179→  1179→            <p className="text-white/40 text-center py-8">{t('لا توجد خبرات', 'No experiences yet')}</p>
+   381→  1180→  1180→          )}
+   382→  1181→  1181→          {experiences.map((exp) => (
+   383→  1182→  1182→            <Card key={exp.id} className="border-white/10" style={{ background: NAVY_800 }}>
+   384→  1183→  1183→              <CardContent className="p-4 flex items-center justify-between">
+   385→  1184→  1184→                <div className="min-w-0 flex-1">
+   386→  1185→  1185→                  <div className="flex items-center gap-2">
+   387→  1186→  1186→                    <span className="text-white font-medium truncate">{isRTL ? exp.companyAr : exp.companyEn}</span>
+   388→  1187→  1187→                    {!exp.visible && <EyeOff className="h-3 w-3 text-white/30" />}
+   389→  1188→  1188→                  </div>
+   390→  1189→  1189→                  <p className="text-white/40 text-sm truncate">{isRTL ? exp.descAr : exp.descEn}</p>
+   391→  1190→  1190→                </div>
+   392→  1191→  1191→                <div className="flex items-center gap-2 flex-shrink-0 ms-3">
+   393→  1192→  1192→                  <Button
+   394→  1193→  1193→                    onClick={() => setEditingExperience({ ...exp })}
+   395→  1194→  1194→                    variant="ghost"
+   396→  1195→  1195→                    size="sm"
+   397→  1196→  1196→                    className="text-white/50 hover:text-white hover:bg-white/10 cursor-pointer"
+   398→  1197→  1197→                  >
+   399→  1198→  1198→                    <Edit3 className="h-4 w-4" />
+   400→  1199→  1199→                  </Button>
+   401→  1200→  1200→                  <Button
+   402→  1201→  1201→                    onClick={() => deleteExperience(exp.id)}
+   403→  1202→  1202→                    variant="ghost"
+   404→  1203→  1203→                    size="sm"
+   405→  1204→  1204→                    className="text-red-400 hover:text-red-300 hover:bg-red-500/10 cursor-pointer"
+   406→  1205→  1205→                  >
+   407→  1206→  1206→                    <Trash2 className="h-4 w-4" />
+   408→  1207→  1207→                  </Button>
+   409→  1208→  1208→                </div>
+   410→  1209→  1209→              </CardContent>
+   411→  1210→  1210→            </Card>
+   412→  1211→  1211→          ))}
+   413→  1212→  1212→        </div>
+   414→  1213→  1213→      </div>
+   415→  1214→  1214→    );
+   416→  1215→  1215→  };
+   417→  1216→  1216→
+   418→  1217→  1217→  // ─── Render: Clients Section ───
+   419→  1218→  1218→  const renderClientsSection = () => {
+   420→  1219→  1219→    if (!clientsLoaded) return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin" style={{ color: GOLD }} /></div>;
+   421→  1220→  1220→
+   422→  1221→  1221→    return (
+   423→  1222→  1222→      <div className="space-y-4">
+   424→  1223→  1223→        <div className="flex items-center justify-between mb-6">
+   425→  1224→  1224→          <h3 className="text-xl font-bold text-white">{t('إدارة العملاء', 'Clients Management')}</h3>
+   426→  1225→  1225→          <Button
+   427→  1226→  1226→            onClick={() => setEditingClient({ id: '', nameAr: '', nameEn: '', logoUrl: null, order: 0, visible: true })}
+   428→  1227→  1227→            className="cursor-pointer font-bold"
+   429→  1228→  1228→            style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_900 }}
+   430→  1229→  1229→          >
+   431→  1230→  1230→            <Plus className="h-4 w-4 me-2" />
+   432→  1231→  1231→            {t('إضافة عميل', 'Add Client')}
+   433→  1232→  1232→          </Button>
+   434→  1233→  1233→        </div>
+   435→  1234→  1234→
+   436→  1235→  1235→        {/* Edit Form */}
+   437→  1236→  1236→        {editingClient && (
+   438→  1237→  1237→          <Card className="border-white/20" style={{ background: NAVY_800 }}>
+   439→  1238→  1238→            <CardHeader className="pb-3">
+   440→  1239→  1239→              <CardTitle className="text-white">{editingClient.id ? t('تعديل عميل', 'Edit Client') : t('إضافة عميل جديد', 'Add New Client')}</CardTitle>
+   441→  1240→  1240→            </CardHeader>
+   442→  1241→  1241→            <CardContent className="space-y-4">
+   443→  1242→  1242→              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+   444→  1243→  1243→                <div className="space-y-1">
+   445→  1244→  1244→                  <Label className="text-white/70">{t('الاسم (عربي)', 'Name (Arabic)')}</Label>
+   446→  1245→  1245→                  <Input
+   447→  1246→  1246→                    value={editingClient.nameAr}
+   448→  1247→  1247→                    onChange={(e) => setEditingClient({ ...editingClient, nameAr: e.target.value })}
+   449→  1248→  1248→                    className="bg-white/5 border-white/10 text-white"
+   450→  1249→  1249→                    dir="rtl"
+   451→  1250→  1250→                  />
+   452→  1251→  1251→                </div>
+   453→  1252→  1252→                <div className="space-y-1">
+   454→  1253→  1253→                  <Label className="text-white/70">{t('الاسم (إنجليزي)', 'Name (English)')}</Label>
+   455→  1254→  1254→                  <Input
+   456→  1255→  1255→                    value={editingClient.nameEn}
+   457→  1256→  1256→                    onChange={(e) => setEditingClient({ ...editingClient, nameEn: e.target.value })}
+   458→  1257→  1257→                    className="bg-white/5 border-white/10 text-white"
+   459→  1258→  1258→                    dir="ltr"
+   460→  1259→  1259→                  />
+   461→  1260→  1260→                </div>
+   462→  1261→  1261→              </div>
+   463→  1262→  1262→
+   464→  1263→  1263→              {/* Logo upload */}
+   465→  1264→  1264→              <div className="space-y-2">
+   466→  1265→  1265→                <Label className="text-white/70">{t('شعار العميل', 'Client Logo')}</Label>
+   467→  1266→  1266→                <div className="flex items-center gap-3">
+   468→  1267→  1267→                  <input
+   469→  1268→  1268→                    ref={clientLogoRef}
+   470→  1269→  1269→                    type="file"
+   471→  1270→  1270→                    className="hidden"
+   472→  1271→  1271→                    accept="image/*"
+   473→  1272→  1272→                    onChange={(e) => handleClientLogoUpload(e, editingClient.id || '')}
+   474→  1273→  1273→                  />
+   475→  1274→  1274→                  {editingClient.logoUrl && (
+   476→  1275→  1275→                    <img src={editingClient.logoUrl} alt="Logo" className="w-12 h-12 object-contain rounded border border-white/10" />
+   477→  1276→  1276→                  )}
+   478→  1277→  1277→                  <Button
+   479→  1278→  1278→                    onClick={() => clientLogoRef.current?.click()}
+   480→  1279→  1279→                    variant="outline"
+   481→  1280→  1280→                    className="cursor-pointer"
+   482→  1281→  1281→                    style={{ borderColor: GOLD, color: GOLD }}
+   483→  1282→  1282→                  >
+   484→  1283→  1283→                    <Upload className="h-4 w-4 me-2" />
+   485→  1284→  1284→                    {t('رفع شعار', 'Upload Logo')}
+   486→  1285→  1285→                  </Button>
+   487→  1286→  1286→                </div>
+   488→  1287→  1287→              </div>
+   489→  1288→  1288→
+   490→  1289→  1289→              <div className="flex items-center gap-3">
+   491→  1290→  1290→                <Switch
+   492→  1291→  1291→                  checked={editingClient.visible}
+   493→  1292→  1292→                  onCheckedChange={(v) => setEditingClient({ ...editingClient, visible: v })}
+   494→  1293→  1293→                />
+   495→  1294→  1294→                <Label className="text-white/70">{t('مرئي', 'Visible')}</Label>
+   496→  1295→  1295→              </div>
+   497→  1296→  1296→              <div className="flex items-center gap-3 justify-end">
+   498→  1297→  1297→                <Button onClick={() => setEditingClient(null)} variant="ghost" className="text-white/50 hover:text-white cursor-pointer">
+   499→  1298→  1298→                  {t('إلغاء', 'Cancel')}
+   500→  1299→  1299→                </Button>
+
+[showing lines 1-500 of 502; use offset=501 with limit to continue reading]

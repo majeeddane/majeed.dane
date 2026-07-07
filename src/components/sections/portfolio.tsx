@@ -31,6 +31,15 @@ interface PortfolioItem {
   visible: boolean;
 }
 
+// Helper to check if an imageUrl is valid (not a placeholder or empty)
+function isValidImageUrl(url: string | null | undefined): url is string {
+  if (!url) return false;
+  if (url === '/placeholder.jpg') return false;
+  if (url.startsWith('/placeholder')) return false;
+  if (url.trim() === '') return false;
+  return true;
+}
+
 function getCategoryIcon(category: string) {
   switch (category) {
     case 'posts':
@@ -77,12 +86,13 @@ function PostCard({ item, onClick }: { item: PortfolioItem; onClick: () => void 
       className="break-inside-avoid cursor-pointer overflow-hidden rounded-lg shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
       onClick={onClick}
     >
-      {item.imageUrl ? (
+      {isValidImageUrl(item.imageUrl) ? (
         <div className="relative aspect-[4/5] overflow-hidden rounded-lg">
           <img
             src={item.imageUrl}
             alt={t(item.titleAr, item.titleEn)}
             className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -121,12 +131,13 @@ function ProfileCard({ item, onClick }: { item: PortfolioItem; onClick: () => vo
       className="break-inside-avoid cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
       onClick={onClick}
     >
-      {item.imageUrl ? (
+      {isValidImageUrl(item.imageUrl) ? (
         <div className="relative aspect-[3/4] overflow-hidden rounded-t-lg">
           <img
             src={item.imageUrl}
             alt={t(item.titleAr, item.titleEn)}
             className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -164,12 +175,13 @@ function WebsiteCard({ item, onClick }: { item: PortfolioItem; onClick: () => vo
       className="break-inside-avoid cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
       onClick={onClick}
     >
-      {item.imageUrl ? (
+      {isValidImageUrl(item.imageUrl) ? (
         <div className="relative aspect-[16/10] overflow-hidden rounded-t-lg">
           <img
             src={item.imageUrl}
             alt={t(item.titleAr, item.titleEn)}
             className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -357,7 +369,7 @@ export default function PortfolioSection() {
         <DialogContent className="max-w-3xl p-0 overflow-hidden">
           {lightboxItem && (
             <>
-              {lightboxItem.imageUrl ? (
+              {isValidImageUrl(lightboxItem.imageUrl) ? (
                 <div className="relative">
                   <img
                     src={lightboxItem.imageUrl}

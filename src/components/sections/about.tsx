@@ -153,6 +153,7 @@ export default function AboutSection() {
                     src={aboutImageUrl}
                     alt={sectionTitle}
                     className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                   />
                 ) : (
                   <span
