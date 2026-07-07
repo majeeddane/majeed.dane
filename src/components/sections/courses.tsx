@@ -14,24 +14,29 @@ import {
   Brain,
   type LucideIcon,
 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface Course {
-  icon: LucideIcon;
+  id: string;
   titleAr: string;
   titleEn: string;
+  icon: string | null;
+  visible: boolean;
 }
 
-const courses: Course[] = [
-  { icon: Palette, titleAr: 'تصميم الهويات البصرية', titleEn: 'Visual Identity Design' },
-  { icon: Image, titleAr: 'تصميم منشورات السوشيال ميديا', titleEn: 'Social Media Post Design' },
-  { icon: PenTool, titleAr: 'كتابة المحتوى التسويقي', titleEn: 'Marketing Content Writing' },
-  { icon: Megaphone, titleAr: 'إدارة الإعلانات على مواقع التواصل الاجتماعي', titleEn: 'Social Media Ads Management' },
-  { icon: Target, titleAr: 'إعداد الحملات التسويقية والإعلانات الممولة', titleEn: 'Marketing Campaigns & Funded Ads' },
-  { icon: Brush, titleAr: 'Canva للمحترفين', titleEn: 'Canva for Professionals' },
-  { icon: Layers, titleAr: 'Adobe Photoshop & Illustrator', titleEn: 'Adobe Photoshop & Illustrator' },
-  { icon: Sparkles, titleAr: 'طرق استخدام مواقع الذكاء الاصطناعي والاستفادة منها', titleEn: 'Using AI Websites Effectively' },
-  { icon: Brain, titleAr: 'كيف تتعامل مع الذكاء الاصطناعي', titleEn: 'How to Deal with AI' },
-];
+const iconMap: Record<string, LucideIcon> = {
+  Palette,
+  Image,
+  PenTool,
+  Megaphone,
+  Target,
+  Brush,
+  Layers,
+  Sparkles,
+  Brain,
+};
+
+const defaultIcons: LucideIcon[] = [Palette, Image, PenTool, Megaphone, Target, Brush, Layers, Sparkles, Brain];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -52,6 +57,20 @@ const cardVariants = {
 
 export default function CoursesSection() {
   const { isRTL, t } = useLanguage();
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/courses')
+      .then(res => res.json())
+      .then(data => {
+        setCourses(Array.isArray(data) ? data.filter((c: Course) => c.visible) : []);
+      })
+      .catch(() => {
+        setCourses([]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <section
@@ -75,51 +94,65 @@ export default function CoursesSection() {
         </motion.div>
 
         {/* Courses Grid */}
-        <motion.div
-          className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: '-100px' }}
-        >
-          {courses.map((course, index) => {
-            const IconComponent = course.icon;
-            const number = String(index + 1).padStart(2, '0');
-            return (
-              <motion.div
-                key={index}
-                variants={cardVariants}
-                whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                className="group relative rounded-xl bg-white p-5 shadow-sm border border-border/50 transition-shadow duration-300 hover:shadow-md overflow-hidden"
-              >
-                {/* Gradient accent bar on left (LTR) or right (RTL) */}
-                <div
-                  className="absolute top-0 bottom-0 w-1 bg-gradient-to-b from-gold to-gold-light"
-                  style={{
-                    [isRTL ? 'right' : 'left']: 0,
-                  }}
-                />
-
-                {/* Numbered badge in top-right */}
-                <span
-                  className="absolute top-3 text-xs font-bold text-gold/30 select-none"
-                  style={{
-                    [isRTL ? 'left' : 'right']: '12px',
-                  }}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gold/30 border-t-gold" />
+          </div>
+        ) : courses.length === 0 ? (
+          <div className="py-20 text-center">
+            <p className="text-lg font-medium text-navy-900/50">
+              {t('لا توجد دورات بعد', 'No courses yet')}
+            </p>
+          </div>
+        ) : (
+          <motion.div
+            className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-100px' }}
+          >
+            {courses.map((course, index) => {
+              const IconComponent = course.icon && iconMap[course.icon]
+                ? iconMap[course.icon]
+                : defaultIcons[index % defaultIcons.length];
+              const number = String(index + 1).padStart(2, '0');
+              return (
+                <motion.div
+                  key={course.id}
+                  variants={cardVariants}
+                  whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                  className="group relative rounded-xl bg-white p-5 shadow-sm border border-border/50 transition-shadow duration-300 hover:shadow-md overflow-hidden"
                 >
-                  {number}
-                </span>
+                  {/* Gradient accent bar on left (LTR) or right (RTL) */}
+                  <div
+                    className="absolute top-0 bottom-0 w-1 bg-gradient-to-b from-gold to-gold-light"
+                    style={{
+                      [isRTL ? 'right' : 'left']: 0,
+                    }}
+                  />
 
-                <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-navy-800/10 transition-colors duration-300 group-hover:bg-gold/15">
-                  <IconComponent className="h-5 w-5 text-navy-800 transition-colors duration-300 group-hover:text-gold" />
-                </div>
-                <h3 className="text-sm font-semibold leading-relaxed text-navy-900">
-                  {t(course.titleAr, course.titleEn)}
-                </h3>
-              </motion.div>
-            );
-          })}
-        </motion.div>
+                  {/* Numbered badge in top-right */}
+                  <span
+                    className="absolute top-3 text-xs font-bold text-gold/30 select-none"
+                    style={{
+                      [isRTL ? 'left' : 'right']: '12px',
+                    }}
+                  >
+                    {number}
+                  </span>
+
+                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-navy-800/10 transition-colors duration-300 group-hover:bg-gold/15">
+                    <IconComponent className="h-5 w-5 text-navy-800 transition-colors duration-300 group-hover:text-gold" />
+                  </div>
+                  <h3 className="text-sm font-semibold leading-relaxed text-navy-900">
+                    {t(course.titleAr, course.titleEn)}
+                  </h3>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        )}
       </div>
     </section>
   );

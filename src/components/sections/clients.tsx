@@ -3,35 +3,25 @@
 import { useLanguage } from '@/lib/language-context';
 import { motion } from 'framer-motion';
 import { Building2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface ClientEntry {
+  id: string;
   nameAr: string;
   nameEn: string;
+  logoUrl: string | null;
+  visible: boolean;
 }
 
-const clients: ClientEntry[] = [
-  { nameAr: 'سهل للصرافة', nameEn: 'Sahl for Exchange' },
-  { nameAr: 'انچ لاونج', nameEn: 'Ang Lounge' },
-  { nameAr: 'انچ للتجارة', nameEn: 'Ang Trading Co.' },
-  {
-    nameAr: 'اتحاد العصر للمحاماة والاستشارات',
-    nameEn: 'ASR Law Group',
-  },
-  { nameAr: 'الموقع الأول', nameEn: 'First Location' },
-  { nameAr: 'دهليز لتأجير السيارات', nameEn: 'Dehliz' },
-  { nameAr: 'مطاعم وسّاب', nameEn: 'Wesab Restaurant' },
-  { nameAr: 'كونتكت لنظم المعلومات', nameEn: 'CIS' },
-  { nameAr: 'بهارات حدة', nameEn: 'Haddah Spices' },
-  { nameAr: 'فلافل المعلم', nameEn: 'Al-Muallim Falafel' },
-];
-
 function ClientCard({ client }: { client: ClientEntry }) {
+  const { t } = useLanguage();
   return (
     <div
       className="flex-shrink-0 group flex cursor-pointer flex-col items-center justify-center rounded-lg border bg-white p-5 transition-all duration-300 hover:scale-105 hover:shadow-lg mx-2 sm:mx-3"
       style={{
         borderColor: '#E2E8F0',
         width: '180px',
+        minHeight: '120px',
       }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.borderColor = '#C9A84C';
@@ -40,18 +30,26 @@ function ClientCard({ client }: { client: ClientEntry }) {
         (e.currentTarget as HTMLElement).style.borderColor = '#E2E8F0';
       }}
     >
-      <div
-        className="mb-3 flex h-12 w-12 items-center justify-center rounded-full transition-colors duration-300"
-        style={{ backgroundColor: '#F0F4F8' }}
-      >
-        <Building2
-          className="h-6 w-6 transition-colors duration-300"
-          style={{ color: '#8A9BB5' }}
+      {client.logoUrl ? (
+        <img
+          src={client.logoUrl}
+          alt={t(client.nameAr, client.nameEn)}
+          className="mb-3 h-12 w-12 rounded-full object-cover"
         />
-      </div>
+      ) : (
+        <div
+          className="mb-3 flex h-12 w-12 items-center justify-center rounded-full transition-colors duration-300"
+          style={{ backgroundColor: '#F0F4F8' }}
+        >
+          <Building2
+            className="h-6 w-6 transition-colors duration-300"
+            style={{ color: '#8A9BB5' }}
+          />
+        </div>
+      )}
       <span
-        className="text-center text-sm font-medium leading-tight transition-colors duration-300 group-hover:text-[#0B2545]"
-        style={{ color: '#64748B' }}
+        className="text-center text-sm font-semibold leading-tight transition-colors duration-300 group-hover:text-[#0B2545]"
+        style={{ color: '#333' }}
         dir="rtl"
       >
         {client.nameAr}
@@ -69,10 +67,25 @@ function ClientCard({ client }: { client: ClientEntry }) {
 
 export default function ClientsSection() {
   const { isRTL, t } = useLanguage();
+  const [clients, setClients] = useState<ClientEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/clients')
+      .then(res => res.json())
+      .then(data => {
+        setClients(Array.isArray(data) ? data.filter((c: ClientEntry) => c.visible) : []);
+      })
+      .catch(() => {
+        setClients([]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   // Split clients into two rows
-  const firstRow = clients.slice(0, 5);
-  const secondRow = clients.slice(5, 10);
+  const midpoint = Math.ceil(clients.length / 2);
+  const firstRow = clients.slice(0, midpoint);
+  const secondRow = clients.slice(midpoint);
 
   // Duplicate items 4 times for seamless looping
   const dupFirstRow = [...firstRow, ...firstRow, ...firstRow, ...firstRow];
@@ -108,31 +121,47 @@ export default function ClientsSection() {
       </div>
 
       {/* Marquee Container */}
-      <div className="w-full space-y-6">
-        {/* First row - scrolls left */}
-        <div className="overflow-hidden w-full">
-          <div
-            className="flex w-max hover:[animation-play-state:paused]"
-            style={{ animation: 'marquee-scroll 30s linear infinite' }}
-          >
-            {dupFirstRow.map((client, index) => (
-              <ClientCard key={`row1-${index}`} client={client} />
-            ))}
-          </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-10">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-gold/30 border-t-gold" />
         </div>
+      ) : clients.length === 0 ? (
+        <div className="py-10 text-center">
+          <p className="text-lg font-medium" style={{ color: '#64748B' }}>
+            {t('لا يوجد شركاء بعد', 'No clients yet')}
+          </p>
+        </div>
+      ) : (
+        <div className="w-full space-y-6">
+          {/* First row - scrolls left */}
+          {firstRow.length > 0 && (
+            <div className="overflow-hidden w-full">
+              <div
+                className="flex w-max hover:[animation-play-state:paused]"
+                style={{ animation: 'marquee-scroll 30s linear infinite' }}
+              >
+                {dupFirstRow.map((client, index) => (
+                  <ClientCard key={`row1-${index}`} client={client} />
+                ))}
+              </div>
+            </div>
+          )}
 
-        {/* Second row - scrolls right (reverse) */}
-        <div className="overflow-hidden w-full">
-          <div
-            className="flex w-max hover:[animation-play-state:paused]"
-            style={{ animation: 'marquee-scroll-reverse 35s linear infinite' }}
-          >
-            {dupSecondRow.map((client, index) => (
-              <ClientCard key={`row2-${index}`} client={client} />
-            ))}
-          </div>
+          {/* Second row - scrolls right (reverse) */}
+          {secondRow.length > 0 && (
+            <div className="overflow-hidden w-full">
+              <div
+                className="flex w-max hover:[animation-play-state:paused]"
+                style={{ animation: 'marquee-scroll-reverse 35s linear infinite' }}
+              >
+                {dupSecondRow.map((client, index) => (
+                  <ClientCard key={`row2-${index}`} client={client} />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      </div>
+      )}
     </section>
   );
 }

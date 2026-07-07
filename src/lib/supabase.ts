@@ -1,16 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-// Client-side Supabase (limited access)
+// Client-side Supabase client (uses anon key - respects RLS)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-// Admin Supabase (full access, server-only)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
+// Server-side Supabase client (uses service role key - bypasses RLS)
+// Only use in API routes / server-side code
+export function getServerSupabase() {
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  return createClient(supabaseUrl, serviceRoleKey);
+}
 
-// Check if Supabase is configured
-export const isSupabaseConfigured = () => {
-  return supabaseUrl && supabaseAnonKey && supabaseServiceKey;
-};
+// Storage bucket name
+export const STORAGE_BUCKET = 'uploads';

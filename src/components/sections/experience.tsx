@@ -3,46 +3,16 @@
 import { useLanguage } from '@/lib/language-context';
 import { motion } from 'framer-motion';
 import { Briefcase } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface ExperienceEntry {
+  id: string;
   companyAr: string;
   companyEn: string;
   descAr: string;
   descEn: string;
+  visible: boolean;
 }
-
-const experiences: ExperienceEntry[] = [
-  {
-    companyAr: 'شركة كونتكت لنظم المعلومات',
-    companyEn: 'Contact Information Systems (CIS)',
-    descAr: 'تصميم الهوية البصرية الكاملة للشركة، وإدارة حسابات التواصل الاجتماعي، والرد على استفسارات العملاء عبر الصفحات وخرائط جوجل.',
-    descEn: 'Complete visual identity design, social media management, and customer inquiries response via pages and Google Maps.',
-  },
-  {
-    companyAr: 'شركة اتحاد العصر للمحاماة',
-    companyEn: 'ASR Law Group',
-    descAr: 'تصميم وإدارة صفحات التواصل الاجتماعي، وإنشاء وإدارة حملات إعلانية ممولة.',
-    descEn: 'Social media design and management, creation and management of funded advertising campaigns.',
-  },
-  {
-    companyAr: 'مخابز ساساز بيكري',
-    companyEn: 'Sasaz Bakery',
-    descAr: 'تصميم الهوية البصرية والمحتوى التسويقي.',
-    descEn: 'Visual identity design and marketing content creation.',
-  },
-  {
-    companyAr: 'عملاء متعددون',
-    companyEn: 'Multiple Clients',
-    descAr: 'تصميم وإدارة صفحات التواصل الاجتماعي وإطلاق حملات إعلانية ممولة لشركات عقارية، مطاعم، تأجير سيارات، مقاهي، وشركة تنظيم مؤتمرات.',
-    descEn: 'Social media design and management, launching funded ad campaigns for real estate, restaurants, car rental, cafes, and event management companies.',
-  },
-  {
-    companyAr: 'مشاريع ويب وبروفايلات',
-    companyEn: 'Web & Profile Projects',
-    descAr: 'تصميم بروفايلات تعريفية للشركات، وتصميم وتطوير مواقع ويب.',
-    descEn: 'Company profile design and website development.',
-  },
-];
 
 function TimelineCard({ exp, isRTL, t, index }: { exp: ExperienceEntry; isRTL: boolean; t: (ar: string, en: string) => string; index: number }) {
   return (
@@ -77,6 +47,20 @@ function TimelineCard({ exp, isRTL, t, index }: { exp: ExperienceEntry; isRTL: b
 
 export default function ExperienceSection() {
   const { isRTL, t } = useLanguage();
+  const [experiences, setExperiences] = useState<ExperienceEntry[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/experience')
+      .then(res => res.json())
+      .then(data => {
+        setExperiences(Array.isArray(data) ? data.filter((e: ExperienceEntry) => e.visible) : []);
+      })
+      .catch(() => {
+        setExperiences([]);
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <section
@@ -99,47 +83,59 @@ export default function ExperienceSection() {
           <div className="mx-auto mt-4 h-1 w-20 rounded-full bg-gold" />
         </motion.div>
 
-        {/* Timeline Container - single column for cleaner look */}
-        <div className="relative">
-          {/* Vertical line */}
-          <div
-            className="absolute top-0 h-full w-0.5"
-            style={{
-              background: 'linear-gradient(to bottom, #C9A84C, #13315C, #C9A84C)',
-              ...(isRTL ? { right: '1rem' } : { left: '1rem' }),
-            }}
-          />
-
-          {experiences.map((exp, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: isRTL ? 40 : -40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: '-50px' }}
-              transition={{
-                duration: 0.5,
-                delay: index * 0.12,
-                ease: 'easeOut',
+        {/* Timeline Container */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gold/30 border-t-gold" />
+          </div>
+        ) : experiences.length === 0 ? (
+          <div className="py-20 text-center">
+            <p className="text-lg font-medium text-navy-900/50">
+              {t('لا توجد خبرات بعد', 'No experiences yet')}
+            </p>
+          </div>
+        ) : (
+          <div className="relative">
+            {/* Vertical line */}
+            <div
+              className="absolute top-0 h-full w-0.5"
+              style={{
+                background: 'linear-gradient(to bottom, #C9A84C, #13315C, #C9A84C)',
+                ...(isRTL ? { right: '1rem' } : { left: '1rem' }),
               }}
-              className="relative mb-10 last:mb-0"
-            >
-              {/* Timeline dot with gold gradient and pulse */}
-              <div
-                className="absolute top-3 z-10 flex h-5 w-5 items-center justify-center rounded-full animate-dot-pulse"
-                style={{
-                  background: 'linear-gradient(135deg, #C9A84C 0%, #D4BC6A 100%)',
-                  border: '3px solid #0B2545',
-                  ...(isRTL ? { right: '0.625rem' } : { left: '0.625rem' }),
-                }}
-              />
+            />
 
-              {/* Card with offset */}
-              <div className={isRTL ? 'mr-12' : 'ml-12'}>
-                <TimelineCard exp={exp} isRTL={isRTL} t={t} index={index} />
-              </div>
-            </motion.div>
-          ))}
-        </div>
+            {experiences.map((exp, index) => (
+              <motion.div
+                key={exp.id}
+                initial={{ opacity: 0, x: isRTL ? 40 : -40 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, margin: '-50px' }}
+                transition={{
+                  duration: 0.5,
+                  delay: index * 0.12,
+                  ease: 'easeOut',
+                }}
+                className="relative mb-10 last:mb-0"
+              >
+                {/* Timeline dot with gold gradient and pulse */}
+                <div
+                  className="absolute top-3 z-10 flex h-5 w-5 items-center justify-center rounded-full animate-dot-pulse"
+                  style={{
+                    background: 'linear-gradient(135deg, #C9A84C 0%, #D4BC6A 100%)',
+                    border: '3px solid #0B2545',
+                    ...(isRTL ? { right: '0.625rem' } : { left: '0.625rem' }),
+                  }}
+                />
+
+                {/* Card with offset */}
+                <div className={isRTL ? 'mr-12' : 'ml-12'}>
+                  <TimelineCard exp={exp} isRTL={isRTL} t={t} index={index} />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

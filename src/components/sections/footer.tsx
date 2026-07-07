@@ -2,6 +2,8 @@
 
 import { useLanguage } from '@/lib/language-context';
 import { Download } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 const quickLinks = [
   { ar: 'نبذة عني', en: 'About', href: '#about' },
@@ -13,6 +15,30 @@ const quickLinks = [
 
 export default function Footer() {
   const { isRTL, t } = useLanguage();
+  const [cvUrl, setCvUrl] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    fetch('/api/content')
+      .then(res => res.json())
+      .then(data => {
+        const cvItem = data.find((item: { key: string; valueAr: string | null }) => item.key === 'cv_file');
+        if (cvItem?.valueAr) {
+          setCvUrl(cvItem.valueAr);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleCvClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!cvUrl) {
+      e.preventDefault();
+      toast({
+        title: t('لم يتم رفع الملف بعد', 'File not uploaded yet'),
+        description: t('سيتم إضافة الملف قريباً', 'The file will be added soon'),
+      });
+    }
+  };
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
@@ -71,7 +97,10 @@ export default function Footer() {
                 {t('السيرة الذاتية', 'Resume')}
               </h4>
               <a
-                href="#"
+                href={cvUrl || '#'}
+                target={cvUrl ? '_blank' : undefined}
+                rel={cvUrl ? 'noopener noreferrer' : undefined}
+                onClick={handleCvClick}
                 className="inline-flex items-center gap-2 rounded-lg border border-gold/50 px-5 py-2.5 text-sm font-medium text-gold transition-all duration-300 hover:bg-gold hover:text-navy-900"
               >
                 <Download className="h-4 w-4" />

@@ -9,7 +9,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { titleAr, titleEn, category, imageUrl, order, visible } = body;
+    const { titleAr, titleEn, category, imageUrl, descriptionAr, descriptionEn, projectUrl, order, visible } = body;
 
     const existing = await db.portfolioItem.findUnique({ where: { id } });
     if (!existing) {
@@ -26,6 +26,9 @@ export async function PUT(
         ...(titleEn !== undefined && { titleEn }),
         ...(category !== undefined && { category }),
         ...(imageUrl !== undefined && { imageUrl }),
+        ...(descriptionAr !== undefined && { descriptionAr }),
+        ...(descriptionEn !== undefined && { descriptionEn }),
+        ...(projectUrl !== undefined && { projectUrl }),
         ...(order !== undefined && { order }),
         ...(visible !== undefined && { visible }),
       },

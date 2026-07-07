@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Menu, Download, X } from 'lucide-react';
 import { Sheet, SheetTrigger, SheetContent } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 const navLinks = [
   { ar: 'نبذة عني', en: 'About', href: '#about' },
@@ -18,6 +19,8 @@ export default function Header() {
   const { lang, isRTL, t, toggleLanguage } = useLanguage();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [cvUrl, setCvUrl] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,6 +29,28 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    fetch('/api/content')
+      .then(res => res.json())
+      .then(data => {
+        const cvItem = data.find((item: { key: string; valueAr: string | null }) => item.key === 'cv_file');
+        if (cvItem?.valueAr) {
+          setCvUrl(cvItem.valueAr);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleCvClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!cvUrl) {
+      e.preventDefault();
+      toast({
+        title: t('لم يتم رفع الملف بعد', 'File not uploaded yet'),
+        description: t('سيتم إضافة الملف قريباً', 'The file will be added soon'),
+      });
+    }
+  };
 
   const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
     e.preventDefault();
@@ -93,7 +118,10 @@ export default function Header() {
 
           {/* CV Download Button */}
           <a
-            href="#"
+            href={cvUrl || '#'}
+            target={cvUrl ? '_blank' : undefined}
+            rel={cvUrl ? 'noopener noreferrer' : undefined}
+            onClick={handleCvClick}
             className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
               scrolled
                 ? 'bg-gold text-navy-900 hover:bg-gold-light'
@@ -156,7 +184,10 @@ export default function Header() {
 
                 {/* CV Download */}
                 <a
-                  href="#"
+                  href={cvUrl || '#'}
+                  target={cvUrl ? '_blank' : undefined}
+                  rel={cvUrl ? 'noopener noreferrer' : undefined}
+                  onClick={handleCvClick}
                   className="mt-2 inline-flex items-center justify-center gap-2 rounded-lg bg-gold px-4 py-3 text-sm font-semibold text-navy-900 transition-colors duration-200 hover:bg-gold-light"
                 >
                   <Download className="h-4 w-4" />

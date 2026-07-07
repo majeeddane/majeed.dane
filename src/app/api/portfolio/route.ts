@@ -21,7 +21,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { titleAr, titleEn, category, imageUrl, order, visible } = body;
+    const { titleAr, titleEn, category, imageUrl, descriptionAr, descriptionEn, projectUrl, order, visible } = body;
 
     if (!titleAr || !titleEn || !imageUrl) {
       return NextResponse.json(
@@ -36,6 +36,9 @@ export async function POST(request: Request) {
         titleEn,
         category: category ?? 'posts',
         imageUrl,
+        descriptionAr: descriptionAr ?? null,
+        descriptionEn: descriptionEn ?? null,
+        projectUrl: projectUrl ?? null,
         order: order ?? 0,
         visible: visible ?? true,
       },

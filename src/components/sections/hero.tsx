@@ -2,9 +2,10 @@
 
 import { useLanguage } from '@/lib/language-context';
 import { Button } from '@/components/ui/button';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, FileText } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { useToast } from '@/hooks/use-toast';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -46,6 +47,8 @@ const particles = [
 export default function HeroSection() {
   const { lang, isRTL, t } = useLanguage();
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
+  const [portfolioFileUrl, setPortfolioFileUrl] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     fetch('/api/content')
@@ -54,6 +57,10 @@ export default function HeroSection() {
         const profileItem = data.find((item: { key: string; valueAr: string | null }) => item.key === 'profile_image');
         if (profileItem?.valueAr) {
           setProfileImageUrl(profileItem.valueAr);
+        }
+        const portfolioItem = data.find((item: { key: string; valueAr: string | null }) => item.key === 'portfolio_file');
+        if (portfolioItem?.valueAr) {
+          setPortfolioFileUrl(portfolioItem.valueAr);
         }
       })
       .catch(() => {});
@@ -64,11 +71,23 @@ export default function HeroSection() {
   const tagline = t('أبدع بالتصميم، أخطط بالتسويق، وأوظّف الذكاء الاصطناعي لصناعة مخرجات استثنائية', 'Creative in Design, Strategic in Marketing, Leveraging AI for Exceptional Results');
   const cta1 = t('تواصل معي', 'Contact Me');
   const cta2 = t('شاهد أعمالي', 'View Portfolio');
+  const cta3 = t('ملف أعمالي الإبداعية', 'Creative Portfolio File');
   const initials = t('ع م', 'AM');
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handlePortfolioFileClick = () => {
+    if (!portfolioFileUrl) {
+      toast({
+        title: t('لم يتم رفع الملف بعد', 'File not uploaded yet'),
+        description: t('سيتم إضافة الملف قريباً', 'The file will be added soon'),
+      });
+      return;
+    }
+    window.open(portfolioFileUrl, '_blank');
   };
 
   return (
@@ -155,6 +174,16 @@ export default function HeroSection() {
                 className="border-2 border-gold/60 text-gold bg-navy-900/30 backdrop-blur-sm hover:bg-gold/10 hover:border-gold font-semibold text-base px-6 md:px-8 py-5 md:py-6 rounded-lg transition-all hover:-translate-y-0.5"
               >
                 {cta2}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={handlePortfolioFileClick}
+                className="border-2 border-white/30 text-white bg-navy-900/20 backdrop-blur-sm hover:bg-white/10 hover:border-white/50 font-semibold text-base px-6 md:px-8 py-5 md:py-6 rounded-lg transition-all hover:-translate-y-0.5"
+              >
+                <FileText className="h-5 w-5 mr-2 ml-2" />
+                {cta3}
               </Button>
             </motion.div>
           </motion.div>
