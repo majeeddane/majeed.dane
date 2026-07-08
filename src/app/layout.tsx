@@ -32,7 +32,10 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "عبدالمجيد الضاعني" }],
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico" },
+    ],
   },
   openGraph: {
     title: "عبدالمجيد الضاعني | مصمم جرافيك ومسوّق رقمي",

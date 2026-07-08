@@ -29,3 +29,30 @@ Stage Summary:
 - Portfolio items gracefully handle missing images with fallback UI
 - about_image content key added and working
 - Both hero profile image and about section image are independent and working
+
+---
+Task ID: 2
+Agent: Main Agent
+Task: Fix /api/upload 404 error - route file and env file missing
+
+Work Log:
+- Discovered /api/upload returned 404 because the entire directory src/app/api/upload/ was missing
+- Discovered .env.local file was also missing, causing "supabaseUrl is required" error when route was recreated
+- Created /src/app/api/upload/route.ts with full Supabase Storage integration (image+PDF upload, size validation, error handling)
+- Created /src/app/api/upload/delete/route.ts for file deletion from Supabase Storage
+- Recreated .env.local with Supabase credentials (NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY)
+- Made supabase.ts more resilient: lazy initialization for client, clear error messages for missing env vars
+- Added favicon.svg to /public and updated layout.tsx to fix /favicon.ico 404
+- Verified upload route no longer returns 404
+- Tested full upload flow via curl: image upload → content save → public URL accessible
+- Tested PDF upload and CV/portfolio file save
+- Verified via browser: no console errors, profile and about images display correctly
+- Ran lint check - all clean
+
+Stage Summary:
+- /api/upload route fully restored and working (no more 404)
+- /api/upload/delete route restored
+- .env.local with Supabase credentials restored
+- supabase.ts made resilient to missing env vars (lazy init pattern)
+- favicon.svg added, /favicon.ico 404 resolved
+- All uploads (images + PDFs) work end-to-end via API and admin panel
