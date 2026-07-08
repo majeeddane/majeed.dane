@@ -87,7 +87,7 @@ export default function CoursesSection() {
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-3xl font-bold text-navy-900 md:text-4xl">
+          <h2 className="text-3xl font-bold text-white md:text-4xl">
             {t('الشهادات والدورات', 'Certifications & Courses')}
           </h2>
           <div className="mx-auto mt-4 h-1 w-20 rounded-full bg-gold" />
@@ -100,7 +100,7 @@ export default function CoursesSection() {
           </div>
         ) : courses.length === 0 ? (
           <div className="py-20 text-center">
-            <p className="text-lg font-medium text-navy-900/50">
+            <p className="text-lg font-medium text-white/50">
               {t('لا توجد دورات بعد', 'No courses yet')}
             </p>
           </div>
@@ -122,7 +122,7 @@ export default function CoursesSection() {
                   key={course.id}
                   variants={cardVariants}
                   whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                  className="group relative rounded-xl bg-white p-5 shadow-sm border border-border/50 transition-shadow duration-300 hover:shadow-md overflow-hidden"
+                  className="group relative rounded-xl bg-navy-800/30 backdrop-blur-sm p-5 shadow-sm border border-white/5 transition-shadow duration-300 hover:shadow-md overflow-hidden"
                 >
                   {/* Gradient accent bar on left (LTR) or right (RTL) */}
                   <div
@@ -142,10 +142,10 @@ export default function CoursesSection() {
                     {number}
                   </span>
 
-                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-navy-800/10 transition-colors duration-300 group-hover:bg-gold/15">
-                    <IconComponent className="h-5 w-5 text-navy-800 transition-colors duration-300 group-hover:text-gold" />
+                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-white/5 border border-white/5 transition-colors duration-300 group-hover:bg-gold/15">
+                    <IconComponent className="h-5 w-5 text-gold transition-colors duration-300 group-hover:text-gold" />
                   </div>
-                  <h3 className="text-sm font-semibold leading-relaxed text-navy-900">
+                  <h3 className="text-sm font-semibold leading-relaxed text-white">
                     {t(course.titleAr, course.titleEn)}
                   </h3>
                 </motion.div>

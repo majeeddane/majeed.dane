@@ -83,7 +83,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning>
+    <html lang="ar" dir="rtl" className="dark" suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"

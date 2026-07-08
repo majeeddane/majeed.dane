@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { getServerSupabase } from '@/lib/supabase';
 
 // PUT update skill by id
 export async function PUT(
@@ -11,30 +11,40 @@ export async function PUT(
     const body = await request.json();
     const { titleAr, titleEn, descAr, descEn, icon, level, category, order, visible } = body;
 
-    const existing = await db.skill.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json(
-        { error: 'Skill not found' },
-        { status: 404 }
-      );
-    }
+    const supabase = getServerSupabase();
 
-    const updated = await db.skill.update({
-      where: { id },
-      data: {
-        ...(titleAr !== undefined && { titleAr }),
-        ...(titleEn !== undefined && { titleEn }),
-        ...(descAr !== undefined && { descAr }),
-        ...(descEn !== undefined && { descEn }),
+    const { data, error } = await supabase
+      .from('skills')
+      .update({
+        ...(titleAr !== undefined && { title_ar: titleAr }),
+        ...(titleEn !== undefined && { title_en: titleEn }),
+        ...(descAr !== undefined && { desc_ar: descAr }),
+        ...(descEn !== undefined && { desc_en: descEn }),
         ...(icon !== undefined && { icon }),
         ...(level !== undefined && { level }),
         ...(category !== undefined && { category }),
         ...(order !== undefined && { order }),
         ...(visible !== undefined && { visible }),
-      },
-    });
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
-    return NextResponse.json(updated);
+    if (error) throw error;
+
+    return NextResponse.json({
+      id: data.id,
+      titleAr: data.title_ar,
+      titleEn: data.title_en,
+      descAr: data.desc_ar,
+      descEn: data.desc_en,
+      icon: data.icon,
+      level: data.level,
+      category: data.category,
+      order: data.order,
+      visible: data.visible,
+    });
   } catch (error) {
     console.error('Error updating skill:', error);
     return NextResponse.json(
@@ -46,21 +56,19 @@ export async function PUT(
 
 // DELETE skill by id
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const supabase = getServerSupabase();
 
-    const existing = await db.skill.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json(
-        { error: 'Skill not found' },
-        { status: 404 }
-      );
-    }
+    const { error } = await supabase
+      .from('skills')
+      .delete()
+      .eq('id', id);
 
-    await db.skill.delete({ where: { id } });
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'Skill deleted' });
   } catch (error) {

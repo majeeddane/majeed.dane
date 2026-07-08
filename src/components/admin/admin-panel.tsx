@@ -203,7 +203,7 @@ interface CourseData {
 }
 
 // ─── Sidebar Navigation Items ───
-type SectionKey = 'files' | 'content' | 'experience' | 'clients' | 'skills' | 'courses' | 'portfolio';
+type SectionKey = 'files' | 'content' | 'experience' | 'clients' | 'skills' | 'courses' | 'portfolio' | 'settings';
 
 interface NavItem {
   key: SectionKey;
@@ -220,6 +220,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: 'skills', labelAr: 'المهارات', labelEn: 'Skills', icon: <BarChart3 className="h-5 w-5" /> },
   { key: 'courses', labelAr: 'الدورات', labelEn: 'Courses', icon: <BookOpen className="h-5 w-5" /> },
   { key: 'portfolio', labelAr: 'المعرض', labelEn: 'Portfolio', icon: <FolderOpen className="h-5 w-5" /> },
+  { key: 'settings', labelAr: 'الإعدادات', labelEn: 'Settings', icon: <Settings className="h-5 w-5" /> },
 ];
 
 // ─── Save Button Component ───
@@ -323,6 +324,12 @@ export default function AdminPanel() {
 
   // ── Portfolio Sub-tab ──
   const [portfolioSubTab, setPortfolioSubTab] = useState<'posts' | 'profiles' | 'websites'>('posts');
+
+  // ── Settings / Password Change State ──
+  const [currentPwd, setCurrentPwd] = useState('');
+  const [newPwd, setNewPwd] = useState('');
+  const [confirmPwd, setConfirmPwd] = useState('');
+  const [changingPwd, setChangingPwd] = useState(false);
 
   // ── File Input Refs ──
   const profileImageRef = useRef<HTMLInputElement>(null);
@@ -757,6 +764,10 @@ export default function AdminPanel() {
           titleEn: data.titleEn,
           category: data.category,
           imageUrl: data.imageUrl,
+          descriptionAr: data.descriptionAr || '',
+          descriptionEn: data.descriptionEn || '',
+          projectUrl: data.projectUrl || '',
+          order: data.order ?? 0,
           visible: data.visible,
         }),
       });
@@ -818,25 +829,23 @@ export default function AdminPanel() {
 
   // ─── Content fields configuration ───
   const CONTENT_FIELDS = [
-    { key: 'hero_title', labelAr: 'العنوان الرئيسي', labelEn: 'Hero Title', type: 'text' },
-    { key: 'hero_subtitle', labelAr: 'العنوان الفرعي', labelEn: 'Hero Subtitle', type: 'text' },
-    { key: 'hero_description', labelAr: 'وصف البطل', labelEn: 'Hero Description', type: 'textarea' },
-    { key: 'about_text', labelAr: 'نص نبذة عني', labelEn: 'About Text', type: 'textarea' },
-    { key: 'about_title', labelAr: 'عنوان نبذة عني', labelEn: 'About Title', type: 'text' },
-    { key: 'contact_email', labelAr: 'البريد الإلكتروني', labelEn: 'Contact Email', type: 'text' },
+    { key: 'hero_name_ar', labelAr: 'الاسم الكامل', labelEn: 'Full Name', type: 'text' },
+    { key: 'hero_title_ar', labelAr: 'المسمى الوظيفي', labelEn: 'Job Title', type: 'text' },
+    { key: 'hero_tagline_ar', labelAr: 'الشعار / التاقلاين', labelEn: 'Tagline', type: 'textarea' },
+    { key: 'about_ar', labelAr: 'نص نبذة عني', labelEn: 'About Text', type: 'textarea' },
+    { key: 'education_ar', labelAr: 'المؤهل العلمي', labelEn: 'Education', type: 'text' },
+    { key: 'about_age', labelAr: 'العمر', labelEn: 'Age', type: 'text' },
+    { key: 'about_nationality', labelAr: 'الجنسية', labelEn: 'Nationality', type: 'text' },
+    { key: 'about_status', labelAr: 'الحالة الاجتماعية', labelEn: 'Status', type: 'text' },
+    { key: 'about_availability', labelAr: 'التوفر للعمل', labelEn: 'Availability', type: 'text' },
+    { key: 'about_location', labelAr: 'الموقع الجغرافي', labelEn: 'Location', type: 'text' },
     { key: 'contact_phone', labelAr: 'رقم الهاتف', labelEn: 'Contact Phone', type: 'text' },
-    { key: 'contact_whatsapp', labelAr: 'واتساب', labelEn: 'WhatsApp', type: 'text' },
-    { key: 'contact_location', labelAr: 'الموقع', labelEn: 'Location', type: 'text' },
-    { key: 'contact_linkedin', labelAr: 'لينكدإن', labelEn: 'LinkedIn', type: 'text' },
-    { key: 'contact_github', labelAr: 'جيت هب', labelEn: 'GitHub', type: 'text' },
-    { key: 'contact_twitter', labelAr: 'تويتر', labelEn: 'Twitter', type: 'text' },
-    { key: 'name_ar', labelAr: 'الاسم (عربي)', labelEn: 'Name (Arabic)', type: 'text' },
-    { key: 'name_en', labelAr: 'الاسم (إنجليزي)', labelEn: 'Name (English)', type: 'text' },
-    { key: 'job_title_ar', labelAr: 'المسمى الوظيفي (عربي)', labelEn: 'Job Title (Arabic)', type: 'text' },
-    { key: 'job_title_en', labelAr: 'المسمى الوظيفي (إنجليزي)', labelEn: 'Job Title (English)', type: 'text' },
+    { key: 'contact_email', labelAr: 'البريد الإلكتروني', labelEn: 'Contact Email', type: 'text' },
+    { key: 'contact_location', labelAr: 'الموقع (تواصل)', labelEn: 'Location (Contact)', type: 'text' },
+    { key: 'stats_experience', labelAr: 'سنوات الخبرة', labelEn: 'Years Experience', type: 'text' },
     { key: 'stats_projects', labelAr: 'عدد المشاريع', labelEn: 'Projects Count', type: 'text' },
     { key: 'stats_clients', labelAr: 'عدد العملاء', labelEn: 'Clients Count', type: 'text' },
-    { key: 'stats_experience', labelAr: 'سنوات الخبرة', labelEn: 'Years Experience', type: 'text' },
+    { key: 'stats_campaigns', labelAr: 'الحملات الإعلانية', labelEn: 'Ad Campaigns', type: 'text' },
   ];
 
   // ─── Get current file URL from content ───
@@ -997,10 +1006,11 @@ export default function AdminPanel() {
                       </div>
                     )}
 
-                    {/* Upload button */}
+                    {/* Upload button - using HTML label for reliable cross-browser file dialog */}
                     <div className="flex items-center gap-3">
                       <input
                         ref={file.ref}
+                        id={`file-input-${file.key}`}
                         type="file"
                         className="hidden"
                         accept={file.isImage ? 'image/*' : '.pdf'}
@@ -1012,20 +1022,18 @@ export default function AdminPanel() {
                           }
                         }}
                       />
-                      <Button
-                        onClick={() => file.ref.current?.click()}
-                        disabled={isUploading || savingContentKey === file.key}
-                        className="cursor-pointer"
-                        variant="outline"
+                      <label
+                        htmlFor={`file-input-${file.key}`}
+                        className={`cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-md border text-sm font-medium transition-colors hover:bg-white/5 ${isUploading || savingContentKey === file.key ? 'opacity-50 pointer-events-none' : ''}`}
                         style={{ borderColor: GOLD, color: GOLD }}
                       >
                         {isUploading || savingContentKey === file.key ? (
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          <Upload className="h-4 w-4 mr-2" />
+                          <Upload className="h-4 w-4" />
                         )}
                         {t('اختيار ملف', 'Choose File')}
-                      </Button>
+                      </label>
                       {currentUrl && (
                         <Badge variant="outline" className="border-green-500/30 text-green-400 text-xs">
                           {t('ملف محفوظ', 'File Saved')}
@@ -1286,6 +1294,7 @@ export default function AdminPanel() {
                 <div className="flex items-center gap-3">
                   <input
                     ref={clientLogoRef}
+                    id="client-logo-upload"
                     type="file"
                     className="hidden"
                     accept="image/*"
@@ -1294,15 +1303,14 @@ export default function AdminPanel() {
                   {editingClient.logoUrl && (
                     <img src={editingClient.logoUrl} alt="Logo" className="w-12 h-12 object-contain rounded border border-white/10" />
                   )}
-                  <Button
-                    onClick={() => clientLogoRef.current?.click()}
-                    variant="outline"
-                    className="cursor-pointer"
+                  <label
+                    htmlFor="client-logo-upload"
+                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-md border text-sm font-medium transition-colors hover:bg-white/5"
                     style={{ borderColor: GOLD, color: GOLD }}
                   >
-                    <Upload className="h-4 w-4 me-2" />
+                    <Upload className="h-4 w-4" />
                     {t('رفع شعار', 'Upload Logo')}
-                  </Button>
+                  </label>
                 </div>
               </div>
 
@@ -1734,12 +1742,13 @@ export default function AdminPanel() {
                 </div>
               </div>
 
-              {/* Image Upload */}
+              {/* Image Upload - using label for reliable file dialog */}
               <div className="space-y-2">
                 <Label className="text-white/70">{t('صورة العنصر', 'Item Image')}</Label>
                 <div className="flex items-center gap-3">
                   <input
                     ref={portfolioImageRef}
+                    id="portfolio-img-upload"
                     type="file"
                     className="hidden"
                     accept="image/*"
@@ -1748,20 +1757,42 @@ export default function AdminPanel() {
                   {editingPortfolio.imageUrl && (
                     <img src={editingPortfolio.imageUrl} alt="Preview" className="w-16 h-16 object-cover rounded border border-white/10" />
                   )}
-                  <Button
-                    onClick={() => portfolioImageRef.current?.click()}
-                    variant="outline"
-                    className="cursor-pointer"
+                  <label
+                    htmlFor="portfolio-img-upload"
+                    className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 rounded-md border text-sm font-medium transition-colors hover:bg-white/5"
                     style={{ borderColor: GOLD, color: GOLD }}
                   >
-                    <Upload className="h-4 w-4 me-2" />
+                    <Upload className="h-4 w-4" />
                     {t('رفع صورة', 'Upload Image')}
-                  </Button>
+                  </label>
                 </div>
               </div>
 
-              {/* Project URL (websites only) */}
-              {portfolioSubTab === 'websites' && (
+              {/* Description fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-white/70">{t('الوصف (عربي)', 'Description (Arabic)')}</Label>
+                  <Textarea
+                    value={editingPortfolio.descriptionAr || ''}
+                    onChange={(e) => setEditingPortfolio({ ...editingPortfolio, descriptionAr: e.target.value })}
+                    className="bg-white/5 border-white/10 text-white min-h-[70px]"
+                    dir="rtl"
+                    placeholder={t('وصف اختياري', 'Optional description')}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-white/70">{t('الوصف (إنجليزي)', 'Description (English)')}</Label>
+                  <Textarea
+                    value={editingPortfolio.descriptionEn || ''}
+                    onChange={(e) => setEditingPortfolio({ ...editingPortfolio, descriptionEn: e.target.value })}
+                    className="bg-white/5 border-white/10 text-white min-h-[70px]"
+                    dir="ltr"
+                    placeholder="Optional description"
+                  />
+                </div>
+              </div>
+              {/* Project URL - show for websites and profiles */}
+              {(portfolioSubTab === 'websites' || portfolioSubTab === 'profiles') && (
                 <div className="space-y-1">
                   <Label className="text-white/70">{t('رابط المشروع', 'Project URL')}</Label>
                   <Input
@@ -1845,6 +1876,116 @@ export default function AdminPanel() {
     );
   };
 
+  // ─── Handler: Change Password ───
+  const handleChangePassword = async () => {
+    if (!newPwd || newPwd !== confirmPwd) {
+      toast({ title: t('خطأ', 'Error'), description: t('كلمتا المرور الجديدة غير متطابقتين', 'New passwords do not match'), variant: 'destructive' });
+      return;
+    }
+    if (newPwd.length < 6) {
+      toast({ title: t('خطأ', 'Error'), description: t('يجب أن تكون كلمة المرور 6 أحرف على الأقل', 'Password must be at least 6 characters'), variant: 'destructive' });
+      return;
+    }
+    setChangingPwd(true);
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: currentPwd, newPassword: newPwd }),
+      });
+      if (res.ok) {
+        toast({ title: t('تم الحفظ', 'Saved'), description: t('تم تغيير كلمة المرور بنجاح', 'Password changed successfully') });
+        setCurrentPwd(''); setNewPwd(''); setConfirmPwd('');
+      } else {
+        const err = await res.json();
+        toast({ title: t('خطأ', 'Error'), description: err.error || t('فشل تغيير كلمة المرور', 'Failed to change password'), variant: 'destructive' });
+      }
+    } catch {
+      toast({ title: t('خطأ', 'Error'), description: t('حدث خطأ غير متوقع', 'An unexpected error occurred'), variant: 'destructive' });
+    } finally {
+      setChangingPwd(false);
+    }
+  };
+
+  // ─── Render: Settings Section (Inline) ───
+  const renderSettingsInline = () => (
+    <div className="space-y-6 max-w-lg">
+      <h3 className="text-xl font-bold text-white mb-6">{t('إدارة كلمة المرور', 'Password Management')}</h3>
+      <Card className="border-white/10" style={{ background: NAVY_800 }}>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-white text-lg flex items-center gap-2">
+            <Lock className="h-5 w-5" style={{ color: GOLD }} />
+            {t('تغيير كلمة المرور', 'Change Password')}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-1">
+            <Label className="text-white/70">{t('كلمة المرور الحالية', 'Current Password')}</Label>
+            <Input
+              type="password"
+              value={currentPwd}
+              onChange={(e) => setCurrentPwd(e.target.value)}
+              className="bg-white/5 border-white/10 text-white"
+              placeholder="••••••••"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-white/70">{t('كلمة المرور الجديدة', 'New Password')}</Label>
+            <Input
+              type="password"
+              value={newPwd}
+              onChange={(e) => setNewPwd(e.target.value)}
+              className="bg-white/5 border-white/10 text-white"
+              placeholder="••••••••"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label className="text-white/70">{t('تأكيد كلمة المرور الجديدة', 'Confirm New Password')}</Label>
+            <Input
+              type="password"
+              value={confirmPwd}
+              onChange={(e) => setConfirmPwd(e.target.value)}
+              className="bg-white/5 border-white/10 text-white"
+              placeholder="••••••••"
+            />
+          </div>
+          <div className="flex justify-end pt-2">
+            <Button
+              onClick={handleChangePassword}
+              disabled={changingPwd || !currentPwd || !newPwd || !confirmPwd}
+              className="font-bold cursor-pointer"
+              style={{ background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`, color: NAVY_900 }}
+            >
+              {changingPwd ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+              {t('تغيير كلمة المرور', 'Change Password')}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Site Info */}
+      <Card className="border-white/10" style={{ background: NAVY_800 }}>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-white text-lg">{t('معلومات الموقع', 'Site Information')}</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between py-2 border-b border-white/5">
+            <span className="text-white/60 text-sm">{t('نظام قاعدة البيانات', 'Database')}</span>
+            <Badge variant="outline" className="border-green-500/30 text-green-400">Supabase ✓</Badge>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-white/5">
+            <span className="text-white/60 text-sm">{t('إطار العمل', 'Framework')}</span>
+            <Badge variant="outline" className="border-blue-500/30 text-blue-400">Next.js ✓</Badge>
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <span className="text-white/60 text-sm">{t('حالة الموقع', 'Status')}</span>
+            <Badge variant="outline" className="border-green-500/30 text-green-400">{t('يعمل بشكل طبيعي', 'Running normally')}</Badge>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   // ─── Render: Active Section Content ───
   const renderSection = () => {
     switch (activeSection) {
@@ -1855,6 +1996,7 @@ export default function AdminPanel() {
       case 'skills': return renderSkillsSection();
       case 'courses': return renderCoursesSection();
       case 'portfolio': return renderPortfolioSection();
+      case 'settings': return renderSettingsInline();
       default: return null;
     }
   };
@@ -1876,12 +2018,12 @@ export default function AdminPanel() {
 
       {/* Full Panel Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex" style={{ background: NAVY_900 }}>
+        <div className="fixed inset-0 z-[100] flex h-screen w-screen overflow-hidden" style={{ background: NAVY_900 }}>
           {/* Sidebar */}
           {isAuthenticated && renderSidebar()}
 
           {/* Main Content */}
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col h-full min-w-0 overflow-hidden">
             {/* Top bar */}
             <div className="flex items-center justify-between p-4 border-b border-white/10 flex-shrink-0" style={{ background: NAVY_900 }}>
               <div className="flex items-center gap-3">
@@ -1928,7 +2070,7 @@ export default function AdminPanel() {
       )}
 
       {/* Custom scrollbar styles */}
-      <style jsx global>{`
+      <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
         }

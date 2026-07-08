@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { User, Globe, Heart, Briefcase, MapPin, GraduationCap } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { cachedFetch } from '@/lib/content-cache';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -30,26 +31,21 @@ const badgeVariants: Variants = {
 interface InfoBadgeProps {
   icon: React.ReactNode;
   text: string;
-  delay?: number;
 }
 
-function InfoBadge({ icon, text, delay = 0 }: InfoBadgeProps) {
+function InfoBadge({ icon, text }: InfoBadgeProps) {
   return (
     <motion.div
       className="group flex items-center gap-3 px-4 py-3 rounded-xl
-        bg-white/60 backdrop-blur-sm border border-navy-800/5
+        bg-navy-800/40 backdrop-blur-sm border border-white/5
         shadow-sm hover:shadow-md hover:-translate-y-1
         transition-all duration-300 cursor-default"
       variants={badgeVariants}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ delay }}
     >
-      <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-navy-800/10 flex items-center justify-center text-navy-800 group-hover:bg-gold/15 group-hover:text-gold transition-colors duration-300">
+      <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-gold/10 flex items-center justify-center text-gold group-hover:bg-gold/20 group-hover:scale-110 transition-all duration-300">
         {icon}
       </div>
-      <span className="text-sm font-medium text-navy-900">{text}</span>
+      <span className="text-sm font-medium text-white/90 group-hover:text-gold transition-colors duration-300">{text}</span>
     </motion.div>
   );
 }
@@ -57,52 +53,45 @@ function InfoBadge({ icon, text, delay = 0 }: InfoBadgeProps) {
 export default function AboutSection() {
   const { lang, isRTL, t } = useLanguage();
   const [aboutImageUrl, setAboutImageUrl] = useState<string | null>(null);
+  const [dynamicContent, setDynamicContent] = useState<Record<string, { valueAr: string; valueEn: string }>>({});
 
   useEffect(() => {
-    fetch('/api/content')
-      .then(res => res.json())
-      .then(data => {
-        const aboutImageItem = data.find((item: { key: string; valueAr: string | null }) => item.key === 'about_image');
-        if (aboutImageItem?.valueAr) {
-          setAboutImageUrl(aboutImageItem.valueAr);
-        }
+    cachedFetch<{ key: string; valueAr: string; valueEn: string }[]>('/api/content')
+      .then((data) => {
+        const aboutImageItem = data.find(item => item.key === 'about_image');
+        if (aboutImageItem?.valueAr) setAboutImageUrl(aboutImageItem.valueAr);
+        // Build a map of all content for easy access
+        const map: Record<string, { valueAr: string; valueEn: string }> = {};
+        data.forEach(item => { map[item.key] = { valueAr: item.valueAr || '', valueEn: item.valueEn || '' }; });
+        setDynamicContent(map);
       })
       .catch(() => {});
   }, []);
 
+  const getVal = (key: string, fallbackAr: string, fallbackEn: string) => {
+    const item = dynamicContent[key];
+    if (!item) return t(fallbackAr, fallbackEn);
+    return lang === 'ar' ? (item.valueAr || fallbackAr) : (item.valueEn || fallbackEn);
+  };
+
   const sectionTitle = t('نبذة عني', 'About Me');
-  const bioText = t(
-    'مصمم جرافيك ومسوّق رقمي، خريج علوم حاسوب، يمتلك خبرة عملية في العمل الحر امتدت لعدة سنوات في تصميم الهويات البصرية، وإدارة حسابات التواصل الاجتماعي، وإعداد وإدارة الحملات الإعلانية الممولة لعملاء من قطاعات متنوعة (عقارات، مطاعم، محاماة، تأجير سيارات، مخابز، مقاهي). يمزج بين الحس الإبداعي في التصميم والتخطيط التسويقي المدروس، مستعينًا بأدوات الذكاء الاصطناعي لتسريع الإنتاج ورفع جودة المخرجات.',
-    'Graphic designer and digital marketer, computer science graduate, with years of freelance experience in visual identity design, social media management, and creating/managing funded advertising campaigns for clients across diverse sectors (real estate, restaurants, law firms, car rental, bakeries, cafes). Combines creative design sensibility with strategic marketing planning, leveraging AI tools to accelerate production and enhance output quality.'
+  const bioText = getVal('about_ar',
+    'مصمم جرافيك ومسوّق رقمي، خريج علوم حاسوب، يمتلك خبرة عملية في العمل الحر امتدت لعدة سنوات في تصميم الهويات البصرية، وإدارة حسابات التواصل الاجتماعي، وإعداد وإدارة الحملات الإعلانية الممولة لعملاء من قطاعات متنوعة. يمزج بين الحس الإبداعي في التصميم والتخطيط التسويقي المدروس، مستعينًا بأدوات الذكاء الاصطناعي لتسريع الإنتاج ورفع جودة المخرجات.',
+    'Graphic designer and digital marketer, computer science graduate, with years of freelance experience in visual identity design, social media management, and creating/managing funded advertising campaigns for clients across diverse sectors. Combines creative design sensibility with strategic marketing planning, leveraging AI tools to accelerate production and enhance output quality.'
   );
   const educationTitle = t('التعليم', 'Education');
-  const educationText = t(
+  const educationText = getVal('education_ar',
     'بكالوريوس علوم حاسوب — الكلية الدولية، صنعاء، اليمن — 2023',
     "Bachelor of Computer Science — International College, Sana'a, Yemen — 2023"
   );
   const initials = t('ع م', 'AM');
 
   const infoBadges: InfoBadgeProps[] = [
-    {
-      icon: <User className="size-4" />,
-      text: t('24 سنة', '24 years'),
-    },
-    {
-      icon: <Globe className="size-4" />,
-      text: t('يمنية', 'Yemeni'),
-    },
-    {
-      icon: <Heart className="size-4" />,
-      text: t('أعزب', 'Single'),
-    },
-    {
-      icon: <Briefcase className="size-4" />,
-      text: t('متفرغ', 'Available'),
-    },
-    {
-      icon: <MapPin className="size-4" />,
-      text: t('الرياض', 'Riyadh'),
-    },
+    { icon: <User className="size-4" />, text: getVal('about_age', '24 سنة', '24 years') },
+    { icon: <Globe className="size-4" />, text: getVal('about_nationality', 'يمنية', 'Yemeni') },
+    { icon: <Heart className="size-4" />, text: getVal('about_status', 'أعزب', 'Single') },
+    { icon: <Briefcase className="size-4" />, text: getVal('about_availability', 'متفرغ', 'Available') },
+    { icon: <MapPin className="size-4" />, text: getVal('about_location', 'الرياض', 'Riyadh') },
   ];
 
   return (
@@ -120,7 +109,7 @@ export default function AboutSection() {
           viewport={{ once: true, amount: 0.5 }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-navy-900">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white">
             {sectionTitle}
           </h2>
           <div className="mt-4 flex justify-center">
@@ -188,10 +177,10 @@ export default function AboutSection() {
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.6 }}
             >
-              <Card className="border-navy-800/8 shadow-md hover:shadow-lg transition-shadow duration-300">
+              <Card className="border-white/5 bg-navy-800/30 backdrop-blur-sm shadow-md hover:shadow-lg transition-shadow duration-300">
                 <CardContent className="p-6 md:p-8">
                   <p
-                    className={`text-base md:text-lg leading-relaxed text-foreground/80 ${isRTL ? 'text-right' : 'text-left'}`}
+                    className={`text-base md:text-lg leading-relaxed text-white/80 ${isRTL ? 'text-right' : 'text-left'}`}
                   >
                     {bioText}
                   </p>
@@ -212,7 +201,6 @@ export default function AboutSection() {
                   key={index}
                   icon={badge.icon}
                   text={badge.text}
-                  delay={index * 0.08}
                 />
               ))}
             </motion.div>
@@ -226,7 +214,7 @@ export default function AboutSection() {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <h3
-                className={`text-xl md:text-2xl font-bold text-navy-900 mb-4 flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}
+                className={`text-xl md:text-2xl font-bold text-white mb-4 flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}
               >
                 <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gold/15 flex items-center justify-center text-gold">
                   <GraduationCap className="size-5" />
@@ -234,10 +222,10 @@ export default function AboutSection() {
                 {educationTitle}
               </h3>
 
-              <Card className="border-navy-800/8 shadow-sm hover:shadow-md transition-shadow duration-300">
+              <Card className="border-white/5 bg-navy-800/30 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow duration-300">
                 <CardContent className="p-5 md:p-6">
                   <p
-                    className={`text-base md:text-lg font-medium text-foreground/90 ${isRTL ? 'text-right' : 'text-left'}`}
+                    className={`text-base md:text-lg font-medium text-white/90 ${isRTL ? 'text-right' : 'text-left'}`}
                   >
                     {educationText}
                   </p>

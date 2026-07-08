@@ -70,7 +70,7 @@ export default function Header() {
     <header
       className={`fixed top-0 z-50 w-full transition-all duration-300 ${
         scrolled
-          ? 'border-b border-navy-800/10 bg-white/90 backdrop-blur-lg shadow-sm'
+          ? 'border-b border-white/10 bg-navy-900/85 backdrop-blur-lg shadow-lg shadow-black/10'
           : 'bg-transparent'
       }`}
       dir={isRTL ? 'rtl' : 'ltr'}
@@ -79,9 +79,7 @@ export default function Header() {
         {/* Logo / Name */}
         <button
           onClick={scrollToTop}
-          className={`text-lg font-bold transition-colors hover:text-blue-600 ${
-            scrolled ? 'text-navy-900' : 'text-white'
-          }`}
+          className={`text-lg font-bold transition-colors hover:text-gold text-white`}
         >
           {t('عبدالمجيد الضاعني', 'Al-Daani')}
         </button>
@@ -93,9 +91,7 @@ export default function Header() {
               key={index}
               href={link.href}
               onClick={(e) => handleNavClick(e, link.href)}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 hover:bg-white/10 ${
-                scrolled ? 'text-navy-900/70 hover:text-navy-900 hover:bg-navy-800/5' : 'text-white/80 hover:text-white'
-              }`}
+              className={`rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 text-white/80 hover:text-white hover:bg-white/10`}
             >
               {t(link.ar, link.en)}
             </a>
@@ -107,11 +103,7 @@ export default function Header() {
           {/* Language Toggle */}
           <button
             onClick={toggleLanguage}
-            className={`flex h-9 min-w-[42px] cursor-pointer items-center justify-center rounded-full px-3 text-xs font-bold transition-all duration-200 ${
-              scrolled
-                ? 'bg-navy-900 text-white hover:bg-navy-800'
-                : 'bg-white/15 text-white hover:bg-white/25 border border-white/20'
-            }`}
+            className={`flex h-9 min-w-[42px] cursor-pointer items-center justify-center rounded-full px-3 text-xs font-bold transition-all duration-200 bg-white/15 text-white hover:bg-white/25 border border-white/20`}
           >
             {lang === 'ar' ? 'EN' : 'عربي'}
           </button>
@@ -122,11 +114,7 @@ export default function Header() {
             target={cvUrl ? '_blank' : undefined}
             rel={cvUrl ? 'noopener noreferrer' : undefined}
             onClick={handleCvClick}
-            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 ${
-              scrolled
-                ? 'bg-gold text-navy-900 hover:bg-gold-light'
-                : 'bg-gold text-navy-900 hover:bg-gold-light shadow-lg shadow-gold/20'
-            }`}
+            className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-all duration-200 bg-gold text-navy-900 hover:bg-gold-light shadow-lg shadow-gold/20`}
           >
             <Download className="h-4 w-4" />
             <span className="hidden lg:inline">{t('السيرة الذاتية', 'Download CV')}</span>
@@ -137,9 +125,7 @@ export default function Header() {
         <div className="flex items-center gap-2 md:hidden">
           <button
             onClick={toggleLanguage}
-            className={`flex h-8 min-w-[36px] cursor-pointer items-center justify-center rounded-full px-2 text-[10px] font-bold transition-all duration-200 ${
-              scrolled ? 'bg-navy-900 text-white' : 'bg-white/15 text-white border border-white/20'
-            }`}
+            className={`flex h-8 min-w-[36px] cursor-pointer items-center justify-center rounded-full px-2 text-[10px] font-bold transition-all duration-200 bg-white/15 text-white border border-white/20`}
           >
             {lang === 'ar' ? 'EN' : 'عربي'}
           </button>

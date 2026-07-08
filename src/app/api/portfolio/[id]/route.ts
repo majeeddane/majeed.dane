@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { getServerSupabase } from '@/lib/supabase';
 
 // PUT update portfolio item by id
 export async function PUT(
@@ -11,30 +11,40 @@ export async function PUT(
     const body = await request.json();
     const { titleAr, titleEn, category, imageUrl, descriptionAr, descriptionEn, projectUrl, order, visible } = body;
 
-    const existing = await db.portfolioItem.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json(
-        { error: 'Portfolio item not found' },
-        { status: 404 }
-      );
-    }
+    const supabase = getServerSupabase();
 
-    const updated = await db.portfolioItem.update({
-      where: { id },
-      data: {
-        ...(titleAr !== undefined && { titleAr }),
-        ...(titleEn !== undefined && { titleEn }),
+    const { data, error } = await supabase
+      .from('portfolio_items')
+      .update({
+        ...(titleAr !== undefined && { title_ar: titleAr }),
+        ...(titleEn !== undefined && { title_en: titleEn }),
         ...(category !== undefined && { category }),
-        ...(imageUrl !== undefined && { imageUrl }),
-        ...(descriptionAr !== undefined && { descriptionAr }),
-        ...(descriptionEn !== undefined && { descriptionEn }),
-        ...(projectUrl !== undefined && { projectUrl }),
+        ...(imageUrl !== undefined && { image_url: imageUrl }),
+        ...(descriptionAr !== undefined && { description_ar: descriptionAr }),
+        ...(descriptionEn !== undefined && { description_en: descriptionEn }),
+        ...(projectUrl !== undefined && { project_url: projectUrl }),
         ...(order !== undefined && { order }),
         ...(visible !== undefined && { visible }),
-      },
-    });
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
-    return NextResponse.json(updated);
+    if (error) throw error;
+
+    return NextResponse.json({
+      id: data.id,
+      titleAr: data.title_ar,
+      titleEn: data.title_en,
+      category: data.category,
+      imageUrl: data.image_url,
+      descriptionAr: data.description_ar,
+      descriptionEn: data.description_en,
+      projectUrl: data.project_url,
+      order: data.order,
+      visible: data.visible,
+    });
   } catch (error) {
     console.error('Error updating portfolio item:', error);
     return NextResponse.json(
@@ -46,21 +56,19 @@ export async function PUT(
 
 // DELETE portfolio item by id
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const supabase = getServerSupabase();
 
-    const existing = await db.portfolioItem.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json(
-        { error: 'Portfolio item not found' },
-        { status: 404 }
-      );
-    }
+    const { error } = await supabase
+      .from('portfolio_items')
+      .delete()
+      .eq('id', id);
 
-    await db.portfolioItem.delete({ where: { id } });
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'Portfolio item deleted' });
   } catch (error) {

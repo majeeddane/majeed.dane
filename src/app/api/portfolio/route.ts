@@ -1,13 +1,44 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { getServerSupabase } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 
 // GET all portfolio items
 export async function GET() {
   try {
-    const items = await db.portfolioItem.findMany({
-      orderBy: { order: 'asc' },
-    });
-    return NextResponse.json(items);
+    const supabase = getServerSupabase();
+    const { data, error } = await supabase
+      .from('portfolio_items')
+      .select('*')
+      .order('order');
+
+    if (error) throw error;
+
+    const normalized = (data || []).map((item: {
+      id: string;
+      title_ar: string;
+      title_en: string;
+      category: string;
+      image_url: string;
+      description_ar: string | null;
+      description_en: string | null;
+      project_url: string | null;
+      order: number;
+      visible: boolean;
+    }) => ({
+      id: item.id,
+      titleAr: item.title_ar,
+      titleEn: item.title_en,
+      category: item.category,
+      imageUrl: item.image_url,
+      descriptionAr: item.description_ar,
+      descriptionEn: item.description_en,
+      projectUrl: item.project_url,
+      order: item.order,
+      visible: item.visible,
+    }));
+
+    return NextResponse.json(normalized);
   } catch (error) {
     console.error('Error fetching portfolio items:', error);
     return NextResponse.json(
@@ -30,21 +61,37 @@ export async function POST(request: Request) {
       );
     }
 
-    const item = await db.portfolioItem.create({
-      data: {
-        titleAr,
-        titleEn,
+    const supabase = getServerSupabase();
+    const { data, error } = await supabase
+      .from('portfolio_items')
+      .insert({
+        title_ar: titleAr,
+        title_en: titleEn,
         category: category ?? 'posts',
-        imageUrl: imageUrl || '',
-        descriptionAr: descriptionAr ?? null,
-        descriptionEn: descriptionEn ?? null,
-        projectUrl: projectUrl ?? null,
+        image_url: imageUrl || '',
+        description_ar: descriptionAr ?? null,
+        description_en: descriptionEn ?? null,
+        project_url: projectUrl ?? null,
         order: order ?? 0,
         visible: visible ?? true,
-      },
-    });
+      })
+      .select()
+      .single();
 
-    return NextResponse.json(item, { status: 201 });
+    if (error) throw error;
+
+    return NextResponse.json({
+      id: data.id,
+      titleAr: data.title_ar,
+      titleEn: data.title_en,
+      category: data.category,
+      imageUrl: data.image_url,
+      descriptionAr: data.description_ar,
+      descriptionEn: data.description_en,
+      projectUrl: data.project_url,
+      order: data.order,
+      visible: data.visible,
+    }, { status: 201 });
   } catch (error) {
     console.error('Error creating portfolio item:', error);
     return NextResponse.json(

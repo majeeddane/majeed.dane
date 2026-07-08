@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { getServerSupabase } from '@/lib/supabase';
 
 // PUT update experience by id
 export async function PUT(
@@ -11,27 +11,34 @@ export async function PUT(
     const body = await request.json();
     const { companyAr, companyEn, descAr, descEn, order, visible } = body;
 
-    const existing = await db.experience.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json(
-        { error: 'Experience not found' },
-        { status: 404 }
-      );
-    }
+    const supabase = getServerSupabase();
 
-    const updated = await db.experience.update({
-      where: { id },
-      data: {
-        ...(companyAr !== undefined && { companyAr }),
-        ...(companyEn !== undefined && { companyEn }),
-        ...(descAr !== undefined && { descAr }),
-        ...(descEn !== undefined && { descEn }),
+    const { data, error } = await supabase
+      .from('experiences')
+      .update({
+        ...(companyAr !== undefined && { company_ar: companyAr }),
+        ...(companyEn !== undefined && { company_en: companyEn }),
+        ...(descAr !== undefined && { desc_ar: descAr }),
+        ...(descEn !== undefined && { desc_en: descEn }),
         ...(order !== undefined && { order }),
         ...(visible !== undefined && { visible }),
-      },
-    });
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
-    return NextResponse.json(updated);
+    if (error) throw error;
+
+    return NextResponse.json({
+      id: data.id,
+      companyAr: data.company_ar,
+      companyEn: data.company_en,
+      descAr: data.desc_ar,
+      descEn: data.desc_en,
+      order: data.order,
+      visible: data.visible,
+    });
   } catch (error) {
     console.error('Error updating experience:', error);
     return NextResponse.json(
@@ -43,21 +50,19 @@ export async function PUT(
 
 // DELETE experience by id
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const supabase = getServerSupabase();
 
-    const existing = await db.experience.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json(
-        { error: 'Experience not found' },
-        { status: 404 }
-      );
-    }
+    const { error } = await supabase
+      .from('experiences')
+      .delete()
+      .eq('id', id);
 
-    await db.experience.delete({ where: { id } });
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'Experience deleted' });
   } catch (error) {

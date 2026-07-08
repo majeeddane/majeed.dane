@@ -17,9 +17,9 @@ function ClientCard({ client }: { client: ClientEntry }) {
   const { t } = useLanguage();
   return (
     <div
-      className="flex-shrink-0 group flex cursor-pointer flex-col items-center justify-center rounded-lg border bg-white p-5 transition-all duration-300 hover:scale-105 hover:shadow-lg mx-2 sm:mx-3"
+      className="flex-shrink-0 group flex cursor-pointer flex-col items-center justify-center rounded-lg border bg-navy-800/30 backdrop-blur-sm p-5 transition-all duration-300 hover:scale-105 hover:shadow-lg mx-2 sm:mx-3"
       style={{
-        borderColor: '#E2E8F0',
+        borderColor: 'rgba(255, 255, 255, 0.08)',
         width: '180px',
         minHeight: '120px',
       }}
@@ -27,19 +27,19 @@ function ClientCard({ client }: { client: ClientEntry }) {
         (e.currentTarget as HTMLElement).style.borderColor = '#C9A84C';
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = '#E2E8F0';
+        (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255, 255, 255, 0.08)';
       }}
     >
       {client.logoUrl ? (
         <img
           src={client.logoUrl}
           alt={t(client.nameAr, client.nameEn)}
-          className="mb-3 h-12 w-12 rounded-full object-cover"
+          className="mb-3 h-12 w-12 rounded-full object-cover border border-white/10"
         />
       ) : (
         <div
           className="mb-3 flex h-12 w-12 items-center justify-center rounded-full transition-colors duration-300"
-          style={{ backgroundColor: '#F0F4F8' }}
+          style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
         >
           <Building2
             className="h-6 w-6 transition-colors duration-300"
@@ -48,15 +48,13 @@ function ClientCard({ client }: { client: ClientEntry }) {
         </div>
       )}
       <span
-        className="text-center text-sm font-semibold leading-tight transition-colors duration-300 group-hover:text-[#0B2545]"
-        style={{ color: '#333' }}
+        className="text-center text-sm font-semibold leading-tight transition-colors duration-300 text-white/90 group-hover:text-white"
         dir="rtl"
       >
         {client.nameAr}
       </span>
       <span
-        className="mt-1 text-center text-xs leading-tight transition-colors duration-300 group-hover:text-[#C9A84C]"
-        style={{ color: '#94A3B8' }}
+        className="mt-1 text-center text-xs leading-tight transition-colors duration-300 text-white/50 group-hover:text-[#C9A84C]"
         dir="ltr"
       >
         {client.nameEn}
@@ -94,8 +92,7 @@ export default function ClientsSection() {
   return (
     <section
       id="clients"
-      className="py-16 md:py-24 overflow-hidden"
-      style={{ backgroundColor: '#F0F4F8' }}
+      className="py-16 md:py-24 overflow-hidden border-y border-white/5 bg-navy-950/45"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -108,8 +105,7 @@ export default function ClientsSection() {
           className="mb-12 md:mb-16 text-center"
         >
           <h2
-            className="text-3xl font-bold md:text-4xl"
-            style={{ color: '#0B2545' }}
+            className="text-3xl font-bold md:text-4xl text-white"
           >
             {t('شركاء النجاح', 'Trusted By')}
           </h2>

@@ -6,6 +6,7 @@ import { ChevronDown, FileText } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { cachedFetch } from '@/lib/content-cache';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -48,27 +49,32 @@ export default function HeroSection() {
   const { lang, isRTL, t } = useLanguage();
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [portfolioFileUrl, setPortfolioFileUrl] = useState<string | null>(null);
+  const [dynamicContent, setDynamicContent] = useState<Record<string, { valueAr: string; valueEn: string }>>({});
   const { toast } = useToast();
 
   useEffect(() => {
-    fetch('/api/content')
-      .then(res => res.json())
-      .then(data => {
-        const profileItem = data.find((item: { key: string; valueAr: string | null }) => item.key === 'profile_image');
-        if (profileItem?.valueAr) {
-          setProfileImageUrl(profileItem.valueAr);
-        }
-        const portfolioItem = data.find((item: { key: string; valueAr: string | null }) => item.key === 'portfolio_file');
-        if (portfolioItem?.valueAr) {
-          setPortfolioFileUrl(portfolioItem.valueAr);
-        }
+    cachedFetch<{ key: string; valueAr: string; valueEn: string }[]>('/api/content')
+      .then((data) => {
+        const profileItem = data.find(item => item.key === 'profile_image');
+        if (profileItem?.valueAr) setProfileImageUrl(profileItem.valueAr);
+        const portfolioItem = data.find(item => item.key === 'portfolio_file');
+        if (portfolioItem?.valueAr) setPortfolioFileUrl(portfolioItem.valueAr);
+        const map: Record<string, { valueAr: string; valueEn: string }> = {};
+        data.forEach(item => { map[item.key] = { valueAr: item.valueAr || '', valueEn: item.valueEn || '' }; });
+        setDynamicContent(map);
       })
       .catch(() => {});
   }, []);
 
-  const name = t('عبدالمجيد محمد يحيى الضاعني', 'Abdulmajeed Mohammed Yahya Al-Daani');
-  const title = t('مصمم جرافيك | أخصائي تسويق رقمي | مطوّر مواقع ويب', 'Graphic Designer | Digital Marketing Specialist | Web Developer');
-  const tagline = t('أبدع بالتصميم، أخطط بالتسويق، وأوظّف الذكاء الاصطناعي لصناعة مخرجات استثنائية', 'Creative in Design, Strategic in Marketing, Leveraging AI for Exceptional Results');
+  const getVal = (key: string, fallbackAr: string, fallbackEn: string) => {
+    const item = dynamicContent[key];
+    if (!item) return t(fallbackAr, fallbackEn);
+    return lang === 'ar' ? (item.valueAr || fallbackAr) : (item.valueEn || fallbackEn);
+  };
+
+  const name = getVal('hero_name_ar', 'عبدالمجيد محمد يحيى الضاعني', 'Abdulmajeed Mohammed Yahya Al-Daani');
+  const title = getVal('hero_title_ar', 'مصمم جرافيك | أخصائي تسويق رقمي | مطوّر مواقع ويب', 'Graphic Designer | Digital Marketing Specialist | Web Developer');
+  const tagline = getVal('hero_tagline_ar', 'أبدع بالتصميم، أخطط بالتسويق، وأوظّف الذكاء الاصطناعي لصناعة مخرجات استثنائية', 'Creative in Design, Strategic in Marketing, Leveraging AI for Exceptional Results');
   const cta1 = t('تواصل معي', 'Contact Me');
   const cta2 = t('شاهد أعمالي', 'View Portfolio');
   const cta3 = t('ملف أعمالي الإبداعية', 'Creative Portfolio File');

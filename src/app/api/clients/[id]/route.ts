@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { getServerSupabase } from '@/lib/supabase';
 
 // PUT update client logo by id
 export async function PUT(
@@ -11,26 +11,32 @@ export async function PUT(
     const body = await request.json();
     const { nameAr, nameEn, logoUrl, order, visible } = body;
 
-    const existing = await db.clientLogo.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json(
-        { error: 'Client not found' },
-        { status: 404 }
-      );
-    }
+    const supabase = getServerSupabase();
 
-    const updated = await db.clientLogo.update({
-      where: { id },
-      data: {
-        ...(nameAr !== undefined && { nameAr }),
-        ...(nameEn !== undefined && { nameEn }),
-        ...(logoUrl !== undefined && { logoUrl }),
+    const { data, error } = await supabase
+      .from('client_logos')
+      .update({
+        ...(nameAr !== undefined && { name_ar: nameAr }),
+        ...(nameEn !== undefined && { name_en: nameEn }),
+        ...(logoUrl !== undefined && { logo_url: logoUrl }),
         ...(order !== undefined && { order }),
         ...(visible !== undefined && { visible }),
-      },
-    });
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
-    return NextResponse.json(updated);
+    if (error) throw error;
+
+    return NextResponse.json({
+      id: data.id,
+      nameAr: data.name_ar,
+      nameEn: data.name_en,
+      logoUrl: data.logo_url,
+      order: data.order,
+      visible: data.visible,
+    });
   } catch (error) {
     console.error('Error updating client:', error);
     return NextResponse.json(
@@ -42,21 +48,19 @@ export async function PUT(
 
 // DELETE client logo by id
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const supabase = getServerSupabase();
 
-    const existing = await db.clientLogo.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json(
-        { error: 'Client not found' },
-        { status: 404 }
-      );
-    }
+    const { error } = await supabase
+      .from('client_logos')
+      .delete()
+      .eq('id', id);
 
-    await db.clientLogo.delete({ where: { id } });
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'Client deleted' });
   } catch (error) {

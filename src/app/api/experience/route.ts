@@ -1,13 +1,40 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { getServerSupabase } from '@/lib/supabase';
+
+export const dynamic = 'force-dynamic';
 
 // GET all experiences (ordered by order field)
 export async function GET() {
   try {
-    const experiences = await db.experience.findMany({
-      orderBy: { order: 'asc' },
-    });
-    return NextResponse.json(experiences);
+    const supabase = getServerSupabase();
+    const { data, error } = await supabase
+      .from('experiences')
+      .select('*')
+      .order('order');
+
+    if (error) throw error;
+
+    const normalized = (data || []).map((item: {
+      id: string;
+      company_ar: string;
+      company_en: string;
+      desc_ar: string;
+      desc_en: string;
+      order: number;
+      visible: boolean;
+      created_at: string;
+    }) => ({
+      id: item.id,
+      companyAr: item.company_ar,
+      companyEn: item.company_en,
+      descAr: item.desc_ar,
+      descEn: item.desc_en,
+      order: item.order,
+      visible: item.visible,
+      createdAt: item.created_at,
+    }));
+
+    return NextResponse.json(normalized);
   } catch (error) {
     console.error('Error fetching experiences:', error);
     return NextResponse.json(
@@ -30,18 +57,31 @@ export async function POST(request: Request) {
       );
     }
 
-    const experience = await db.experience.create({
-      data: {
-        companyAr,
-        companyEn,
-        descAr: descAr ?? '',
-        descEn: descEn ?? '',
+    const supabase = getServerSupabase();
+    const { data, error } = await supabase
+      .from('experiences')
+      .insert({
+        company_ar: companyAr,
+        company_en: companyEn,
+        desc_ar: descAr ?? '',
+        desc_en: descEn ?? '',
         order: order ?? 0,
         visible: visible ?? true,
-      },
-    });
+      })
+      .select()
+      .single();
 
-    return NextResponse.json(experience, { status: 201 });
+    if (error) throw error;
+
+    return NextResponse.json({
+      id: data.id,
+      companyAr: data.company_ar,
+      companyEn: data.company_en,
+      descAr: data.desc_ar,
+      descEn: data.desc_en,
+      order: data.order,
+      visible: data.visible,
+    }, { status: 201 });
   } catch (error) {
     console.error('Error creating experience:', error);
     return NextResponse.json(

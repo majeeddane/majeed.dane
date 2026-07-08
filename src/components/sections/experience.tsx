@@ -17,7 +17,7 @@ interface ExperienceEntry {
 function TimelineCard({ exp, isRTL, t, index }: { exp: ExperienceEntry; isRTL: boolean; t: (ar: string, en: string) => string; index: number }) {
   return (
     <div
-      className="group w-full rounded-xl bg-white p-5 shadow-sm border border-border/50 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 md:p-6 relative overflow-hidden"
+      className="group w-full rounded-xl bg-navy-800/30 backdrop-blur-sm p-5 shadow-sm border border-white/5 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 md:p-6 relative overflow-hidden"
       style={{
         borderRightWidth: isRTL ? '4px' : undefined,
         borderRightColor: isRTL ? '#C9A84C' : undefined,
@@ -26,18 +26,18 @@ function TimelineCard({ exp, isRTL, t, index }: { exp: ExperienceEntry; isRTL: b
       }}
     >
       {/* Subtle gradient background on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
       <div className="relative z-10">
         <div className="mb-3 flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-900">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-900 border border-white/5">
             <Briefcase className="h-5 w-5 text-gold" />
           </div>
-          <h3 className="text-lg font-semibold text-navy-900">
+          <h3 className="text-lg font-semibold text-white">
             {t(exp.companyAr, exp.companyEn)}
           </h3>
         </div>
-        <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
+        <p className="text-sm leading-relaxed text-white/70 md:text-base">
           {t(exp.descAr, exp.descEn)}
         </p>
       </div>
@@ -77,7 +77,7 @@ export default function ExperienceSection() {
           transition={{ duration: 0.6 }}
           className="mb-16 text-center"
         >
-          <h2 className="text-3xl font-bold text-navy-900 md:text-4xl">
+          <h2 className="text-3xl font-bold text-white md:text-4xl">
             {t('الخبرة العملية', 'Work Experience')}
           </h2>
           <div className="mx-auto mt-4 h-1 w-20 rounded-full bg-gold" />
@@ -90,7 +90,7 @@ export default function ExperienceSection() {
           </div>
         ) : experiences.length === 0 ? (
           <div className="py-20 text-center">
-            <p className="text-lg font-medium text-navy-900/50">
+            <p className="text-lg font-medium text-white/50">
               {t('لا توجد خبرات بعد', 'No experiences yet')}
             </p>
           </div>
@@ -123,7 +123,7 @@ export default function ExperienceSection() {
                   className="absolute top-3 z-10 flex h-5 w-5 items-center justify-center rounded-full animate-dot-pulse"
                   style={{
                     background: 'linear-gradient(135deg, #C9A84C 0%, #D4BC6A 100%)',
-                    border: '3px solid #0B2545',
+                    border: '3px solid #0A1628',
                     ...(isRTL ? { right: '0.625rem' } : { left: '0.625rem' }),
                   }}
                 />

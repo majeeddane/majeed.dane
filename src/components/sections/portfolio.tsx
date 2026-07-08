@@ -128,7 +128,7 @@ function ProfileCard({ item, onClick }: { item: PortfolioItem; onClick: () => vo
   const { t } = useLanguage();
   return (
     <div
-      className="break-inside-avoid cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+      className="break-inside-avoid cursor-pointer overflow-hidden rounded-lg border border-white/5 bg-navy-800/30 backdrop-blur-sm shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
       onClick={onClick}
     >
       {isValidImageUrl(item.imageUrl) ? (
@@ -172,7 +172,7 @@ function WebsiteCard({ item, onClick }: { item: PortfolioItem; onClick: () => vo
   const { t } = useLanguage();
   return (
     <div
-      className="break-inside-avoid cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+      className="break-inside-avoid cursor-pointer overflow-hidden rounded-lg border border-white/5 bg-navy-800/30 backdrop-blur-sm shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
       onClick={onClick}
     >
       {isValidImageUrl(item.imageUrl) ? (
@@ -240,7 +240,7 @@ export default function PortfolioSection() {
   return (
     <section
       id="portfolio"
-      className="bg-white py-16 md:py-24"
+      className="bg-background py-16 md:py-24"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
@@ -253,8 +253,7 @@ export default function PortfolioSection() {
           className="mb-12 text-center"
         >
           <h2
-            className="text-3xl font-bold md:text-4xl"
-            style={{ color: '#0B2545' }}
+            className="text-3xl font-bold md:text-4xl text-white"
           >
             {t('معرض الأعمال', 'Portfolio')}
           </h2>
@@ -273,22 +272,19 @@ export default function PortfolioSection() {
           <TabsList className="mx-auto flex w-full max-w-xl flex-wrap justify-center gap-2 bg-transparent p-0">
             <TabsTrigger
               value="posts"
-              className="rounded-lg border px-4 py-2.5 text-sm font-medium data-[state=active]:border-[#C9A84C] data-[state=active]:bg-[#0B2545] data-[state=active]:text-white"
-              style={{ color: '#0B2545' }}
+              className="rounded-lg border px-4 py-2.5 text-sm font-medium border-white/10 text-white/70 data-[state=active]:border-gold data-[state=active]:bg-gold data-[state=active]:text-navy-950 transition-all"
             >
               {t('بوستات ومحتوى تسويقي', 'Marketing Posts')}
             </TabsTrigger>
             <TabsTrigger
               value="profiles"
-              className="rounded-lg border px-4 py-2.5 text-sm font-medium data-[state=active]:border-[#C9A84C] data-[state=active]:bg-[#0B2545] data-[state=active]:text-white"
-              style={{ color: '#0B2545' }}
+              className="rounded-lg border px-4 py-2.5 text-sm font-medium border-white/10 text-white/70 data-[state=active]:border-gold data-[state=active]:bg-gold data-[state=active]:text-navy-950 transition-all"
             >
               {t('بروفايلات تعريفية', 'Company Profiles')}
             </TabsTrigger>
             <TabsTrigger
               value="websites"
-              className="rounded-lg border px-4 py-2.5 text-sm font-medium data-[state=active]:border-[#C9A84C] data-[state=active]:bg-[#0B2545] data-[state=active]:text-white"
-              style={{ color: '#0B2545' }}
+              className="rounded-lg border px-4 py-2.5 text-sm font-medium border-white/10 text-white/70 data-[state=active]:border-gold data-[state=active]:bg-gold data-[state=active]:text-navy-950 transition-all"
             >
               {t('مواقع ويب', 'Web Projects')}
             </TabsTrigger>
@@ -307,10 +303,10 @@ export default function PortfolioSection() {
                   animate={{ opacity: 1 }}
                   className="py-20 text-center"
                 >
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-navy-800/10">
+                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/5">
                     {getCategoryIcon(activeTab)}
                   </div>
-                  <p className="text-lg font-medium text-navy-900/50">
+                  <p className="text-lg font-medium text-white/50">
                     {t('لا توجد أعمال في هذا القسم بعد', 'No items in this category yet')}
                   </p>
                 </motion.div>
@@ -396,13 +392,13 @@ export default function PortfolioSection() {
                   </h3>
                 </div>
               )}
-              <div className="p-6">
+              <div className="p-6 bg-navy-900">
                 <DialogHeader>
-                  <DialogTitle style={{ color: '#0B2545' }}>
+                  <DialogTitle className="text-white">
                     {t(lightboxItem.titleAr, lightboxItem.titleEn)}
                   </DialogTitle>
                   {(lightboxItem.descriptionAr || lightboxItem.descriptionEn) && (
-                    <DialogDescription className="text-base leading-relaxed" style={{ color: '#13315C' }}>
+                    <DialogDescription className="text-base leading-relaxed text-white/70">
                       {t(lightboxItem.descriptionAr || '', lightboxItem.descriptionEn || '')}
                     </DialogDescription>
                   )}

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { getServerSupabase } from '@/lib/supabase';
 
 // PUT update course by id
 export async function PUT(
@@ -11,26 +11,32 @@ export async function PUT(
     const body = await request.json();
     const { titleAr, titleEn, icon, order, visible } = body;
 
-    const existing = await db.course.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json(
-        { error: 'Course not found' },
-        { status: 404 }
-      );
-    }
+    const supabase = getServerSupabase();
 
-    const updated = await db.course.update({
-      where: { id },
-      data: {
-        ...(titleAr !== undefined && { titleAr }),
-        ...(titleEn !== undefined && { titleEn }),
+    const { data, error } = await supabase
+      .from('courses')
+      .update({
+        ...(titleAr !== undefined && { title_ar: titleAr }),
+        ...(titleEn !== undefined && { title_en: titleEn }),
         ...(icon !== undefined && { icon }),
         ...(order !== undefined && { order }),
         ...(visible !== undefined && { visible }),
-      },
-    });
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', id)
+      .select()
+      .single();
 
-    return NextResponse.json(updated);
+    if (error) throw error;
+
+    return NextResponse.json({
+      id: data.id,
+      titleAr: data.title_ar,
+      titleEn: data.title_en,
+      icon: data.icon,
+      order: data.order,
+      visible: data.visible,
+    });
   } catch (error) {
     console.error('Error updating course:', error);
     return NextResponse.json(
@@ -42,21 +48,19 @@ export async function PUT(
 
 // DELETE course by id
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const supabase = getServerSupabase();
 
-    const existing = await db.course.findUnique({ where: { id } });
-    if (!existing) {
-      return NextResponse.json(
-        { error: 'Course not found' },
-        { status: 404 }
-      );
-    }
+    const { error } = await supabase
+      .from('courses')
+      .delete()
+      .eq('id', id);
 
-    await db.course.delete({ where: { id } });
+    if (error) throw error;
 
     return NextResponse.json({ success: true, message: 'Course deleted' });
   } catch (error) {
