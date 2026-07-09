@@ -55,3 +55,4 @@ server.log
 
 # database files
 *.db
+.vercel
