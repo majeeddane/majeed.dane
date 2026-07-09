@@ -93,7 +93,6 @@ export default function ClientsSection() {
     <section
       id="clients"
       className="py-16 md:py-24 overflow-hidden border-y border-white/5 bg-navy-950/45"
-      dir={isRTL ? 'rtl' : 'ltr'}
     >
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
         {/* Section Title */}
@@ -128,7 +127,8 @@ export default function ClientsSection() {
           </p>
         </div>
       ) : (
-        <div className="w-full space-y-6">
+        /* Marquee Container — always dir="ltr" so translateX works in Arabic too */
+        <div dir="ltr" className="w-full space-y-6">
           {/* First row - scrolls left */}
           {firstRow.length > 0 && (
             <div className="overflow-hidden w-full">
