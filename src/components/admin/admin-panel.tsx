@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
+import { uploadFileDirect } from '@/lib/upload-client';
 import { useLanguage } from '@/lib/language-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -362,37 +363,18 @@ export default function AdminPanel() {
   }, [getContentValue]);
 
   // ─── API Helpers ───
-  const uploadFile = useCallback(async (file: File, purpose: string): Promise<string | null> => {
+  // Upload directly from browser → Supabase Storage (bypasses Vercel 4.5 MB body limit)
+  const uploadFile = useCallback(async (file: File | Blob, purpose: string, originalName?: string): Promise<string | null> => {
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('purpose', purpose);
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      
-      // Try to get the actual error message from the response
-      if (!res.ok) {
-        let errorMsg = 'Upload failed';
-        try {
-          const errorData = await res.json();
-          errorMsg = errorData.error || `Server error (${res.status})`;
-        } catch {
-          errorMsg = `Server error (${res.status})`;
-        }
-        throw new Error(errorMsg);
-      }
-      
-      const data = await res.json();
-      if (!data.url) {
-        throw new Error('No URL returned from server');
-      }
-      return data.url;
+      const result = await uploadFileDirect(file, purpose, originalName);
+      return result.url;
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : 'Unknown error';
-      console.error('Upload error:', errorMsg);
-      toast({ 
-        title: t('خطأ في الرفع', 'Upload Error'), 
-        description: errorMsg, 
-        variant: 'destructive' 
+      const errorMsg = err instanceof Error ? err.message : 'Unknown upload error';
+      console.error('[uploadFile] error:', errorMsg);
+      toast({
+        title: t('خطأ في الرفع', 'Upload Error'),
+        description: errorMsg,
+        variant: 'destructive',
       });
       return null;
     }
@@ -560,8 +542,8 @@ export default function AdminPanel() {
         setCropImageSrc(null);
         setCropCallback(null);
         setUploadingFile(contentKey);
-        const croppedFile = new File([blob], `crop_${contentKey}.jpg`, { type: 'image/jpeg' });
-        const url = await uploadFile(croppedFile, purpose);
+        // Pass original file name so the extension is correct after crop
+        const url = await uploadFile(blob, purpose, `crop_${contentKey}.jpg`);
         if (url) {
           await saveContent(contentKey, url, url, 'file');
         }
@@ -751,6 +733,16 @@ export default function AdminPanel() {
 
   // ─── Portfolio CRUD ───
   const savePortfolio = async (data: Omit<PortfolioItemData, 'id'> & { id?: string }) => {
+    // Client-side validation
+    if (!data.titleAr || data.titleAr.trim() === '') {
+      toast({ title: t('خطأ', 'Error'), description: t('العنوان بالعربية مطلوب', 'Arabic title is required'), variant: 'destructive' });
+      return;
+    }
+    if (!data.titleEn || data.titleEn.trim() === '') {
+      toast({ title: t('خطأ', 'Error'), description: t('العنوان بالإنجليزية مطلوب', 'English title is required'), variant: 'destructive' });
+      return;
+    }
+
     const isEdit = !!data.id;
     setSavingPortfolio(data.id || 'new');
     try {
@@ -760,10 +752,10 @@ export default function AdminPanel() {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          titleAr: data.titleAr,
-          titleEn: data.titleEn,
+          titleAr: data.titleAr.trim(),
+          titleEn: data.titleEn.trim(),
           category: data.category,
-          imageUrl: data.imageUrl,
+          imageUrl: data.imageUrl || '',
           descriptionAr: data.descriptionAr || '',
           descriptionEn: data.descriptionEn || '',
           projectUrl: data.projectUrl || '',
@@ -771,12 +763,20 @@ export default function AdminPanel() {
           visible: data.visible,
         }),
       });
-      if (!res.ok) throw new Error('Failed');
+      if (!res.ok) {
+        let errorMsg = t('فشل حفظ عنصر المعرض', 'Failed to save portfolio item');
+        try {
+          const errData = await res.json();
+          errorMsg = errData.error || errData.detail || `HTTP ${res.status}`;
+        } catch { /* ignore json parse error */ }
+        throw new Error(errorMsg);
+      }
       await fetchPortfolio();
       setEditingPortfolio(null);
       toast({ title: t('تم الحفظ', 'Saved'), description: t('تم حفظ عنصر المعرض بنجاح', 'Portfolio item saved successfully') });
-    } catch {
-      toast({ title: t('خطأ', 'Error'), description: t('فشل حفظ عنصر المعرض', 'Failed to save portfolio item'), variant: 'destructive' });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : t('فشل حفظ عنصر المعرض', 'Failed to save portfolio item');
+      toast({ title: t('خطأ', 'Error'), description: msg, variant: 'destructive' });
     } finally {
       setSavingPortfolio(null);
     }
@@ -821,7 +821,7 @@ export default function AdminPanel() {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = '';
-    const url = await uploadFile(file, 'portfolio_image');
+    const url = await uploadFile(file, 'portfolio_image', file.name);
     if (url && editingPortfolio) {
       setEditingPortfolio({ ...editingPortfolio, imageUrl: url });
     }

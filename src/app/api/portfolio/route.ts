@@ -40,9 +40,10 @@ export async function GET() {
 
     return NextResponse.json(normalized);
   } catch (error) {
-    console.error('Error fetching portfolio items:', error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('Error fetching portfolio items:', msg);
     return NextResponse.json(
-      { error: 'Failed to fetch portfolio items' },
+      { error: 'Failed to fetch portfolio items', detail: msg },
       { status: 500 }
     );
   }
@@ -52,33 +53,74 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { titleAr, titleEn, category, imageUrl, descriptionAr, descriptionEn, projectUrl, order, visible } = body;
+    const {
+      titleAr,
+      titleEn,
+      category,
+      imageUrl,
+      descriptionAr,
+      descriptionEn,
+      projectUrl,
+      order,
+      visible,
+    } = body;
 
-    if (!titleAr || !titleEn) {
+    // Validate required fields
+    if (!titleAr || typeof titleAr !== 'string' || titleAr.trim() === '') {
       return NextResponse.json(
-        { error: 'titleAr and titleEn are required' },
+        { error: 'titleAr is required and must be a non-empty string' },
         { status: 400 }
       );
     }
+    if (!titleEn || typeof titleEn !== 'string' || titleEn.trim() === '') {
+      return NextResponse.json(
+        { error: 'titleEn is required and must be a non-empty string' },
+        { status: 400 }
+      );
+    }
+
+    console.log('[Portfolio POST] Inserting:', {
+      titleAr,
+      titleEn,
+      category,
+      imageUrl: imageUrl ? '(set)' : '(empty)',
+    });
 
     const supabase = getServerSupabase();
     const { data, error } = await supabase
       .from('portfolio_items')
       .insert({
-        title_ar: titleAr,
-        title_en: titleEn,
+        title_ar: titleAr.trim(),
+        title_en: titleEn.trim(),
         category: category ?? 'posts',
         image_url: imageUrl || '',
-        description_ar: descriptionAr ?? null,
-        description_en: descriptionEn ?? null,
-        project_url: projectUrl ?? null,
-        order: order ?? 0,
-        visible: visible ?? true,
+        description_ar: descriptionAr || null,
+        description_en: descriptionEn || null,
+        project_url: projectUrl || null,
+        order: typeof order === 'number' ? order : 0,
+        visible: visible !== undefined ? visible : true,
       })
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('[Portfolio POST] Supabase error:', JSON.stringify({
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+      }));
+      return NextResponse.json(
+        {
+          error: 'Database error when creating portfolio item',
+          detail: error.message,
+          code: error.code,
+        },
+        { status: 500 }
+      );
+    }
+
+    console.log('[Portfolio POST] Success:', data.id);
 
     return NextResponse.json({
       id: data.id,
@@ -93,9 +135,10 @@ export async function POST(request: Request) {
       visible: data.visible,
     }, { status: 201 });
   } catch (error) {
-    console.error('Error creating portfolio item:', error);
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('[Portfolio POST] Unexpected error:', msg);
     return NextResponse.json(
-      { error: 'Failed to create portfolio item' },
+      { error: 'Unexpected server error', detail: msg },
       { status: 500 }
     );
   }
