@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { uploadFileDirect } from '@/lib/upload-client';
+import { invalidateCache } from '@/lib/content-cache';
 import { useLanguage } from '@/lib/language-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -401,6 +402,7 @@ export default function AdminPanel() {
         delete next[key];
         return next;
       });
+      invalidateCache('/api/content');
       toast({ title: t('تم الحفظ', 'Saved'), description: t('تم حفظ المحتوى بنجاح', 'Content saved successfully') });
     } catch (err) {
       console.error('Save content error:', err);
