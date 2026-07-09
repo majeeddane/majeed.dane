@@ -538,7 +538,7 @@ export default function AdminPanel() {
     const reader = new FileReader();
     reader.onload = () => {
       setCropImageSrc(reader.result as string);
-      setCropCallback(async (blob: Blob) => {
+      setCropCallback(() => async (blob: Blob) => {
         setCropImageSrc(null);
         setCropCallback(null);
         setUploadingFile(contentKey);
