@@ -1,5 +1,3 @@
-'use client';
-
 import Header from '@/components/sections/header';
 import HeroSection from '@/components/sections/hero';
 import AboutSection from '@/components/sections/about';
@@ -13,15 +11,48 @@ import CoursesSection from '@/components/sections/courses';
 import ContactSection from '@/components/sections/contact';
 import Footer from '@/components/sections/footer';
 import AdminPanel from '@/components/admin/admin-panel';
+import { getServerSupabase } from '@/lib/supabase';
 
-export default function Home() {
+// Force dynamic so admin panel changes reflect immediately (no stale cache)
+export const dynamic = 'force-dynamic';
+
+export interface ContentItem {
+  id: string;
+  key: string;
+  valueAr: string | null;
+  valueEn: string | null;
+  type: string;
+}
+
+async function getInitialContent(): Promise<ContentItem[]> {
+  try {
+    const supabase = getServerSupabase();
+    const { data, error } = await supabase
+      .from('site_content')
+      .select('id, key, value_ar, value_en, type');
+    if (error) throw error;
+    return (data || []).map((item) => ({
+      id: item.id,
+      key: item.key,
+      valueAr: item.value_ar,
+      valueEn: item.value_en,
+      type: item.type,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+export default async function Home() {
+  const initialContent = await getInitialContent();
+
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
+      <Header initialContent={initialContent} />
       <main className="flex-1">
-        <HeroSection />
+        <HeroSection initialContent={initialContent} />
         <div id="about">
-          <AboutSection />
+          <AboutSection initialContent={initialContent} />
         </div>
         <StatsSection />
         <div id="skills">
@@ -40,7 +71,7 @@ export default function Home() {
           <ContactSection />
         </div>
       </main>
-      <Footer />
+      <Footer initialContent={initialContent} />
       <AdminPanel />
     </div>
   );
