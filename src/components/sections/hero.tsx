@@ -29,11 +29,11 @@ const itemVariants: Variants = {
 };
 
 const imageVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.8 },
+  hidden: { opacity: 1, scale: 1 },
   visible: {
     opacity: 1,
     scale: 1,
-    transition: { duration: 0.8, ease: [0.25, 0.1, 0.25, 1], delay: 0.6 },
+    transition: { duration: 0 },
   },
 };
 

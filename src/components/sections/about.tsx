@@ -122,10 +122,10 @@ export default function AboutSection() {
           {/* Profile Image Column */}
           <motion.div
             className="flex-shrink-0 relative"
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 1, scale: 1 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.7 }}
+            transition={{ duration: 0 }}
           >
             {/* Glow behind circle */}
             <div className="absolute inset-0 rounded-full bg-gold/20 blur-3xl scale-125" />
