@@ -269,24 +269,34 @@ export default function PortfolioSection() {
           onValueChange={setActiveTab}
           className="mb-12"
         >
-          <TabsList className="mx-auto flex w-full max-w-xl flex-wrap justify-center gap-2 bg-transparent p-0">
+          {/* Category Selector - 3-column grid on all screen sizes */}
+          <TabsList className="mx-auto grid w-full max-w-2xl grid-cols-3 gap-2 bg-transparent p-0 h-auto">
             <TabsTrigger
               value="posts"
-              className="rounded-lg border px-4 py-2.5 text-sm font-medium border-white/10 text-white/70 data-[state=active]:border-gold data-[state=active]:bg-gold data-[state=active]:text-navy-950 transition-all"
+              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-navy-800/30 backdrop-blur-sm px-2 py-3 sm:py-4 text-white/60 transition-all duration-300 hover:border-gold/40 hover:bg-navy-800/60 hover:text-white data-[state=active]:border-gold data-[state=active]:bg-gold/15 data-[state=active]:text-gold data-[state=active]:shadow-[0_0_20px_rgba(201,168,76,0.15)] h-auto"
             >
-              {t('بوستات ومحتوى تسويقي', 'Marketing Posts')}
+              <ImageIcon className="h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-data-[state=active]:scale-110" />
+              <span className="text-center text-xs sm:text-sm font-semibold leading-tight">
+                {t('بوستات ومحتوى تسويقي', 'Marketing Posts')}
+              </span>
             </TabsTrigger>
             <TabsTrigger
               value="profiles"
-              className="rounded-lg border px-4 py-2.5 text-sm font-medium border-white/10 text-white/70 data-[state=active]:border-gold data-[state=active]:bg-gold data-[state=active]:text-navy-950 transition-all"
+              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-navy-800/30 backdrop-blur-sm px-2 py-3 sm:py-4 text-white/60 transition-all duration-300 hover:border-gold/40 hover:bg-navy-800/60 hover:text-white data-[state=active]:border-gold data-[state=active]:bg-gold/15 data-[state=active]:text-gold data-[state=active]:shadow-[0_0_20px_rgba(201,168,76,0.15)] h-auto"
             >
-              {t('بروفايلات تعريفية', 'Company Profiles')}
+              <FileText className="h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-data-[state=active]:scale-110" />
+              <span className="text-center text-xs sm:text-sm font-semibold leading-tight">
+                {t('بروفايلات تعريفية', 'Company Profiles')}
+              </span>
             </TabsTrigger>
             <TabsTrigger
               value="websites"
-              className="rounded-lg border px-4 py-2.5 text-sm font-medium border-white/10 text-white/70 data-[state=active]:border-gold data-[state=active]:bg-gold data-[state=active]:text-navy-950 transition-all"
+              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-navy-800/30 backdrop-blur-sm px-2 py-3 sm:py-4 text-white/60 transition-all duration-300 hover:border-gold/40 hover:bg-navy-800/60 hover:text-white data-[state=active]:border-gold data-[state=active]:bg-gold/15 data-[state=active]:text-gold data-[state=active]:shadow-[0_0_20px_rgba(201,168,76,0.15)] h-auto"
             >
-              {t('مواقع ويب', 'Web Projects')}
+              <Globe className="h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-data-[state=active]:scale-110" />
+              <span className="text-center text-xs sm:text-sm font-semibold leading-tight">
+                {t('مواقع ويب', 'Web Projects')}
+              </span>
             </TabsTrigger>
           </TabsList>
 
