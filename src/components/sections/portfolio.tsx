@@ -273,29 +273,32 @@ export default function PortfolioSection() {
           <TabsList className="mx-auto grid w-full max-w-2xl grid-cols-3 gap-2 bg-transparent p-0 h-auto">
             <TabsTrigger
               value="posts"
-              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-navy-800/30 backdrop-blur-sm px-2 py-3 sm:py-4 text-white/60 transition-all duration-300 hover:border-gold/40 hover:bg-navy-800/60 hover:text-white data-[state=active]:border-gold data-[state=active]:bg-gold/15 data-[state=active]:text-gold data-[state=active]:shadow-[0_0_20px_rgba(201,168,76,0.15)] h-auto"
+              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-navy-800/30 backdrop-blur-sm px-1.5 py-3 sm:px-3 sm:py-4 text-white/60 transition-all duration-300 hover:border-gold/40 hover:bg-navy-800/60 hover:text-white data-[state=active]:border-gold data-[state=active]:bg-gold/15 data-[state=active]:text-gold data-[state=active]:shadow-[0_0_20px_rgba(201,168,76,0.15)] h-auto min-h-[80px] sm:min-h-[90px]"
             >
               <ImageIcon className="h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-data-[state=active]:scale-110" />
-              <span className="text-center text-xs sm:text-sm font-semibold leading-tight">
-                {t('بوستات ومحتوى تسويقي', 'Marketing Posts')}
+              <span className="flex flex-col items-center text-center font-semibold" style={{ fontSize: 'clamp(9px, 2.4vw, 13px)', lineHeight: '1.3' }}>
+                <span>{t('بوستات', 'Marketing')}</span>
+                <span>{t('ومحتوى تسويقي', 'Posts')}</span>
               </span>
             </TabsTrigger>
             <TabsTrigger
               value="profiles"
-              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-navy-800/30 backdrop-blur-sm px-2 py-3 sm:py-4 text-white/60 transition-all duration-300 hover:border-gold/40 hover:bg-navy-800/60 hover:text-white data-[state=active]:border-gold data-[state=active]:bg-gold/15 data-[state=active]:text-gold data-[state=active]:shadow-[0_0_20px_rgba(201,168,76,0.15)] h-auto"
+              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-navy-800/30 backdrop-blur-sm px-1.5 py-3 sm:px-3 sm:py-4 text-white/60 transition-all duration-300 hover:border-gold/40 hover:bg-navy-800/60 hover:text-white data-[state=active]:border-gold data-[state=active]:bg-gold/15 data-[state=active]:text-gold data-[state=active]:shadow-[0_0_20px_rgba(201,168,76,0.15)] h-auto min-h-[80px] sm:min-h-[90px]"
             >
               <FileText className="h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-data-[state=active]:scale-110" />
-              <span className="text-center text-xs sm:text-sm font-semibold leading-tight">
-                {t('بروفايلات تعريفية', 'Company Profiles')}
+              <span className="flex flex-col items-center text-center font-semibold" style={{ fontSize: 'clamp(9px, 2.4vw, 13px)', lineHeight: '1.3' }}>
+                <span>{t('بروفايلات', 'Company')}</span>
+                <span>{t('تعريفية', 'Profiles')}</span>
               </span>
             </TabsTrigger>
             <TabsTrigger
               value="websites"
-              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-navy-800/30 backdrop-blur-sm px-2 py-3 sm:py-4 text-white/60 transition-all duration-300 hover:border-gold/40 hover:bg-navy-800/60 hover:text-white data-[state=active]:border-gold data-[state=active]:bg-gold/15 data-[state=active]:text-gold data-[state=active]:shadow-[0_0_20px_rgba(201,168,76,0.15)] h-auto"
+              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-navy-800/30 backdrop-blur-sm px-1.5 py-3 sm:px-3 sm:py-4 text-white/60 transition-all duration-300 hover:border-gold/40 hover:bg-navy-800/60 hover:text-white data-[state=active]:border-gold data-[state=active]:bg-gold/15 data-[state=active]:text-gold data-[state=active]:shadow-[0_0_20px_rgba(201,168,76,0.15)] h-auto min-h-[80px] sm:min-h-[90px]"
             >
               <Globe className="h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-data-[state=active]:scale-110" />
-              <span className="text-center text-xs sm:text-sm font-semibold leading-tight">
-                {t('مواقع ويب', 'Web Projects')}
+              <span className="flex flex-col items-center text-center font-semibold" style={{ fontSize: 'clamp(9px, 2.4vw, 13px)', lineHeight: '1.3' }}>
+                <span>{t('مواقع ويب', 'Web')}</span>
+                <span>{t('', 'Projects')}</span>
               </span>
             </TabsTrigger>
           </TabsList>
