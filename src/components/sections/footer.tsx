@@ -1,7 +1,7 @@
 'use client';
 
 import { useLanguage } from '@/lib/language-context';
-import { Download } from 'lucide-react';
+import { Download, Settings } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -106,6 +106,20 @@ export default function Footer() {
                 <Download className="h-4 w-4" />
                 {t('تحميل السيرة الذاتية', 'Download CV')}
               </a>
+
+              {/* Static Admin Panel Trigger Button */}
+              <div className="mt-4">
+                <button
+                  onClick={() => {
+                    window.dispatchEvent(new CustomEvent('open-admin-panel'));
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-white/50 transition-all duration-300 hover:border-gold/30 hover:bg-white/10 hover:text-white/80 cursor-pointer"
+                  aria-label={t('لوحة الإدارة', 'Admin Panel')}
+                >
+                  <Settings className="h-3.5 w-3.5 text-white/50 transition-colors group-hover:text-white" />
+                  <span>{t('لوحة التحكم', 'Admin')}</span>
+                </button>
+              </div>
             </div>
 
             <p className="mt-8 text-xs text-white/30 md:mt-0">

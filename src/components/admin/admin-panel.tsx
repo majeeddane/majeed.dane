@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { uploadFileDirect } from '@/lib/upload-client';
 import { invalidateCache } from '@/lib/content-cache';
 import { useLanguage } from '@/lib/language-context';
@@ -283,6 +283,12 @@ export default function AdminPanel() {
 
   // ── Panel State ──
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('open-admin-panel', handleOpen);
+    return () => window.removeEventListener('open-admin-panel', handleOpen);
+  }, []);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
@@ -2006,19 +2012,6 @@ export default function AdminPanel() {
   // ─── Main Render ───
   return (
     <>
-      {/* Admin Trigger - visible small button at bottom center */}
-      {!isOpen && (
-        <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-3 z-[90] flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 backdrop-blur-sm px-3 py-1.5 opacity-70 hover:opacity-100 transition-all duration-300 hover:border-gold/50 hover:bg-black/60 cursor-pointer"
-          style={{ left: '50%', transform: 'translateX(-50%)' }}
-          aria-label={t('لوحة الإدارة', 'Admin Panel')}
-        >
-          <Settings className="h-3 w-3 text-white/70" />
-          <span className="text-[11px] font-medium text-white/70">{t('لوحة التحكم', 'Admin')}</span>
-        </button>
-      )}
-
       {/* Full Panel Overlay */}
       {isOpen && (
         <div className="fixed inset-0 z-[100] flex h-screen w-screen overflow-hidden" style={{ background: NAVY_900 }}>
