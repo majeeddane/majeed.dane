@@ -11,6 +11,7 @@ import CoursesSection from '@/components/sections/courses';
 import ContactSection from '@/components/sections/contact';
 import Footer from '@/components/sections/footer';
 import AdminPanel from '@/components/admin/admin-panel';
+import WhatsAppButton from '@/components/ui/whatsapp-button';
 import { getServerSupabase } from '@/lib/supabase';
 
 // Force dynamic so admin panel changes reflect immediately (no stale cache)
@@ -73,6 +74,7 @@ export default async function Home() {
       </main>
       <Footer initialContent={initialContent} />
       <AdminPanel />
+      <WhatsAppButton />
     </div>
   );
 }
