@@ -2006,16 +2006,16 @@ export default function AdminPanel() {
   // ─── Main Render ───
   return (
     <>
-      {/* Admin Trigger - hidden tiny link at bottom of page */}
+      {/* Admin Trigger - visible small button at bottom center */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-0 z-[90] opacity-0 hover:opacity-100 transition-opacity duration-500 text-[10px] text-white/20 hover:text-white/50 px-3 py-1 cursor-default select-none"
-          style={{ left: isRTL ? undefined : '50%', right: isRTL ? '50%' : undefined, transform: 'translateX(-50%)' }}
+          className="fixed bottom-3 z-[90] flex items-center gap-1.5 rounded-full border border-white/20 bg-black/40 backdrop-blur-sm px-3 py-1.5 opacity-70 hover:opacity-100 transition-all duration-300 hover:border-gold/50 hover:bg-black/60 cursor-pointer"
+          style={{ left: '50%', transform: 'translateX(-50%)' }}
           aria-label={t('لوحة الإدارة', 'Admin Panel')}
-          title=""
         >
-          ·
+          <Settings className="h-3 w-3 text-white/70" />
+          <span className="text-[11px] font-medium text-white/70">{t('لوحة التحكم', 'Admin')}</span>
         </button>
       )}
 
