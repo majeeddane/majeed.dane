@@ -4,8 +4,9 @@ import { useLanguage } from '@/lib/language-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { User, Globe, Heart, Briefcase, MapPin, GraduationCap } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { cachedFetch } from '@/lib/content-cache';
+import type { ContentItem } from '@/app/page';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -50,12 +51,31 @@ function InfoBadge({ icon, text }: InfoBadgeProps) {
   );
 }
 
-export default function AboutSection() {
+interface AboutSectionProps {
+  initialContent?: ContentItem[];
+}
+
+export default function AboutSection({ initialContent = [] }: AboutSectionProps) {
   const { lang, isRTL, t } = useLanguage();
-  const [aboutImageUrl, setAboutImageUrl] = useState<string | null>(null);
-  const [dynamicContent, setDynamicContent] = useState<Record<string, { valueAr: string; valueEn: string }>>({});
+
+  // Build initial map from server-side data (renders immediately, no delay)
+  const initialMap = useMemo(() => {
+    const map: Record<string, { valueAr: string; valueEn: string }> = {};
+    initialContent.forEach(item => {
+      map[item.key] = { valueAr: item.valueAr || '', valueEn: item.valueEn || '' };
+    });
+    return map;
+  }, [initialContent]);
+
+  const [dynamicContent, setDynamicContent] = useState<Record<string, { valueAr: string; valueEn: string }>>(initialMap);
+
+  // Extract about image URL directly from initialContent for immediate rendering
+  const initialAboutUrl = initialContent.find(item => item.key === 'about_image')?.valueAr || null;
+  const [aboutImageUrl, setAboutImageUrl] = useState<string | null>(initialAboutUrl);
 
   useEffect(() => {
+    // Only fetch if we didn't get data from server (fallback)
+    if (initialContent.length > 0) return;
     cachedFetch<{ key: string; valueAr: string; valueEn: string }[]>('/api/content')
       .then((data) => {
         const aboutImageItem = data.find(item => item.key === 'about_image');
@@ -66,7 +86,7 @@ export default function AboutSection() {
         setDynamicContent(map);
       })
       .catch(() => {});
-  }, []);
+  }, [initialContent.length]);
 
   const getVal = (key: string, fallbackAr: string, fallbackEn: string) => {
     const item = dynamicContent[key];
@@ -142,6 +162,9 @@ export default function AboutSection() {
                     src={aboutImageUrl}
                     alt={sectionTitle}
                     className="w-full h-full object-cover"
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                   />
                 ) : (

@@ -4,9 +4,10 @@ import { useLanguage } from '@/lib/language-context';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, FileText } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cachedFetch } from '@/lib/content-cache';
+import type { ContentItem } from '@/app/page';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -45,14 +46,35 @@ const particles = [
   { size: 3, top: '25%', left: '75%', delay: 1.5, duration: 6.5 },
 ];
 
-export default function HeroSection() {
+interface HeroSectionProps {
+  initialContent?: ContentItem[];
+}
+
+export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
   const { lang, isRTL, t } = useLanguage();
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
-  const [portfolioFileUrl, setPortfolioFileUrl] = useState<string | null>(null);
-  const [dynamicContent, setDynamicContent] = useState<Record<string, { valueAr: string; valueEn: string }>>({});
   const { toast } = useToast();
 
+  // Build initial map from server-side data (renders immediately, no delay)
+  const initialMap = useMemo(() => {
+    const map: Record<string, { valueAr: string; valueEn: string }> = {};
+    initialContent.forEach(item => {
+      map[item.key] = { valueAr: item.valueAr || '', valueEn: item.valueEn || '' };
+    });
+    return map;
+  }, [initialContent]);
+
+  const [dynamicContent, setDynamicContent] = useState<Record<string, { valueAr: string; valueEn: string }>>(initialMap);
+
+  // Extract URLs directly from initialContent for immediate rendering
+  const initialProfileUrl = initialContent.find(item => item.key === 'profile_image')?.valueAr || null;
+  const initialPortfolioUrl = initialContent.find(item => item.key === 'portfolio_file')?.valueAr || null;
+
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(initialProfileUrl);
+  const [portfolioFileUrl, setPortfolioFileUrl] = useState<string | null>(initialPortfolioUrl);
+
   useEffect(() => {
+    // Only fetch if we didn't get data from server (fallback)
+    if (initialContent.length > 0) return;
     cachedFetch<{ key: string; valueAr: string; valueEn: string }[]>('/api/content')
       .then((data) => {
         const profileItem = data.find(item => item.key === 'profile_image');
@@ -64,7 +86,7 @@ export default function HeroSection() {
         setDynamicContent(map);
       })
       .catch(() => {});
-  }, []);
+  }, [initialContent.length]);
 
   const getVal = (key: string, fallbackAr: string, fallbackEn: string) => {
     const item = dynamicContent[key];
@@ -216,6 +238,9 @@ export default function HeroSection() {
                     src={profileImageUrl}
                     alt={name}
                     className="w-full h-full object-cover"
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
                     onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                   />
                 ) : (
