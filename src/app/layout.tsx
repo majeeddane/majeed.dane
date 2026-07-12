@@ -1,20 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Cairo, Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { LanguageProvider } from "@/lib/language-context";
-
-const cairo = Cairo({
-  subsets: ["arabic", "latin"],
-  variable: "--font-cairo",
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "عبدالمجيد الضاعني | مصمم جرافيك ومسوّق رقمي",
@@ -91,7 +78,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${cairo.variable} ${inter.variable} antialiased bg-background text-foreground`}
+        className={`antialiased bg-background text-foreground`}
       >
         <LanguageProvider>{children}</LanguageProvider>
         <Toaster />
