@@ -3,36 +3,29 @@
 /* Thmanyah Sans */
 @font-face {
   font-family: 'Thmanyah Sans';
-  src: url('/fonts/thmanyahsans-Light.woff2') format('woff2');
+  src: url('/fonts/thmanyah-sans-light.woff2') format('woff2');
   font-weight: 300;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Thmanyah Sans';
-  src: url('/fonts/thmanyahsans-Regular.woff2') format('woff2');
+  src: url('/fonts/thmanyah-sans-regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Thmanyah Sans';
-  src: url('/fonts/thmanyahsans-Medium.woff2') format('woff2');
+  src: url('/fonts/thmanyah-sans-medium.woff2') format('woff2');
   font-weight: 500;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Thmanyah Sans';
-  src: url('/fonts/thmanyahsans-Bold.woff2') format('woff2');
+  src: url('/fonts/thmanyah-sans-bold.woff2') format('woff2');
   font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Thmanyah Sans';
-  src: url('/fonts/thmanyahsans-Black.woff2') format('woff2');
-  font-weight: 900;
   font-style: normal;
   font-display: swap;
 }
