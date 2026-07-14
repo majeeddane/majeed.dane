@@ -27,7 +27,7 @@ export default function Footer() {
           setCvUrl(cvItem.valueAr);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const handleCvClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -124,8 +124,8 @@ export default function Footer() {
 
             <p className="mt-8 text-xs text-white/30 md:mt-0">
               {t(
-                '© 2024 عبدالمجيد الضاعني. جميع الحقوق محفوظة',
-                '© 2024 Al-Daani. All Rights Reserved'
+                '© 2026 عبدالمجيد الضاعني. جميع الحقوق محفوظة',
+                '© 2026 Al-Daani. All Rights Reserved'
               )}
             </p>
           </div>

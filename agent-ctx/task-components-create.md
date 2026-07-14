@@ -32,7 +32,7 @@ Created four React component files for a premium bilingual (Arabic/English) port
   - Name + title + tagline
   - Quick links (عني، المهارات، الخبرة، الأعمال، تواصل)
   - Download CV button + copyright
-- Copyright: "© 2024 عبدالمجيد الضاعني. جميع الحقوق محفوظة / All Rights Reserved"
+- Copyright: "© 2026 عبدالمجيد الضاعني. جميع الحقوق محفوظة / All Rights Reserved"
 - Download CV: gold outline button with Download icon
 - Smooth scroll on nav links
 - Standard footer element (parent wrapper handles sticky bottom with min-h-screen + flex + mt-auto)
