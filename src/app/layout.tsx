@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { LanguageProvider } from "@/lib/language-context";
+import GsapProvider from "@/components/ui/gsap-provider";
 
 export const metadata: Metadata = {
   title: "عبدالمجيد الضاعني | مصمم جرافيك ومسوّق رقمي",
@@ -76,11 +77,28 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrgData) }}
         />
+        {/* Animate.css */}
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+        />
+        {/* Flaticon UI Icons — Bold Rounded */}
+        <link
+          rel="stylesheet"
+          href="https://cdn-uicons.flaticon.com/2.6.0/uicons-bold-rounded/css/uicons-bold-rounded.css"
+        />
+        {/* Flaticon UI Icons — Brands */}
+        <link
+          rel="stylesheet"
+          href="https://cdn-uicons.flaticon.com/2.6.0/uicons-brands/css/uicons-brands.css"
+        />
       </head>
       <body
         className={`antialiased bg-background text-foreground`}
       >
-        <LanguageProvider>{children}</LanguageProvider>
+        <GsapProvider>
+          <LanguageProvider>{children}</LanguageProvider>
+        </GsapProvider>
         <Toaster />
       </body>
     </html>

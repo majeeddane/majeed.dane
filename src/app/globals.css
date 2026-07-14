@@ -503,3 +503,100 @@
   background: rgba(201, 168, 76, 0.4);
 }
 
+/* ===== Flaticon icon alignment fix ===== */
+[class^="fi-"], [class*=" fi-"] {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+/* ===== Three.js canvas blend mode ===== */
+canvas {
+  mix-blend-mode: screen;
+}
+
+/* ===== Hero social icon hover color ===== */
+.hero-social-icon:hover i {
+  color: var(--hover-color, #fff) !important;
+  filter: drop-shadow(0 0 6px var(--hover-color, #fff));
+}
+
+/* ===== Color glow utilities ===== */
+.glow-gold {
+  box-shadow: 0 0 20px rgba(201, 168, 76, 0.4), 0 0 40px rgba(201, 168, 76, 0.15);
+}
+.glow-blue {
+  box-shadow: 0 0 20px rgba(46, 123, 196, 0.4), 0 0 40px rgba(46, 123, 196, 0.15);
+}
+.text-glow-gold {
+  filter: drop-shadow(0 0 8px rgba(201, 168, 76, 0.6));
+}
+.text-glow-blue {
+  filter: drop-shadow(0 0 8px rgba(46, 123, 196, 0.6));
+}
+
+/* ===== GSAP-ready initial states (prevent flash before JS) ===== */
+[data-gsap="slide-left"],
+[data-gsap="slide-right"],
+[data-gsap="fade-up"],
+[data-gsap="scale-in"] {
+  will-change: transform, opacity;
+}
+
+/* ===== Conic gradient spin ===== */
+@keyframes conic-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.animate-conic-spin {
+  animation: conic-spin 8s linear infinite;
+}
+
+/* ===== Animate.css trigger helpers ===== */
+/* Add class "reveal" to any element — JS adds animate__animated when in view */
+.reveal {
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.reveal.animate__animated {
+  opacity: 1;
+}
+
+/* ===== Card 3D perspective ===== */
+.card-3d {
+  transform-style: preserve-3d;
+  perspective: 800px;
+}
+
+/* ===== Scroll-triggered color morph on sections ===== */
+@keyframes colorMorphBg {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+.gradient-morph {
+  background: linear-gradient(-45deg, #0B2545, #13315C, #1E5F9E, #1B3A6B, #0B2545);
+  background-size: 300% 300%;
+  animation: colorMorphBg 12s ease infinite;
+}
+
+/* ===== Subtle floating badge glow pulse ===== */
+@keyframes badgeGlow {
+  0%, 100% { box-shadow: 0 0 8px  rgba(201,168,76,0.3); }
+  50%       { box-shadow: 0 0 20px rgba(201,168,76,0.6); }
+}
+.animate-badge-glow {
+  animation: badgeGlow 2s ease-in-out infinite;
+}
+
+/* ===== Neon border animation ===== */
+@keyframes neonBorder {
+  0%   { border-color: rgba(201,168,76,0.3); }
+  50%  { border-color: rgba(201,168,76,0.8); }
+  100% { border-color: rgba(201,168,76,0.3); }
+}
+.animate-neon-border {
+  animation: neonBorder 2.5s ease-in-out infinite;
+}
+
