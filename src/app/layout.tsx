@@ -5,6 +5,7 @@ import { LanguageProvider } from "@/lib/language-context";
 import GsapProvider from "@/components/ui/gsap-provider";
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://al-daani.xyz'),
   title: "عبدالمجيد الضاعني | مصمم جرافيك ومسوّق رقمي",
   description:
     "مصمم جرافيك ومسوّق رقمي محترف مع خبرة واسعة في التصميم الإبداعي والتسويق الرقمي. أقدم حلولاً إبداعية تمزج بين الفن والتقنية لتحقيق رؤية عملائك.",
@@ -28,16 +29,25 @@ export const metadata: Metadata = {
   openGraph: {
     title: "عبدالمجيد الضاعني | مصمم جرافيك ومسوّق رقمي",
     description:
-      "مصمم جرافيك ومسوّق رقمي محترف مع خبرة واسعة في التصميم الإبداعي والتسويق الرقمي.",
+      "مصمم جرافيك ومسوّق رقمي محترف مع خبرة واسعة في التصميم الإبداعي والتسويق الرقمي. أقدم حلولاً إبداعية تمزج بين الفن والتقنية لتحقيق رؤية عملائك.",
     type: "website",
     locale: "ar_SA",
     alternateLocale: "en_US",
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: "عبدالمجيد الضاعني | مصمم جرافيك ومسوّق رقمي",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "عبدالمجيد الضاعني | مصمم جرافيك ومسوّق رقمي",
     description:
       "مصمم جرافيك ومسوّق رقمي محترف مع خبرة واسعة في التصميم الإبداعي والتسويق الرقمي.",
+    images: ['/og-image.png'],
   },
 };
 
