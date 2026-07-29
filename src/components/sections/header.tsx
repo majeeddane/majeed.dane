@@ -26,14 +26,12 @@ export default function Header({ initialContent = [] }: HeaderProps) {
   const { toast } = useToast();
   const headerRef = useRef<HTMLElement>(null);
 
-  // Scroll detection
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
+    const onScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // CV URL
   useEffect(() => {
     const cvItem = initialContent.find(item => item.key === 'cv_file');
     if (cvItem?.valueAr) { setCvUrl(cvItem.valueAr); return; }
@@ -46,7 +44,6 @@ export default function Header({ initialContent = [] }: HeaderProps) {
       .catch(() => {});
   }, [initialContent]);
 
-  // Lock body scroll when mobile menu open
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
@@ -67,7 +64,7 @@ export default function Header({ initialContent = [] }: HeaderProps) {
     setTimeout(() => {
       const target = document.querySelector(href);
       if (target) target.scrollIntoView({ behavior: 'smooth' });
-    }, 300);
+    }, 250);
   };
 
   const scrollToTop = (e: React.MouseEvent) => {
@@ -77,12 +74,11 @@ export default function Header({ initialContent = [] }: HeaderProps) {
 
   return (
     <>
-      {/* ── Desktop / Main Header ─────────────────────────── */}
       <header
         ref={headerRef}
-        className={`fixed top-0 z-[9980] w-full transition-all duration-500 ${
+        className={`fixed top-0 z-[9980] w-full transition-all duration-400 ${
           scrolled
-            ? 'bg-[#0A0A0A]/90 backdrop-blur-xl border-b border-white/[0.06] shadow-[0_1px_30px_rgba(0,0,0,0.5)]'
+            ? 'bg-[#060E1A]/90 backdrop-blur-md border-b border-white/[0.08] shadow-lg shadow-black/30'
             : 'bg-transparent'
         }`}
         dir={isRTL ? 'rtl' : 'ltr'}
@@ -94,11 +90,10 @@ export default function Header({ initialContent = [] }: HeaderProps) {
             onClick={scrollToTop}
             data-cursor-hover
             className={`font-bold tracking-tight transition-all duration-300 ${
-              scrolled ? 'text-base text-white/90' : 'text-lg text-white'
+              scrolled ? 'text-base text-white' : 'text-lg text-white'
             }`}
-            style={{ letterSpacing: '-0.01em' }}
           >
-            <span style={{ color: '#C8A45A' }}>{t('عبدالمجيد', 'Al')}</span>
+            <span style={{ color: '#C9A84C' }}>{t('عبدالمجيد', 'Al')}</span>
             {t(' الضاعني', '-Daani')}
           </button>
 
@@ -110,51 +105,47 @@ export default function Header({ initialContent = [] }: HeaderProps) {
                 href={link.href}
                 onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
                 data-cursor-hover
-                className="relative px-4 py-2 text-sm font-medium text-white/60 hover:text-white transition-colors duration-200 group"
+                className="relative px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors duration-200 group"
               >
                 {t(link.ar, link.en)}
-                {/* Underline on hover */}
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-px w-0 bg-gold group-hover:w-4/5 transition-all duration-300" />
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-0 bg-gold group-hover:w-3/4 transition-all duration-300" />
               </a>
             ))}
           </nav>
 
           {/* Desktop Actions */}
           <div className="hidden items-center gap-3 md:flex">
-            {/* Lang toggle */}
             <button
               onClick={toggleLanguage}
               data-cursor-hover
-              className="flex h-8 w-12 items-center justify-center rounded-full text-xs font-bold transition-all duration-200 border border-white/15 text-white/60 hover:border-white/30 hover:text-white"
+              className="flex h-8 w-12 items-center justify-center rounded-full text-xs font-bold transition-all duration-200 border border-white/20 text-white/70 hover:border-white/40 hover:text-white"
             >
               {lang === 'ar' ? 'EN' : 'عربي'}
             </button>
 
-            {/* CV Download */}
             <a
               href={cvUrl || '#'}
               target={cvUrl ? '_blank' : undefined}
               rel={cvUrl ? 'noopener noreferrer' : undefined}
               onClick={handleCvClick}
               data-cursor-hover
-              className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-bold transition-all duration-300 border border-gold/50 text-gold hover:bg-gold hover:text-black hover:border-gold"
+              className="btn-outline-gold text-xs py-1.5 px-4"
             >
               <Download className="h-3.5 w-3.5" />
-              <span>{t('السيرة الذاتية', 'Download CV')}</span>
+              <span>{t('السيرة الذاتية', 'CV')}</span>
             </a>
           </div>
 
-          {/* Mobile — lang + hamburger */}
+          {/* Mobile hamburger */}
           <div className="flex items-center gap-3 md:hidden">
             <button
               onClick={toggleLanguage}
               data-cursor-hover
-              className="flex h-8 w-12 items-center justify-center rounded-full text-[10px] font-bold border border-white/15 text-white/60"
+              className="flex h-8 w-12 items-center justify-center rounded-full text-[10px] font-bold border border-white/20 text-white/70"
             >
               {lang === 'ar' ? 'EN' : 'عربي'}
             </button>
 
-            {/* Hamburger */}
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
               data-cursor-hover
@@ -162,84 +153,61 @@ export default function Header({ initialContent = [] }: HeaderProps) {
               aria-label={mobileOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
             >
               <motion.span
-                className="block h-px bg-white origin-center"
+                className="block h-0.5 bg-white origin-center rounded-full"
                 style={{ width: '22px' }}
-                animate={mobileOpen ? { rotate: 45, y: 4 } : { rotate: 0, y: 0 }}
-                transition={{ duration: 0.3 }}
+                animate={mobileOpen ? { rotate: 45, y: 5 } : { rotate: 0, y: 0 }}
+                transition={{ duration: 0.25 }}
               />
               <motion.span
-                className="block h-px bg-white"
+                className="block h-0.5 bg-white rounded-full"
                 style={{ width: '16px' }}
                 animate={mobileOpen ? { opacity: 0, x: 10 } : { opacity: 1, x: 0 }}
                 transition={{ duration: 0.2 }}
               />
               <motion.span
-                className="block h-px bg-white origin-center"
+                className="block h-0.5 bg-white origin-center rounded-full"
                 style={{ width: '22px' }}
-                animate={mobileOpen ? { rotate: -45, y: -4 } : { rotate: 0, y: 0 }}
-                transition={{ duration: 0.3 }}
+                animate={mobileOpen ? { rotate: -45, y: -5 } : { rotate: 0, y: 0 }}
+                transition={{ duration: 0.25 }}
               />
             </button>
           </div>
         </div>
       </header>
 
-      {/* ── Full-Screen Mobile Menu Overlay ─────────────── */}
+      {/* Full-Screen Mobile Menu Overlay */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
             key="mobile-menu"
-            className="fixed inset-0 z-[9970] flex flex-col bg-[#0A0A0A] md:hidden"
+            className="fixed inset-0 z-[9970] flex flex-col bg-[#0A1628] md:hidden"
             dir={isRTL ? 'rtl' : 'ltr'}
-            initial={{ clipPath: 'circle(0% at 95% 4%)', opacity: 0 }}
-            animate={{ clipPath: 'circle(150% at 95% 4%)', opacity: 1 }}
-            exit={{ clipPath: 'circle(0% at 95% 4%)', opacity: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
           >
-            {/* Background decoration */}
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute top-1/4 right-1/4 w-64 h-64 rounded-full bg-gold/5 blur-3xl" />
-              <div className="absolute bottom-1/4 left-1/4 w-48 h-48 rounded-full bg-blue-600/5 blur-3xl" />
-            </div>
-
-            {/* Nav links */}
             <div className="flex flex-1 flex-col justify-center px-8">
-              <motion.p
-                className="section-eyebrow mb-8"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
+              <p className="section-eyebrow mb-6">
                 <i className="fi fi-br-bars-sort" />
-                {t('التنقل', 'Navigation')}
-              </motion.p>
+                {t('التنقل الرئيسية', 'Main Navigation')}
+              </p>
 
-              <nav className="flex flex-col gap-1">
+              <nav className="flex flex-col gap-2">
                 {navLinks.map((link, i) => (
-                  <motion.a
+                  <a
                     key={i}
                     href={link.href}
                     onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
-                    className="group flex items-center justify-between py-4 border-b border-white/[0.06] text-white/60 hover:text-white transition-colors duration-200"
-                    initial={{ opacity: 0, x: isRTL ? 40 : -40 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.25 + i * 0.07, ease: [0.16, 1, 0.3, 1] }}
+                    className="flex items-center justify-between py-3.5 border-b border-white/10 text-white/70 hover:text-white transition-colors"
                   >
-                    <span className="text-2xl font-bold">{t(link.ar, link.en)}</span>
-                    <span className="text-gold/0 group-hover:text-gold/80 transition-colors text-xs uppercase tracking-widest font-semibold">
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                  </motion.a>
+                    <span className="text-xl font-bold">{t(link.ar, link.en)}</span>
+                    <span className="text-gold/60 text-xs font-semibold">0{i + 1}</span>
+                  </a>
                 ))}
               </nav>
 
-              {/* Bottom actions */}
-              <motion.div
-                className="mt-10 flex flex-col gap-3"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-              >
+              <div className="mt-8 flex flex-col gap-3">
                 <a
                   href={cvUrl || '#'}
                   target={cvUrl ? '_blank' : undefined}
@@ -250,25 +218,8 @@ export default function Header({ initialContent = [] }: HeaderProps) {
                   <Download className="h-4 w-4 relative z-10" />
                   <span className="relative z-10">{t('تحميل السيرة الذاتية', 'Download CV')}</span>
                 </a>
-
-                <button
-                  onClick={() => { toggleLanguage(); setMobileOpen(false); }}
-                  className="btn-outline-white justify-center"
-                >
-                  {lang === 'ar' ? 'Switch to English' : 'التبديل إلى العربية'}
-                </button>
-              </motion.div>
+              </div>
             </div>
-
-            {/* Footer of overlay */}
-            <motion.div
-              className="px-8 pb-10 text-xs text-white/20 font-medium"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
-            >
-              © 2026 {t('عبدالمجيد الضاعني', 'Al-Daani')}
-            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

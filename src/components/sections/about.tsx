@@ -11,26 +11,18 @@ interface AboutSectionProps {
   initialContent?: ContentItem[];
 }
 
-const badgeVariants = {
-  hidden:  { opacity: 0, scale: 0.85, y: 20 },
-  visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] as const } },
-};
-
 function InfoBadge({ icon, text }: { icon: React.ReactNode; text: string }) {
   return (
-    <motion.div
-      variants={badgeVariants}
-      className="group flex items-center gap-3 px-4 py-3 rounded-xl card-glass cursor-default transition-all duration-300 hover:-translate-y-1"
-    >
+    <div className="group flex items-center gap-3 px-4 py-3 rounded-xl card-glass cursor-default transition-all duration-300 hover:-translate-y-1">
       <div className="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 group-hover:scale-110"
-        style={{ background: 'rgba(200,164,90,0.08)', border: '1px solid rgba(200,164,90,0.15)' }}
+        style={{ background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)' }}
       >
-        <span className="text-gold" style={{ color: '#C8A45A' }}>{icon}</span>
+        <span style={{ color: '#C9A84C' }}>{icon}</span>
       </div>
-      <span className="text-sm font-medium text-white/70 group-hover:text-white transition-colors duration-300">
+      <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors duration-300">
         {text}
       </span>
-    </motion.div>
+    </div>
   );
 }
 
@@ -90,56 +82,32 @@ export default function AboutSection({ initialContent = [] }: AboutSectionProps)
 
   return (
     <section
-      className="bg-[#0A0A0A] section-padding"
+      className="bg-[#0A1628] section-padding relative"
       dir={isRTL ? 'rtl' : 'ltr'}
       id="about"
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-
-        {/* Header */}
-        <div className="mb-16 reveal-up">
+        <div className="mb-14 reveal-up">
           <p className="section-eyebrow">
             <i className="fi fi-br-user" />
             {t('من أنا', 'Who I Am')}
           </p>
           <h2 className="section-title-xl">
             {t('نبذة', 'About')}{' '}
-            <span style={{ color: '#C8A45A' }}>{t('عني', 'Me')}</span>
+            <span style={{ color: '#C9A84C' }}>{t('عني', 'Me')}</span>
           </h2>
           <div className="gold-line" />
         </div>
 
-        {/* Two-column layout */}
-        <div className={`flex flex-col lg:flex-row items-start gap-12 lg:gap-20 ${isRTL ? 'lg:flex-row-reverse' : ''}`}>
+        <div className={`flex flex-col lg:flex-row items-start gap-12 lg:gap-16 ${isRTL ? 'lg:flex-row-reverse' : ''}`}>
+          <div className="flex-shrink-0 relative mx-auto lg:mx-0">
+            <div className="absolute inset-0 rounded-full bg-blue-600/15 blur-3xl scale-125 pointer-events-none" />
 
-          {/* ── Image column ── */}
-          <motion.div
-            className="flex-shrink-0 relative mx-auto lg:mx-0"
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-            data-gsap="parallax"
-          >
-            {/* Gold glow */}
-            <div className="absolute inset-0 rounded-full bg-gold/10 blur-3xl scale-150 pointer-events-none" />
-
-            {/* Rotating ring */}
-            <motion.div
-              className="absolute -inset-5 rounded-full"
-              style={{
-                background: 'conic-gradient(from 0deg, rgba(200,164,90,0.3), transparent 40%, rgba(200,164,90,0.15) 70%, transparent)',
-              }}
-              animate={{ rotate: 360 }}
-              transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-            />
-
-            {/* Photo */}
             <div
-              className="relative w-56 h-56 sm:w-64 sm:h-64 md:w-72 md:h-72 rounded-full p-[2px]"
-              style={{ background: 'linear-gradient(135deg, #C8A45A 0%, rgba(200,164,90,0.2) 60%, transparent 100%)' }}
+              className="relative w-52 h-52 sm:w-60 sm:h-60 md:w-64 md:h-64 rounded-full p-[2px]"
+              style={{ background: 'linear-gradient(135deg, #1E5F9E 0%, #C9A84C 100%)' }}
             >
-              <div className="w-full h-full rounded-full bg-[#111] flex items-center justify-center overflow-hidden">
+              <div className="w-full h-full rounded-full bg-[#10243E] flex items-center justify-center overflow-hidden">
                 {aboutImageUrl ? (
                   <img
                     src={aboutImageUrl}
@@ -154,7 +122,7 @@ export default function AboutSection({ initialContent = [] }: AboutSectionProps)
                   <span
                     className="text-5xl font-bold select-none"
                     style={{
-                      background: 'linear-gradient(135deg, #C8A45A 0%, #E8D48B 100%)',
+                      background: 'linear-gradient(135deg, #C9A84C 0%, #E8D48B 100%)',
                       WebkitBackgroundClip: 'text',
                       WebkitTextFillColor: 'transparent',
                       backgroundClip: 'text',
@@ -165,62 +133,37 @@ export default function AboutSection({ initialContent = [] }: AboutSectionProps)
                 )}
               </div>
             </div>
+          </div>
 
-            {/* Decorative static ring */}
-            <div className="absolute -inset-3 rounded-full border border-white/[0.04]" />
-          </motion.div>
-
-          {/* ── Content column ── */}
           <div className="flex-1 w-full min-w-0">
-
-            {/* Bio */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-              className="card-glass p-6 md:p-8 mb-8"
-            >
-              <p className={`text-base md:text-lg leading-[1.9] text-white/60 ${isRTL ? 'text-right' : 'text-left'}`}>
+            <div className="card-glass p-6 md:p-8 mb-6">
+              <p className={`text-base md:text-lg leading-[1.85] text-white/80 ${isRTL ? 'text-right' : 'text-left'}`}>
                 {bioText}
               </p>
-            </motion.div>
+            </div>
 
-            {/* Info badges */}
-            <motion.div
-              className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8"
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ staggerChildren: 0.08, delayChildren: 0.1 }}
-            >
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
               {infoBadges.map((badge, i) => (
                 <InfoBadge key={i} icon={badge.icon} text={badge.text} />
               ))}
-            </motion.div>
+            </div>
 
-            {/* Education */}
-            <motion.div
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.7, delay: 0.2 }}
-            >
-              <div className="flex items-center gap-3 mb-4">
+            <div>
+              <div className="flex items-center gap-3 mb-3">
                 <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: 'rgba(200,164,90,0.08)', border: '1px solid rgba(200,164,90,0.18)' }}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)' }}
                 >
-                  <GraduationCap className="size-4" style={{ color: '#C8A45A' }} />
+                  <GraduationCap className="size-4" style={{ color: '#C9A84C' }} />
                 </div>
                 <h3 className="text-base font-bold text-white">{t('التعليم', 'Education')}</h3>
               </div>
               <div className="card-glass p-5">
-                <p className={`text-sm md:text-base text-white/65 ${isRTL ? 'text-right' : 'text-left'}`}>
+                <p className={`text-sm md:text-base text-white/80 ${isRTL ? 'text-right' : 'text-left'}`}>
                   {educationText}
                 </p>
               </div>
-            </motion.div>
+            </div>
           </div>
         </div>
       </div>

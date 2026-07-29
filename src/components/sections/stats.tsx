@@ -15,7 +15,7 @@ function useGsapCounter(target: number, isInView: boolean) {
     const obj = { val: 0 };
     gsap.to(obj, {
       val: target,
-      duration: 2.5,
+      duration: 2.2,
       ease: 'power2.out',
       onUpdate() { setCount(Math.round(obj.val)); },
       onComplete() { setCount(target); },
@@ -35,42 +35,34 @@ function StatCard({
   const count = useGsapCounter(value, isInView);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.7, delay: index * 0.12, ease: [0.16, 1, 0.3, 1] }}
-      className="relative flex flex-col items-center text-center group px-4"
-    >
-      {/* Icon bubble */}
-      <div className="mb-5 w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-400 group-hover:scale-110"
+    <div className="relative flex flex-col items-center text-center group px-4">
+      <div className="mb-4 w-13 h-13 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
         style={{
-          background: 'rgba(200,164,90,0.06)',
-          border: '1px solid rgba(200,164,90,0.12)',
+          background: 'rgba(201,168,76,0.08)',
+          border: '1px solid rgba(201,168,76,0.2)',
         }}
       >
-        <i className={`${icon} text-2xl`} style={{ color: '#C8A45A' }} />
+        <i className={`${icon} text-2xl`} style={{ color: '#C9A84C' }} />
       </div>
 
-      {/* Number */}
       <div
-        className="font-bold mb-2 tabular-nums leading-none"
+        className="font-bold mb-1 tabular-nums leading-none"
         style={{
-          fontSize: 'clamp(2.5rem, 6vw, 4.5rem)',
-          background: 'linear-gradient(135deg, #C8A45A 0%, #E8D48B 60%, #C8A45A 100%)',
+          fontSize: 'clamp(2.5rem, 5.5vw, 4.25rem)',
+          background: 'linear-gradient(135deg, #C9A84C 0%, #E8D48B 60%, #C9A84C 100%)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
-          filter: 'drop-shadow(0 0 20px rgba(200,164,90,0.3))',
+          filter: 'drop-shadow(0 0 15px rgba(201,168,76,0.25))',
         }}
       >
         {count}{suffix}
       </div>
 
-      {/* Label */}
-      <div className="text-white/45 text-sm font-medium group-hover:text-white/70 transition-colors duration-300 tracking-wide">
+      <div className="text-white/60 text-sm font-medium group-hover:text-white transition-colors duration-300">
         {t(labelAr, labelEn)}
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -87,37 +79,25 @@ export default function StatsSection() {
   ];
 
   return (
-    <section ref={ref} className="bg-[#0A0A0A] relative overflow-hidden py-20 md:py-24" dir={isRTL ? 'rtl' : 'ltr'}>
-      {/* Subtle divider lines */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-
-      {/* Gold glow center */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[200px] bg-gold/[0.04] rounded-full blur-3xl pointer-events-none" />
+    <section ref={ref} className="bg-[#060E1A] relative overflow-hidden py-16 md:py-20" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
       <div className="container mx-auto px-6 relative z-10">
-        {/* Eyebrow */}
-        <motion.div
-          className="text-center mb-14"
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5 }}
-        >
+        <div className="text-center mb-12">
           <p className="section-eyebrow justify-center">
             <i className="fi fi-br-chart-line-up" />
             {isRTL ? 'إنجازاتي بالأرقام' : 'Achievements in Numbers'}
           </p>
-        </motion.div>
+        </div>
 
-        {/* Stats grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-4">
           {stats.map((stat, index) => (
             <div key={index} className="relative">
               <StatCard {...stat} isInView={isInView} index={index} />
-              {/* Vertical separator */}
               {index < stats.length - 1 && (
                 <div
-                  className={`hidden md:block absolute top-1/2 -translate-y-1/2 h-16 w-px bg-gradient-to-b from-transparent via-white/[0.08] to-transparent ${
+                  className={`hidden md:block absolute top-1/2 -translate-y-1/2 h-14 w-px bg-gradient-to-b from-transparent via-white/10 to-transparent ${
                     isRTL ? 'left-0' : 'right-0'
                   }`}
                 />

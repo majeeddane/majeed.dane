@@ -94,53 +94,44 @@ export default function ContactSection() {
   return (
     <section
       id="contact"
-      className="contact-bg section-padding relative overflow-hidden"
+      className="bg-[#0A1628] section-padding relative overflow-hidden"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
-        {/* Section Header */}
-        <div className="mb-16 reveal-up">
+        <div className="mb-14 reveal-up">
           <p className="section-eyebrow">
             <i className="fi fi-br-envelope" />
             {t('دعنا نتحدث', 'Let’s Connect')}
           </p>
           <h2 className="section-title-xl">
             {t('تواصل', 'Get In')}{' '}
-            <span style={{ color: '#C8A45A' }}>{t('معي', 'Touch')}</span>
+            <span style={{ color: '#C9A84C' }}>{t('معي', 'Touch')}</span>
           </h2>
           <div className="gold-line" />
         </div>
 
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-20 items-start">
-          {/* Contact Info Column */}
-          <motion.div
-            className="flex flex-col gap-8"
-            initial={{ opacity: 0, x: isRTL ? 40 : -40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <p className="text-base md:text-lg leading-relaxed text-white/60">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16 items-start">
+          <div className="flex flex-col gap-8">
+            <p className="text-base md:text-lg leading-relaxed text-white/70">
               {t(
                 'أنا دائماً مستعد للتعاون والعمل على مشاريع جديدة وإبداعية. لا تتردد في التواصل معي لمناقشة فكرتك القادمة!',
                 'I am always ready to collaborate and work on exciting new projects. Feel free to reach out and let’s create something extraordinary together!'
               )}
             </p>
 
-            {/* Info Cards */}
             <div className="flex flex-col gap-4">
               {contactInfo.map((item, index) => {
                 const IconComponent = item.icon;
                 const content = (
-                  <div className="group card-glass p-5 flex items-center gap-4 transition-all duration-300 hover:border-gold/30">
+                  <div className="group card-glass p-5 flex items-center gap-4 transition-all duration-300 hover:border-gold/40">
                     <div
                       className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
-                      style={{ background: 'rgba(200,164,90,0.08)', border: '1px solid rgba(200,164,90,0.18)' }}
+                      style={{ background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.25)' }}
                     >
-                      <IconComponent className="h-5 w-5" style={{ color: '#C8A45A' }} />
+                      <IconComponent className="h-5 w-5" style={{ color: '#C9A84C' }} />
                     </div>
                     <div>
-                      <p className="text-xs text-white/40 mb-0.5">{item.label}</p>
+                      <p className="text-xs text-white/50 mb-0.5">{item.label}</p>
                       <p className="font-semibold text-white group-hover:text-gold transition-colors duration-300">
                         {item.value}
                       </p>
@@ -164,13 +155,12 @@ export default function ContactSection() {
               })}
             </div>
 
-            {/* WhatsApp CTA Button */}
             <a
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
               data-cursor-hover
-              className="group flex items-center gap-4 rounded-2xl border border-[#25D366]/30 bg-[#25D366]/[0.06] p-5 backdrop-blur-md transition-all duration-300 hover:border-[#25D366]/60 hover:bg-[#25D366]/15 hover:shadow-[0_0_30px_rgba(37,211,102,0.15)]"
+              className="group flex items-center gap-4 rounded-2xl border border-[#25D366]/40 bg-[#25D366]/10 p-5 backdrop-blur-md transition-all duration-300 hover:border-[#25D366] hover:bg-[#25D366]/20"
             >
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-110" style={{ background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)' }}>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="h-6 w-6">
@@ -178,39 +168,29 @@ export default function ContactSection() {
                 </svg>
               </div>
               <div>
-                <p className="text-xs text-white/40">{t('تواصل مباشر وسريع', 'Direct instant chat')}</p>
+                <p className="text-xs text-white/50">{t('تواصل مباشر وسريع', 'Direct instant chat')}</p>
                 <p className="font-bold text-[#25D366] group-hover:text-[#4de887] transition-colors">
                   {t('تواصل عبر واتساب', 'Chat on WhatsApp')}
                 </p>
               </div>
-              <div className={`${isRTL ? 'mr-auto' : 'ml-auto'} text-[#25D366]/60 transition-transform duration-300 group-hover:translate-x-1`}>
+              <div className={`${isRTL ? 'mr-auto' : 'ml-auto'} text-[#25D366] transition-transform duration-300 group-hover:translate-x-1`}>
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isRTL ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
                 </svg>
               </div>
             </a>
-          </motion.div>
+          </div>
 
-          {/* Minimal Form Column */}
-          <motion.div
-            initial={{ opacity: 0, x: isRTL ? -40 : 40 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-80px' }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <form
-              onSubmit={handleSubmit}
-              className="card-glass p-8 md:p-10 flex flex-col gap-8"
-            >
-              <h3 className="text-xl font-bold text-white mb-2">
-                {t('أرسل لي رسالة', 'Send Me a Message')}
-              </h3>
+          <div className="card-glass p-8 md:p-10 flex flex-col gap-8">
+            <h3 className="text-xl font-bold text-white mb-2">
+              {t('أرسل لي رسالة', 'Send Me a Message')}
+            </h3>
 
-              {/* Minimal Underline Input: Name */}
+            <form onSubmit={handleSubmit} className="flex flex-col gap-6">
               <div className="input-minimal-wrapper">
                 <label
                   htmlFor="name"
-                  className="block text-xs font-semibold uppercase tracking-wider text-white/40 mb-2"
+                  className="block text-xs font-semibold uppercase tracking-wider text-white/50 mb-2"
                 >
                   {t('الاسم الكامل', 'Full Name')}
                 </label>
@@ -226,11 +206,10 @@ export default function ContactSection() {
                 />
               </div>
 
-              {/* Minimal Underline Input: Email */}
               <div className="input-minimal-wrapper">
                 <label
                   htmlFor="email"
-                  className="block text-xs font-semibold uppercase tracking-wider text-white/40 mb-2"
+                  className="block text-xs font-semibold uppercase tracking-wider text-white/50 mb-2"
                 >
                   {t('البريد الإلكتروني', 'Email Address')}
                 </label>
@@ -246,11 +225,10 @@ export default function ContactSection() {
                 />
               </div>
 
-              {/* Minimal Underline Input: Message */}
               <div className="input-minimal-wrapper">
                 <label
                   htmlFor="message"
-                  className="block text-xs font-semibold uppercase tracking-wider text-white/40 mb-2"
+                  className="block text-xs font-semibold uppercase tracking-wider text-white/50 mb-2"
                 >
                   {t('تفاصيل الرسالة أو المشروع', 'Message Details')}
                 </label>
@@ -266,12 +244,11 @@ export default function ContactSection() {
                 />
               </div>
 
-              {/* Submit Button */}
               <button
                 type="submit"
                 disabled={isSubmitting}
                 data-cursor-hover
-                className="btn-gold justify-center mt-4 text-center disabled:opacity-50"
+                className="btn-gold justify-center mt-2 text-center disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <span className="flex items-center justify-center gap-2 relative z-10">
@@ -289,7 +266,7 @@ export default function ContactSection() {
                 )}
               </button>
             </form>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>
