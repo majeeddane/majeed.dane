@@ -2,21 +2,8 @@
 
 import { useLanguage } from '@/lib/language-context';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useEffect } from 'react';
-import { ExternalLink, Maximize2, Globe, FileText, ImageIcon } from 'lucide-react';
-import {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-} from '@/components/ui/tabs';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
+import { useState, useEffect, useCallback } from 'react';
+import { ExternalLink, X, Globe, FileText, ImageIcon, ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface PortfolioItem {
   id: string;
@@ -31,195 +18,261 @@ interface PortfolioItem {
   visible: boolean;
 }
 
-// Helper to check if an imageUrl is valid (not a placeholder or empty)
 function isValidImageUrl(url: string | null | undefined): url is string {
   if (!url) return false;
-  if (url === '/placeholder.jpg') return false;
   if (url.startsWith('/placeholder')) return false;
   if (url.trim() === '') return false;
   return true;
 }
 
-function getCategoryIcon(category: string) {
-  switch (category) {
-    case 'posts':
-      return <ImageIcon className="h-8 w-8 text-white/80" />;
-    case 'profiles':
-      return <FileText className="h-8 w-8 text-white/80" />;
-    case 'websites':
-      return <Globe className="h-8 w-8 text-white/80" />;
-    default:
-      return <ImageIcon className="h-8 w-8 text-white/80" />;
-  }
-}
+const CATEGORIES = [
+  { id: 'all',      arLabel: 'الكل',                enLabel: 'All',          icon: <i className="fi fi-br-apps text-base" /> },
+  { id: 'posts',    arLabel: 'بوستات ومحتوى',        enLabel: 'Marketing Posts', icon: <ImageIcon className="h-4 w-4" /> },
+  { id: 'profiles', arLabel: 'بروفايلات تعريفية',    enLabel: 'Company Profiles', icon: <FileText className="h-4 w-4" /> },
+  { id: 'websites', arLabel: 'مواقع ويب',            enLabel: 'Web Projects', icon: <Globe className="h-4 w-4" /> },
+];
 
 function getCategoryGradient(category: string) {
   switch (category) {
-    case 'posts':
-      return 'linear-gradient(135deg, #0B2545 0%, #1E5F9E 100%)';
-    case 'profiles':
-      return 'linear-gradient(135deg, #0B2545 0%, #13315C 100%)';
-    case 'websites':
-      return 'linear-gradient(135deg, #0d1b2a 0%, #13315C 100%)';
-    default:
-      return 'linear-gradient(135deg, #0B2545 0%, #1E5F9E 100%)';
+    case 'posts':    return 'linear-gradient(135deg, #111 0%, #1a1a1a 100%)';
+    case 'profiles': return 'linear-gradient(135deg, #0d0d0d 0%, #181818 100%)';
+    case 'websites': return 'linear-gradient(135deg, #0a0a0a 0%, #151515 100%)';
+    default:         return 'linear-gradient(135deg, #111 0%, #1a1a1a 100%)';
   }
 }
 
-function getAspectClass(category: string) {
-  switch (category) {
-    case 'posts':
-      return 'aspect-[4/5]';
-    case 'profiles':
-      return 'aspect-[3/4]';
-    case 'websites':
-      return 'aspect-[16/10]';
-    default:
-      return 'aspect-square';
-  }
-}
-
-function PostCard({ item, onClick }: { item: PortfolioItem; onClick: () => void }) {
+/* ──────────────────────────────────────
+   Portfolio Card
+────────────────────────────────────── */
+function PortfolioCard({
+  item, index, onClick,
+}: { item: PortfolioItem; index: number; onClick: () => void }) {
   const { t } = useLanguage();
+  const hasImage = isValidImageUrl(item.imageUrl);
+
+  const aspectClass =
+    item.category === 'websites' ? 'aspect-[16/10]' :
+    item.category === 'profiles' ? 'aspect-[3/4]' :
+    'aspect-[4/5]';
+
   return (
-    <div
-      className="break-inside-avoid cursor-pointer overflow-hidden rounded-lg shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 40, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -20, scale: 0.95 }}
+      transition={{ duration: 0.5, delay: index * 0.06, ease: [0.16, 1, 0.3, 1] }}
+      className="portfolio-card break-inside-avoid mb-4 sm:mb-6"
       onClick={onClick}
+      data-cursor-view
     >
-      {isValidImageUrl(item.imageUrl) ? (
-        <div className="relative aspect-[4/5] overflow-hidden rounded-lg">
+      {hasImage ? (
+        <div className={`relative overflow-hidden rounded-xl ${aspectClass}`}>
           <img
             src={item.imageUrl}
             alt={t(item.titleAr, item.titleEn)}
-            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
+            className="h-full w-full object-cover"
+            loading="lazy"
             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-4">
-            <p className="text-sm font-semibold text-white">
-              {t(item.titleAr, item.titleEn)}
-            </p>
-            <div className="mt-1 flex items-center gap-1 text-white/60">
-              <Maximize2 className="h-3.5 w-3.5" />
-              <span className="text-xs">{t('عرض', 'View')}</span>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div
-          className="flex h-full flex-col items-center justify-center p-6 aspect-[4/5]"
-          style={{ background: getCategoryGradient(item.category) }}
-        >
-          {getCategoryIcon(item.category)}
-          <p className="mt-3 text-center text-sm font-semibold text-white/90">
-            {t(item.titleAr, item.titleEn)}
-          </p>
-          <div className="mt-auto flex items-center gap-1 pt-4 text-white/40 transition-colors hover:text-white/80">
-            <Maximize2 className="h-3.5 w-3.5" />
-            <span className="text-xs">{t('عرض', 'View')}</span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ProfileCard({ item, onClick }: { item: PortfolioItem; onClick: () => void }) {
-  const { t } = useLanguage();
-  return (
-    <div
-      className="break-inside-avoid cursor-pointer overflow-hidden rounded-lg border border-white/5 bg-navy-800/30 backdrop-blur-sm shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
-      onClick={onClick}
-    >
-      {isValidImageUrl(item.imageUrl) ? (
-        <div className="relative aspect-[3/4] overflow-hidden rounded-t-lg">
-          <img
-            src={item.imageUrl}
-            alt={t(item.titleAr, item.titleEn)}
-            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-4">
-            <p className="text-sm font-semibold text-white">
-              {t(item.titleAr, item.titleEn)}
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="rounded-t-lg" style={{ background: getCategoryGradient(item.category) }}>
-          <div className="flex items-center gap-1.5 px-4 py-2.5">
-            <div className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
-            <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
-            <div className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
-            <div className="ml-3 flex-1 rounded-sm bg-white/15 px-3 py-1 text-xs text-white/50">
-              profile.pdf
-            </div>
-          </div>
-          <div className={`flex flex-col items-center justify-center px-6 pb-8 ${getAspectClass(item.category)}`}>
-            {getCategoryIcon(item.category)}
-            <p className="mt-3 text-center text-sm font-semibold text-white/90">
-              {t(item.titleAr, item.titleEn)}
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function WebsiteCard({ item, onClick }: { item: PortfolioItem; onClick: () => void }) {
-  const { t } = useLanguage();
-  return (
-    <div
-      className="break-inside-avoid cursor-pointer overflow-hidden rounded-lg border border-white/5 bg-navy-800/30 backdrop-blur-sm shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg"
-      onClick={onClick}
-    >
-      {isValidImageUrl(item.imageUrl) ? (
-        <div className="relative aspect-[16/10] overflow-hidden rounded-t-lg">
-          <img
-            src={item.imageUrl}
-            alt={t(item.titleAr, item.titleEn)}
-            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
-          <div className="absolute bottom-0 left-0 right-0 p-4">
-            <p className="text-sm font-semibold text-white">
-              {t(item.titleAr, item.titleEn)}
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="rounded-t-lg" style={{ background: getCategoryGradient(item.category) }}>
-          <div className="flex items-center gap-1.5 bg-black/20 px-4 py-2.5">
-            <div className="h-2.5 w-2.5 rounded-full bg-red-400/80" />
-            <div className="h-2.5 w-2.5 rounded-full bg-yellow-400/80" />
-            <div className="h-2.5 w-2.5 rounded-full bg-green-400/80" />
-            <div className="ml-3 flex-1 rounded-sm bg-white/15 px-3 py-1 text-xs text-white/60">
-              https://www.example.com
-            </div>
-          </div>
-          <div className={`flex flex-col items-center justify-center px-6 pb-8 ${getAspectClass(item.category)}`}>
-            {getCategoryIcon(item.category)}
-            <div className="mt-3 rounded-md border border-white/20 bg-white/10 px-4 py-2 backdrop-blur-sm">
-              <p className="text-center text-sm font-semibold text-white/90">
+          {/* Hover overlay */}
+          <div className="portfolio-card-overlay">
+            <div className="portfolio-card-title">
+              <p className="text-white font-bold text-base leading-snug">
                 {t(item.titleAr, item.titleEn)}
+              </p>
+              <p className="text-white/50 text-xs mt-1 uppercase tracking-widest font-medium">
+                {CATEGORIES.find(c => c.id === item.category)?.arLabel || item.category}
               </p>
             </div>
           </div>
+
+          {/* Category badge (always visible) */}
+          <div className="absolute top-3 right-3 z-10">
+            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest"
+              style={{
+                background: 'rgba(10,10,10,0.7)',
+                color: '#C8A45A',
+                border: '1px solid rgba(200,164,90,0.3)',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
+              {t(
+                CATEGORIES.find(c => c.id === item.category)?.arLabel || item.category,
+                CATEGORIES.find(c => c.id === item.category)?.enLabel || item.category,
+              )}
+            </span>
+          </div>
+        </div>
+      ) : (
+        /* Placeholder card */
+        <div
+          className={`relative rounded-xl flex flex-col items-center justify-center gap-3 ${aspectClass}`}
+          style={{ background: getCategoryGradient(item.category), border: '1px solid rgba(255,255,255,0.06)' }}
+        >
+          <div className="w-14 h-14 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center">
+            {item.category === 'websites' ? <Globe className="h-6 w-6 text-white/40" /> :
+             item.category === 'profiles' ? <FileText className="h-6 w-6 text-white/40" /> :
+             <ImageIcon className="h-6 w-6 text-white/40" />}
+          </div>
+          <p className="text-white/60 text-sm font-semibold text-center px-4">
+            {t(item.titleAr, item.titleEn)}
+          </p>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
+/* ──────────────────────────────────────
+   Lightbox Modal
+────────────────────────────────────── */
+function Lightbox({
+  item, items, onClose, onPrev, onNext,
+}: {
+  item: PortfolioItem;
+  items: PortfolioItem[];
+  onClose: () => void;
+  onPrev: () => void;
+  onNext: () => void;
+}) {
+  const { t, isRTL } = useLanguage();
+  const hasImage = isValidImageUrl(item.imageUrl);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowLeft')  isRTL ? onNext() : onPrev();
+      if (e.key === 'ArrowRight') isRTL ? onPrev() : onNext();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose, onPrev, onNext, isRTL]);
+
+  const currentIndex = items.findIndex(i => i.id === item.id);
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[9990] flex items-center justify-center"
+      dir={isRTL ? 'rtl' : 'ltr'}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/95 backdrop-blur-md"
+        onClick={onClose}
+      />
+
+      {/* Close button */}
+      <button
+        onClick={onClose}
+        data-cursor-hover
+        className="absolute top-6 right-6 z-10 w-10 h-10 rounded-full flex items-center justify-center border border-white/15 text-white/60 hover:text-white hover:border-white/40 transition-all duration-200"
+      >
+        <X className="h-4 w-4" />
+      </button>
+
+      {/* Prev / Next */}
+      {items.length > 1 && (
+        <>
+          <button
+            onClick={isRTL ? onNext : onPrev}
+            data-cursor-hover
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full flex items-center justify-center border border-white/15 text-white/60 hover:text-white hover:border-white/40 transition-all duration-200 disabled:opacity-30"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+          <button
+            onClick={isRTL ? onPrev : onNext}
+            data-cursor-hover
+            className="absolute right-14 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full flex items-center justify-center border border-white/15 text-white/60 hover:text-white hover:border-white/40 transition-all duration-200"
+          >
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </>
+      )}
+
+      {/* Modal content */}
+      <motion.div
+        className="relative z-10 w-full max-w-3xl mx-6 rounded-2xl overflow-hidden"
+        style={{ background: '#111111', border: '1px solid rgba(255,255,255,0.08)' }}
+        initial={{ scale: 0.9, y: 30 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 30 }}
+        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Image */}
+        {hasImage ? (
+          <div className="relative max-h-[60vh] overflow-hidden">
+            <img
+              src={item.imageUrl}
+              alt={t(item.titleAr, item.titleEn)}
+              className="w-full object-contain"
+              style={{ maxHeight: '60vh' }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-transparent to-transparent" />
+          </div>
+        ) : (
+          <div
+            className="flex items-center justify-center py-20"
+            style={{ background: getCategoryGradient(item.category), minHeight: '200px' }}
+          >
+            {item.category === 'websites' ? <Globe className="h-16 w-16 text-white/20" /> :
+             item.category === 'profiles' ? <FileText className="h-16 w-16 text-white/20" /> :
+             <ImageIcon className="h-16 w-16 text-white/20" />}
+          </div>
+        )}
+
+        {/* Info panel */}
+        <div className="p-6 md:p-8">
+          {/* Counter */}
+          <p className="section-eyebrow mb-3">
+            {String(currentIndex + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}
+          </p>
+
+          <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
+            {t(item.titleAr, item.titleEn)}
+          </h3>
+
+          {(item.descriptionAr || item.descriptionEn) && (
+            <p className="text-white/60 text-sm md:text-base leading-relaxed mt-3">
+              {t(item.descriptionAr || '', item.descriptionEn || '')}
+            </p>
+          )}
+
+          {item.projectUrl && (
+            <a
+              href={item.projectUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              data-cursor-hover
+              className="inline-flex items-center gap-2 mt-6 text-sm font-semibold transition-colors duration-200 hover:text-gold-light"
+              style={{ color: '#C8A45A' }}
+            >
+              <ExternalLink className="h-4 w-4" />
+              {t('عرض المشروع', 'View Project')}
+            </a>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ──────────────────────────────────────
+   Main Portfolio Section
+────────────────────────────────────── */
 export default function PortfolioSection() {
   const { isRTL, t } = useLanguage();
-  const [activeTab, setActiveTab] = useState('posts');
-  const [lightboxItem, setLightboxItem] = useState<PortfolioItem | null>(null);
-  const [items, setItems] = useState<PortfolioItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [lightboxItem,   setLightboxItem]   = useState<PortfolioItem | null>(null);
+  const [items,          setItems]          = useState<PortfolioItem[]>([]);
+  const [loading,        setLoading]        = useState(true);
 
   useEffect(() => {
     fetch('/api/portfolio')
@@ -227,214 +280,133 @@ export default function PortfolioSection() {
       .then(data => {
         setItems(Array.isArray(data) ? data.filter((item: PortfolioItem) => item.visible) : []);
       })
-      .catch(() => {
-        setItems([]);
-      })
+      .catch(() => setItems([]))
       .finally(() => setLoading(false));
   }, []);
 
-  const filteredItems = items.filter(
-    (item) => item.category === activeTab
-  );
+  const filteredItems = activeCategory === 'all'
+    ? items
+    : items.filter(item => item.category === activeCategory);
+
+  // Lightbox navigation
+  const lightboxIndex = lightboxItem ? filteredItems.findIndex(i => i.id === lightboxItem.id) : -1;
+
+  const goPrev = useCallback(() => {
+    if (lightboxIndex <= 0) return;
+    setLightboxItem(filteredItems[lightboxIndex - 1]);
+  }, [lightboxIndex, filteredItems]);
+
+  const goNext = useCallback(() => {
+    if (lightboxIndex >= filteredItems.length - 1) return;
+    setLightboxItem(filteredItems[lightboxIndex + 1]);
+  }, [lightboxIndex, filteredItems]);
 
   return (
-    <section
-      id="portfolio"
-      className="bg-background py-16 md:py-24"
-      dir={isRTL ? 'rtl' : 'ltr'}
-    >
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-        {/* Section Title */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 0.6 }}
-          className="mb-12 text-center"
-        >
-          <h2
-            className="text-3xl font-bold md:text-4xl text-white"
-          >
-            {t('معرض الأعمال', 'Portfolio')}
-          </h2>
-          <div
-            className="mx-auto mt-4 h-1 w-24 rounded-full"
-            style={{ backgroundColor: '#C9A84C' }}
-          />
-        </motion.div>
-
-        {/* Tabs */}
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="mb-12"
-        >
-          {/* Category Selector - 3-column grid on all screen sizes */}
-          <TabsList className="mx-auto grid w-full max-w-2xl grid-cols-3 gap-2 bg-transparent p-0 h-auto">
-            <TabsTrigger
-              value="posts"
-              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-navy-800/30 backdrop-blur-sm px-1.5 py-3 sm:px-3 sm:py-4 text-white/60 transition-all duration-300 hover:border-gold/40 hover:bg-navy-800/60 hover:text-white data-[state=active]:border-gold data-[state=active]:bg-gold/15 data-[state=active]:text-gold data-[state=active]:shadow-[0_0_20px_rgba(201,168,76,0.15)] h-auto min-h-[80px] sm:min-h-[90px]"
-            >
-              <ImageIcon className="h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-data-[state=active]:scale-110" />
-              <span className="flex flex-col items-center text-center font-semibold" style={{ fontSize: 'clamp(9px, 2.4vw, 13px)', lineHeight: '1.3' }}>
-                <span>{t('بوستات', 'Marketing')}</span>
-                <span>{t('ومحتوى تسويقي', 'Posts')}</span>
-              </span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="profiles"
-              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-navy-800/30 backdrop-blur-sm px-1.5 py-3 sm:px-3 sm:py-4 text-white/60 transition-all duration-300 hover:border-gold/40 hover:bg-navy-800/60 hover:text-white data-[state=active]:border-gold data-[state=active]:bg-gold/15 data-[state=active]:text-gold data-[state=active]:shadow-[0_0_20px_rgba(201,168,76,0.15)] h-auto min-h-[80px] sm:min-h-[90px]"
-            >
-              <FileText className="h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-data-[state=active]:scale-110" />
-              <span className="flex flex-col items-center text-center font-semibold" style={{ fontSize: 'clamp(9px, 2.4vw, 13px)', lineHeight: '1.3' }}>
-                <span>{t('بروفايلات', 'Company')}</span>
-                <span>{t('تعريفية', 'Profiles')}</span>
-              </span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="websites"
-              className="group flex flex-col items-center justify-center gap-1.5 rounded-xl border border-white/10 bg-navy-800/30 backdrop-blur-sm px-1.5 py-3 sm:px-3 sm:py-4 text-white/60 transition-all duration-300 hover:border-gold/40 hover:bg-navy-800/60 hover:text-white data-[state=active]:border-gold data-[state=active]:bg-gold/15 data-[state=active]:text-gold data-[state=active]:shadow-[0_0_20px_rgba(201,168,76,0.15)] h-auto min-h-[80px] sm:min-h-[90px]"
-            >
-              <Globe className="h-5 w-5 flex-shrink-0 transition-transform duration-300 group-hover:scale-110 group-data-[state=active]:scale-110" />
-              <span className="flex flex-col items-center text-center font-semibold" style={{ fontSize: 'clamp(9px, 2.4vw, 13px)', lineHeight: '1.3' }}>
-                <span>{t('مواقع ويب', 'Web')}</span>
-                <span>{t('', 'Projects')}</span>
-              </span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value={activeTab} className="mt-8">
-            <AnimatePresence mode="wait">
-              {loading ? (
-                <div className="flex items-center justify-center py-20">
-                  <div className="h-8 w-8 animate-spin rounded-full border-4 border-gold/30 border-t-gold" />
-                </div>
-              ) : filteredItems.length === 0 ? (
-                <motion.div
-                  key="empty"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="py-20 text-center"
-                >
-                  <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white/5">
-                    {getCategoryIcon(activeTab)}
-                  </div>
-                  <p className="text-lg font-medium text-white/50">
-                    {t('لا توجد أعمال في هذا القسم بعد', 'No items in this category yet')}
-                  </p>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.3 }}
-                  className="columns-1 gap-4 sm:columns-2 sm:gap-6 lg:columns-3"
-                >
-                  {filteredItems.map((item, index) => (
-                    <motion.div
-                      key={item.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{
-                        duration: 0.4,
-                        delay: index * 0.08,
-                      }}
-                      className="mb-4 sm:mb-6"
-                    >
-                      {item.category === 'posts' && (
-                        <PostCard
-                          item={item}
-                          onClick={() => setLightboxItem(item)}
-                        />
-                      )}
-                      {item.category === 'profiles' && (
-                        <ProfileCard
-                          item={item}
-                          onClick={() => setLightboxItem(item)}
-                        />
-                      )}
-                      {item.category === 'websites' && (
-                        <WebsiteCard
-                          item={item}
-                          onClick={() => setLightboxItem(item)}
-                        />
-                      )}
-                    </motion.div>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </TabsContent>
-        </Tabs>
-      </div>
-
-      {/* Lightbox Dialog */}
-      <Dialog
-        open={!!lightboxItem}
-        onOpenChange={(open) => !open && setLightboxItem(null)}
+    <>
+      <section
+        id="portfolio"
+        className="bg-[#0A0A0A] section-padding"
+        dir={isRTL ? 'rtl' : 'ltr'}
       >
-        <DialogContent className="max-w-3xl p-0 overflow-hidden">
-          {lightboxItem && (
-            <>
-              {isValidImageUrl(lightboxItem.imageUrl) ? (
-                <div className="relative">
-                  <img
-                    src={lightboxItem.imageUrl}
-                    alt={t(lightboxItem.titleAr, lightboxItem.titleEn)}
-                    className="w-full max-h-[500px] object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <h3 className="text-2xl font-bold text-white">
-                      {t(lightboxItem.titleAr, lightboxItem.titleEn)}
-                    </h3>
-                  </div>
-                </div>
-              ) : (
-                <div
-                  className="flex flex-col items-center justify-center px-8 py-12"
-                  style={{ background: getCategoryGradient(lightboxItem.category), minHeight: '300px' }}
-                >
-                  <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-sm">
-                    {getCategoryIcon(lightboxItem.category)}
-                  </div>
-                  <h3 className="mt-4 text-2xl font-bold text-white">
-                    {t(lightboxItem.titleAr, lightboxItem.titleEn)}
-                  </h3>
-                </div>
-              )}
-              <div className="p-6 bg-navy-900">
-                <DialogHeader>
-                  <DialogTitle className="text-white">
-                    {t(lightboxItem.titleAr, lightboxItem.titleEn)}
-                  </DialogTitle>
-                  {(lightboxItem.descriptionAr || lightboxItem.descriptionEn) && (
-                    <DialogDescription className="text-base leading-relaxed text-white/70">
-                      {t(lightboxItem.descriptionAr || '', lightboxItem.descriptionEn || '')}
-                    </DialogDescription>
-                  )}
-                </DialogHeader>
-                {lightboxItem.projectUrl && (
-                  <a
-                    href={lightboxItem.projectUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-4 inline-flex items-center gap-2 transition-colors hover:text-gold-light"
-                    style={{ color: '#C9A84C' }}
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    <span className="text-sm font-medium">
-                      {t('عرض المشروع', 'View Project')}
-                    </span>
-                  </a>
+        <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
+
+          {/* ── Section Header ── */}
+          <div className="mb-16 reveal-up">
+            <p className="section-eyebrow">
+              <i className="fi fi-br-layers" />
+              {t('مختارات من أعمالي', 'Selected Works')}
+            </p>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+              <h2 className="section-title-xl">
+                {t('معرض', 'Port')}<span style={{ color: '#C8A45A' }}>{t('الأعمال', 'folio')}</span>
+              </h2>
+              <p className="text-white/40 text-sm max-w-xs sm:text-right leading-relaxed">
+                {t(
+                  'مجموعة من أبرز مشاريعي في التصميم والتسويق الرقمي',
+                  'A curated selection of my design and digital marketing projects'
                 )}
+              </p>
+            </div>
+            <div className="gold-line" />
+          </div>
+
+          {/* ── Filter Buttons ── */}
+          <div className="flex flex-wrap gap-2 mb-12 reveal-up delay-2">
+            {CATEGORIES.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                data-cursor-hover
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 border ${
+                  activeCategory === cat.id
+                    ? 'border-gold bg-gold/15 text-gold shadow-[0_0_20px_rgba(200,164,90,0.15)]'
+                    : 'border-white/10 text-white/50 hover:border-white/25 hover:text-white/80'
+                }`}
+              >
+                {cat.icon}
+                {t(cat.arLabel, cat.enLabel)}
+              </button>
+            ))}
+
+            {/* Item count */}
+            <span className="inline-flex items-center px-3 py-2 rounded-full text-xs text-white/25 border border-white/[0.05] ml-auto">
+              {filteredItems.length} {t('مشروع', 'projects')}
+            </span>
+          </div>
+
+          {/* ── Grid ── */}
+          {loading ? (
+            <div className="flex items-center justify-center py-32">
+              <div className="relative">
+                <div className="h-12 w-12 animate-spin rounded-full border-2 border-white/10 border-t-gold" />
               </div>
-            </>
+            </div>
+          ) : filteredItems.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="py-32 text-center"
+            >
+              <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center mx-auto mb-4">
+                <ImageIcon className="h-6 w-6 text-white/20" />
+              </div>
+              <p className="text-white/30 text-base">
+                {t('لا توجد أعمال في هذا القسم بعد', 'No items in this category yet')}
+              </p>
+            </motion.div>
+          ) : (
+            <AnimatePresence mode="popLayout">
+              <motion.div
+                key={activeCategory}
+                className="columns-1 gap-5 sm:columns-2 lg:columns-3"
+              >
+                {filteredItems.map((item, index) => (
+                  <PortfolioCard
+                    key={item.id}
+                    item={item}
+                    index={index}
+                    onClick={() => setLightboxItem(item)}
+                  />
+                ))}
+              </motion.div>
+            </AnimatePresence>
           )}
-        </DialogContent>
-      </Dialog>
-    </section>
+
+        </div>
+      </section>
+
+      {/* ── Lightbox ── */}
+      <AnimatePresence>
+        {lightboxItem && (
+          <Lightbox
+            item={lightboxItem}
+            items={filteredItems}
+            onClose={() => setLightboxItem(null)}
+            onPrev={goPrev}
+            onNext={goNext}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 }

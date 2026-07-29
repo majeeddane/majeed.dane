@@ -6,14 +6,18 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 const quickLinks = [
-  { ar: 'نبذة عني', en: 'About', href: '#about' },
-  { ar: 'المهارات', en: 'Skills', href: '#skills' },
-  { ar: 'الخبرة', en: 'Experience', href: '#experience' },
-  { ar: 'الأعمال', en: 'Portfolio', href: '#portfolio' },
-  { ar: 'تواصل', en: 'Contact', href: '#contact' },
+  { ar: 'نبذة عني', en: 'About',      href: '#about' },
+  { ar: 'المهارات', en: 'Skills',     href: '#skills' },
+  { ar: 'الخبرة',   en: 'Experience', href: '#experience' },
+  { ar: 'الأعمال',  en: 'Portfolio',  href: '#portfolio' },
+  { ar: 'تواصل',    en: 'Contact',    href: '#contact' },
 ];
 
-export default function Footer() {
+interface FooterProps {
+  initialContent?: { key: string; valueAr: string | null; valueEn: string | null; type: string; id: string }[];
+}
+
+export default function Footer({ initialContent = [] }: FooterProps) {
   const { isRTL, t } = useLanguage();
   const [cvUrl, setCvUrl] = useState<string | null>(null);
   const { toast } = useToast();
@@ -50,84 +54,93 @@ export default function Footer() {
 
   return (
     <footer
-      className="border-t border-gold/30 bg-[#0A1D3A]"
+      className="bg-[#0A0A0A] border-t border-white/[0.06] relative overflow-hidden"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-        <div className="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8">
-          {/* Column 1: Name + Title + Tagline */}
+      {/* Subtle top gold glow line */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 max-w-4xl h-px bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+
+      <div className="mx-auto max-w-7xl px-6 py-16 sm:px-8 lg:px-12">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-8 items-start">
+          {/* Column 1: Name + Role + Description */}
           <div>
-            <h3 className="text-xl font-bold text-white">
-              {t('عبدالمجيد الضاعني', 'Al-Daani')}
+            <h3 className="text-2xl font-bold tracking-tight text-white mb-2">
+              <span style={{ color: '#C8A45A' }}>{t('عبدالمجيد', 'Al')}</span>
+              {t(' الضاعني', '-Daani')}
             </h3>
-            <p className="mt-1 text-sm font-medium text-gold">
-              {t('مصمم ومسوق رقمي', 'Digital Designer & Marketer')}
+            <p className="text-xs font-semibold uppercase tracking-widest text-gold/80 mb-4">
+              {t('مصمم جرافيك ومسوّق رقمي ومطوّر', 'Graphic Designer & Digital Marketer & Developer')}
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-white/50">
+            <p className="text-sm leading-relaxed text-white/40 max-w-sm">
               {t(
-                'أساعد العلامات التجارية على بناء هوية بصرية مميزة وتحقيق نمو رقمي مستدام.',
-                'Helping brands build distinctive visual identities and achieve sustainable digital growth.'
+                'أساعد العلامات التجارية والأنشطة التجارية على بناء هوية بصرية مميزة وتحقيق نمو رقمي مستدام من خلال مزج الإبداع بالتسويق والتكنولوجيا.',
+                'Helping brands and businesses build distinctive visual identities and achieve sustainable digital growth through creative design, strategic marketing, and technology.'
               )}
             </p>
           </div>
 
           {/* Column 2: Quick Links */}
-          <div>
-            <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gold">
-              {t('روابط سريعة', 'Quick Links')}
+          <div className="md:mx-auto">
+            <h4 className="mb-5 text-xs font-bold uppercase tracking-widest text-gold/80">
+              {t('روابط سريعة', 'Quick Navigation')}
             </h4>
-            <nav className="flex flex-col gap-2.5">
+            <nav className="flex flex-col gap-3">
               {quickLinks.map((link, index) => (
                 <a
                   key={index}
                   href={link.href}
                   onClick={(e) => handleNavClick(e, link.href)}
-                  className="text-sm text-white/50 transition-colors duration-200 hover:text-gold"
+                  data-cursor-hover
+                  className="text-sm text-white/50 transition-colors duration-200 hover:text-white flex items-center gap-2 group"
                 >
+                  <span className="w-1.5 h-1.5 rounded-full bg-gold/30 group-hover:bg-gold transition-colors" />
                   {t(link.ar, link.en)}
                 </a>
               ))}
             </nav>
           </div>
 
-          {/* Column 3: Download CV + Copyright */}
-          <div className="flex flex-col justify-between">
+          {/* Column 3: CV + Admin Trigger + Rights */}
+          <div className="flex flex-col justify-between h-full">
             <div>
-              <h4 className="mb-4 text-sm font-semibold uppercase tracking-wider text-gold">
-                {t('السيرة الذاتية', 'Resume')}
+              <h4 className="mb-5 text-xs font-bold uppercase tracking-widest text-gold/80">
+                {t('السيرة الذاتية وإدارة', 'Resume & Admin')}
               </h4>
-              <a
-                href={cvUrl || '#'}
-                target={cvUrl ? '_blank' : undefined}
-                rel={cvUrl ? 'noopener noreferrer' : undefined}
-                onClick={handleCvClick}
-                className="inline-flex items-center gap-2 rounded-lg border border-gold/50 px-5 py-2.5 text-sm font-medium text-gold transition-all duration-300 hover:bg-gold hover:text-navy-900"
-              >
-                <Download className="h-4 w-4" />
-                {t('تحميل السيرة الذاتية', 'Download CV')}
-              </a>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href={cvUrl || '#'}
+                  target={cvUrl ? '_blank' : undefined}
+                  rel={cvUrl ? 'noopener noreferrer' : undefined}
+                  onClick={handleCvClick}
+                  data-cursor-hover
+                  className="btn-outline-gold text-xs py-2 px-4"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  {t('تحميل السيرة الذاتية', 'Download CV')}
+                </a>
 
-              {/* Static Admin Panel Trigger Button */}
-              <div className="mt-4">
                 <button
                   onClick={() => {
                     window.dispatchEvent(new CustomEvent('open-admin-panel'));
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-white/50 transition-all duration-300 hover:border-gold/30 hover:bg-white/10 hover:text-white/80 cursor-pointer"
+                  data-cursor-hover
+                  className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-4 py-2 text-xs font-medium text-white/50 transition-all duration-300 hover:border-gold/30 hover:bg-white/[0.08] hover:text-white"
                   aria-label={t('لوحة الإدارة', 'Admin Panel')}
                 >
-                  <Settings className="h-3.5 w-3.5 text-white/50 transition-colors group-hover:text-white" />
-                  <span>{t('لوحة التحكم', 'Admin')}</span>
+                  <Settings className="h-3.5 w-3.5 text-white/40" />
+                  <span>{t('لوحة التحكم', 'Admin Panel')}</span>
                 </button>
               </div>
             </div>
 
-            <p className="mt-8 text-xs text-white/30 md:mt-0">
-              {t(
-                '© 2026 عبدالمجيد الضاعني. جميع الحقوق محفوظة',
-                '© 2026 Al-Daani. All Rights Reserved'
-              )}
-            </p>
+            <div className="mt-12 md:mt-16 pt-6 border-t border-white/[0.05]">
+              <p className="text-xs text-white/30">
+                {t(
+                  '© 2026 عبدالمجيد الضاعني. جميع الحقوق محفوظة.',
+                  '© 2026 Al-Daani. All Rights Reserved.'
+                )}
+              </p>
+            </div>
           </div>
         </div>
       </div>

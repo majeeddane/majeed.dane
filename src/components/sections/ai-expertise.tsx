@@ -40,11 +40,11 @@ const capabilities: Capability[] = [
 function FloatingParticle({ delay, x, y }: { delay: number; x: string; y: string }) {
   return (
     <motion.div
-      className="absolute w-1 h-1 bg-gold/20 rounded-full"
-      style={{ left: x, top: y }}
+      className="absolute w-1 h-1 rounded-full"
+      style={{ left: x, top: y, background: 'rgba(200,164,90,0.3)' }}
       animate={{
         opacity: [0, 0.6, 0],
-        scale: [0.5, 1.2, 0.5],
+        scale: [0.5, 1.4, 0.5],
         y: [0, -20, 0],
       }}
       transition={{
@@ -65,32 +65,32 @@ function CapabilityCard({ capability, index, isInView }: { capability: Capabilit
     <motion.div
       initial={{ opacity: 0, y: 50 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
-      transition={{ duration: 0.6, delay: 0.3 + index * 0.15 }}
-      whileHover={{ y: -6, scale: 1.02 }}
-      className="glass-effect rounded-xl p-6 md:p-8 relative group overflow-hidden"
+      transition={{ duration: 0.6, delay: 0.2 + index * 0.15, ease: [0.16, 1, 0.3, 1] }}
+      className="card-glass p-6 md:p-8 relative group overflow-hidden"
     >
-      {/* Gold border accent - right in RTL, left in LTR */}
+      {/* Accent bar */}
       <div
-        className={`absolute top-0 bottom-0 w-1 bg-gold ${
+        className={`absolute top-0 bottom-0 w-1 ${
           isRTL ? 'right-0 rounded-r-md' : 'left-0 rounded-l-md'
         }`}
+        style={{ background: '#C8A45A' }}
       />
 
-      {/* Icon with glow effect */}
+      {/* Icon */}
       <div className="relative mb-5 inline-flex">
-        <div className="absolute inset-0 bg-gold/20 blur-xl rounded-full scale-150 group-hover:scale-200 transition-transform duration-500" />
-        <div className="relative w-14 h-14 rounded-full bg-gold/10 border border-gold/30 flex items-center justify-center">
-          <Icon className="w-7 h-7 text-gold" />
+        <div className="absolute inset-0 blur-xl rounded-full scale-150 group-hover:scale-200 transition-transform duration-500" style={{ background: 'rgba(200,164,90,0.2)' }} />
+        <div className="relative w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(200,164,90,0.08)', border: '1px solid rgba(200,164,90,0.2)' }}>
+          <Icon className="w-7 h-7" style={{ color: '#C8A45A' }} />
         </div>
       </div>
 
       {/* Title */}
-      <h3 className="text-xl font-bold text-white mb-3">
+      <h3 className="text-lg font-bold text-white mb-3">
         {t(capability.titleAr, capability.titleEn)}
       </h3>
 
       {/* Description */}
-      <p className={`text-white/70 text-sm leading-relaxed ${isRTL ? 'text-right' : 'text-left'}`}>
+      <p className={`text-white/50 text-sm leading-relaxed ${isRTL ? 'text-right' : 'text-left'}`}>
         {t(capability.descAr, capability.descEn)}
       </p>
 
@@ -103,7 +103,7 @@ function CapabilityCard({ capability, index, isInView }: { capability: Capabilit
 }
 
 export default function AIExpertiseSection() {
-  const { t, isRTL } = useLanguage();
+  const { t } = useLanguage();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
 
@@ -118,67 +118,34 @@ export default function AIExpertiseSection() {
     { delay: 2.0, x: '15%', y: '75%' },
     { delay: 2.8, x: '70%', y: '10%' },
     { delay: 3.6, x: '35%', y: '50%' },
-    { delay: 0.6, x: '5%', y: '45%' },
-    { delay: 1.8, x: '95%', y: '55%' },
   ];
 
   return (
     <section
       ref={ref}
-      className="section-padding relative overflow-hidden"
-      style={{ background: 'linear-gradient(135deg, #0B2545 0%, #0A1D3A 60%, #08162E 100%)' }}
+      className="bg-[#0A0A0A] section-padding relative overflow-hidden"
     >
-      {/* Glowing accent line at top */}
-      <div className="absolute top-0 left-0 right-0 h-1">
-        <div className="h-full w-full bg-gradient-to-r from-transparent via-gold to-transparent" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-4 bg-gold/20 blur-lg" />
-      </div>
-
-      {/* Subtle grid lines background */}
-      <div className="absolute inset-0 opacity-[0.03]">
-        <svg width="100%" height="100%">
-          <defs>
-            <pattern id="ai-grid" width="60" height="60" patternUnits="userSpaceOnUse">
-              <path d="M 60 0 L 0 0 0 60" fill="none" stroke="white" strokeWidth="0.5" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#ai-grid)" />
-        </svg>
-      </div>
+      {/* Top line */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
 
       {/* Floating particles */}
       {particles.map((p, i) => (
         <FloatingParticle key={i} delay={p.delay} x={p.x} y={p.y} />
       ))}
 
-      <div className="container mx-auto px-4 relative z-10">
-        {/* Section Title */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-4"
-        >
-          <div className="inline-flex items-center gap-3 mb-4">
-            <Sparkles className="w-8 h-8 text-gold" />
-            <h2 className="text-3xl md:text-4xl font-bold text-white">
-              {t('الذكاء الاصطناعي', 'AI Expertise')}
-            </h2>
-          </div>
-          <div className="w-24 h-1 bg-gold mx-auto rounded-full mb-6" />
-        </motion.div>
-
-        {/* Prominent differentiator text */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={isInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.7, delay: 0.15 }}
-          className="text-center mb-12"
-        >
-          <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-gradient-gold inline-block">
+      <div className="container mx-auto px-6 sm:px-8 relative z-10">
+        {/* Section Header */}
+        <div className="mb-16 reveal-up text-center">
+          <p className="section-eyebrow justify-center">
+            <Sparkles className="w-3.5 h-3.5" style={{ color: '#C8A45A' }} />
             {t('نقطة التميز الحقيقية', 'The Real Differentiator')}
           </p>
-        </motion.div>
+          <h2 className="section-title-xl">
+            {t('خبرة', 'AI')}{' '}
+            <span style={{ color: '#C8A45A' }}>{t('الذكاء الاصطناعي', 'Expertise')}</span>
+          </h2>
+          <div className="gold-line mx-auto" style={{ transformOrigin: 'center center' }} />
+        </div>
 
         {/* Capability Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">

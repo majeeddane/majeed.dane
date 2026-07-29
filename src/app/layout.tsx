@@ -3,6 +3,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { LanguageProvider } from "@/lib/language-context";
 import GsapProvider from "@/components/ui/gsap-provider";
+import CustomCursor from "@/components/ui/custom-cursor";
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://al-daani.xyz'),
@@ -109,6 +110,7 @@ export default function RootLayout({
         <GsapProvider>
           <LanguageProvider>{children}</LanguageProvider>
         </GsapProvider>
+        <CustomCursor />
         <Toaster />
       </body>
     </html>

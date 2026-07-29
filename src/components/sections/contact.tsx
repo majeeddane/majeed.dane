@@ -3,9 +3,6 @@
 import { useLanguage } from '@/lib/language-context';
 import { motion } from 'framer-motion';
 import { Phone, Mail, MapPin, Send } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -97,51 +94,54 @@ export default function ContactSection() {
   return (
     <section
       id="contact"
-      className="gradient-navy section-padding"
+      className="contact-bg section-padding relative overflow-hidden"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        {/* Section Title */}
-        <motion.div
-          className="mb-12 text-center md:mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="text-3xl font-bold text-white md:text-4xl">
-            {t('تواصل معي', 'Get In Touch')}
+      <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
+        {/* Section Header */}
+        <div className="mb-16 reveal-up">
+          <p className="section-eyebrow">
+            <i className="fi fi-br-envelope" />
+            {t('دعنا نتحدث', 'Let’s Connect')}
+          </p>
+          <h2 className="section-title-xl">
+            {t('تواصل', 'Get In')}{' '}
+            <span style={{ color: '#C8A45A' }}>{t('معي', 'Touch')}</span>
           </h2>
-          <div className="mx-auto mt-4 h-1 w-20 rounded-full bg-gold" />
-        </motion.div>
+          <div className="gold-line" />
+        </div>
 
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-16">
-          {/* Contact Info */}
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-20 items-start">
+          {/* Contact Info Column */}
           <motion.div
-            className="flex flex-col justify-center gap-8"
+            className="flex flex-col gap-8"
             initial={{ opacity: 0, x: isRTL ? 40 : -40 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            <p className="text-lg leading-relaxed text-white/80">
+            <p className="text-base md:text-lg leading-relaxed text-white/60">
               {t(
-                'أنا دائماً مستعد للتعاون والعمل على مشاريع جديدة. لا تتردد في التواصل معي!',
-                'I am always ready to collaborate and work on new projects. Feel free to reach out!'
+                'أنا دائماً مستعد للتعاون والعمل على مشاريع جديدة وإبداعية. لا تتردد في التواصل معي لمناقشة فكرتك القادمة!',
+                'I am always ready to collaborate and work on exciting new projects. Feel free to reach out and let’s create something extraordinary together!'
               )}
             </p>
 
-            <div className="flex flex-col gap-6">
+            {/* Info Cards */}
+            <div className="flex flex-col gap-4">
               {contactInfo.map((item, index) => {
                 const IconComponent = item.icon;
                 const content = (
-                  <div className="group flex items-center gap-4" key={index}>
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gold/20 transition-colors duration-300 group-hover:bg-gold/30">
-                      <IconComponent className="h-5 w-5 text-gold" />
+                  <div className="group card-glass p-5 flex items-center gap-4 transition-all duration-300 hover:border-gold/30">
+                    <div
+                      className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 transition-transform duration-300 group-hover:scale-110"
+                      style={{ background: 'rgba(200,164,90,0.08)', border: '1px solid rgba(200,164,90,0.18)' }}
+                    >
+                      <IconComponent className="h-5 w-5" style={{ color: '#C8A45A' }} />
                     </div>
                     <div>
-                      <p className="text-sm text-white/60">{item.label}</p>
-                      <p className="font-medium text-white transition-all duration-300 group-hover:text-gold-light">
+                      <p className="text-xs text-white/40 mb-0.5">{item.label}</p>
+                      <p className="font-semibold text-white group-hover:text-gold transition-colors duration-300">
                         {item.value}
                       </p>
                     </div>
@@ -153,6 +153,7 @@ export default function ContactSection() {
                     <a
                       key={index}
                       href={item.href}
+                      data-cursor-hover
                       className="block"
                     >
                       {content}
@@ -168,7 +169,8 @@ export default function ContactSection() {
               href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="group mt-2 flex items-center gap-4 rounded-xl border border-[#25D366]/30 bg-[#25D366]/10 p-4 backdrop-blur-sm transition-all duration-300 hover:border-[#25D366]/60 hover:bg-[#25D366]/20 hover:shadow-[0_0_20px_rgba(37,211,102,0.15)]"
+              data-cursor-hover
+              className="group flex items-center gap-4 rounded-2xl border border-[#25D366]/30 bg-[#25D366]/[0.06] p-5 backdrop-blur-md transition-all duration-300 hover:border-[#25D366]/60 hover:bg-[#25D366]/15 hover:shadow-[0_0_30px_rgba(37,211,102,0.15)]"
             >
               <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl shadow-lg transition-transform duration-300 group-hover:scale-110" style={{ background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)' }}>
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" className="h-6 w-6">
@@ -176,12 +178,12 @@ export default function ContactSection() {
                 </svg>
               </div>
               <div>
-                <p className="text-sm text-white/60">{t('تواصل مباشرة', 'Direct contact')}</p>
-                <p className="font-semibold text-[#25D366] transition-colors duration-300 group-hover:text-[#4de887]">
+                <p className="text-xs text-white/40">{t('تواصل مباشر وسريع', 'Direct instant chat')}</p>
+                <p className="font-bold text-[#25D366] group-hover:text-[#4de887] transition-colors">
                   {t('تواصل عبر واتساب', 'Chat on WhatsApp')}
                 </p>
               </div>
-              <div className={`${isRTL ? 'mr-auto' : 'ml-auto'} text-[#25D366]/60 transition-all duration-300 group-hover:text-[#25D366] group-hover:translate-x-1`}>
+              <div className={`${isRTL ? 'mr-auto' : 'ml-auto'} text-[#25D366]/60 transition-transform duration-300 group-hover:translate-x-1`}>
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isRTL ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"} />
                 </svg>
@@ -189,109 +191,103 @@ export default function ContactSection() {
             </a>
           </motion.div>
 
-          {/* Contact Form */}
+          {/* Minimal Form Column */}
           <motion.div
             initial={{ opacity: 0, x: isRTL ? -40 : 40 }}
             whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.6 }}
+            viewport={{ once: true, margin: '-80px' }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
             <form
               onSubmit={handleSubmit}
-              className="flex flex-col gap-5 rounded-xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm md:p-8"
+              className="card-glass p-8 md:p-10 flex flex-col gap-8"
             >
-              <div>
+              <h3 className="text-xl font-bold text-white mb-2">
+                {t('أرسل لي رسالة', 'Send Me a Message')}
+              </h3>
+
+              {/* Minimal Underline Input: Name */}
+              <div className="input-minimal-wrapper">
                 <label
                   htmlFor="name"
-                  className="mb-2 block text-sm font-medium text-white/80"
+                  className="block text-xs font-semibold uppercase tracking-wider text-white/40 mb-2"
                 >
-                  {t('الاسم', 'Name')}
+                  {t('الاسم الكامل', 'Full Name')}
                 </label>
-                <Input
+                <input
                   id="name"
                   name="name"
                   type="text"
                   required
                   value={formData.name}
                   onChange={handleChange}
-                  placeholder={t('أدخل اسمك', 'Enter your name')}
-                  className="bg-white/10 text-white placeholder:text-white/50 border-white/20 focus:border-gold focus:ring-gold/30"
+                  placeholder={t('أدخل اسمك الكريم...', 'Enter your name...')}
+                  className="input-minimal"
                 />
               </div>
 
-              <div>
+              {/* Minimal Underline Input: Email */}
+              <div className="input-minimal-wrapper">
                 <label
                   htmlFor="email"
-                  className="mb-2 block text-sm font-medium text-white/80"
+                  className="block text-xs font-semibold uppercase tracking-wider text-white/40 mb-2"
                 >
-                  {t('البريد الإلكتروني', 'Email')}
+                  {t('البريد الإلكتروني', 'Email Address')}
                 </label>
-                <Input
+                <input
                   id="email"
                   name="email"
                   type="email"
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder={t('أدخل بريدك الإلكتروني', 'Enter your email')}
-                  className="bg-white/10 text-white placeholder:text-white/50 border-white/20 focus:border-gold focus:ring-gold/30"
+                  placeholder={t('example@domain.com', 'example@domain.com')}
+                  className="input-minimal"
                 />
               </div>
 
-              <div>
+              {/* Minimal Underline Input: Message */}
+              <div className="input-minimal-wrapper">
                 <label
                   htmlFor="message"
-                  className="mb-2 block text-sm font-medium text-white/80"
+                  className="block text-xs font-semibold uppercase tracking-wider text-white/40 mb-2"
                 >
-                  {t('الرسالة', 'Message')}
+                  {t('تفاصيل الرسالة أو المشروع', 'Message Details')}
                 </label>
-                <Textarea
+                <textarea
                   id="message"
                   name="message"
                   required
-                  rows={5}
+                  rows={4}
                   value={formData.message}
                   onChange={handleChange}
-                  placeholder={t('اكتب رسالتك هنا...', 'Write your message here...')}
-                  className="bg-white/10 text-white placeholder:text-white/50 border-white/20 focus:border-gold focus:ring-gold/30 min-h-[120px]"
+                  placeholder={t('اكتب تفاصيل مشروعك أو استفسارك هنا...', 'Write your project details or inquiry here...')}
+                  className="input-minimal resize-none"
                 />
               </div>
 
-              <Button
+              {/* Submit Button */}
+              <button
                 type="submit"
                 disabled={isSubmitting}
-                className="mt-2 h-11 cursor-pointer bg-gold text-navy-900 font-semibold hover:bg-gold-light transition-colors duration-300 disabled:opacity-60"
+                data-cursor-hover
+                className="btn-gold justify-center mt-4 text-center disabled:opacity-50"
               >
                 {isSubmitting ? (
-                  <span className="flex items-center gap-2">
-                    <svg
-                      className="h-4 w-4 animate-spin"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      />
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                      />
+                  <span className="flex items-center justify-center gap-2 relative z-10">
+                    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
                     {t('جاري الإرسال...', 'Sending...')}
                   </span>
                 ) : (
-                  <span className="flex items-center gap-2">
+                  <span className="flex items-center justify-center gap-2 relative z-10">
                     <Send className="h-4 w-4" />
                     {t('إرسال الرسالة', 'Send Message')}
                   </span>
                 )}
-              </Button>
+              </button>
             </form>
           </motion.div>
         </div>

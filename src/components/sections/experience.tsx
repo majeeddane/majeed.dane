@@ -2,7 +2,6 @@
 
 import { useLanguage } from '@/lib/language-context';
 import { motion } from 'framer-motion';
-import { Briefcase } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 interface ExperienceEntry {
@@ -14,34 +13,52 @@ interface ExperienceEntry {
   visible: boolean;
 }
 
-function TimelineCard({ exp, isRTL, t, index }: { exp: ExperienceEntry; isRTL: boolean; t: (ar: string, en: string) => string; index: number }) {
+function TimelineCard({
+  exp, isRTL, t, index,
+}: {
+  exp: ExperienceEntry; isRTL: boolean;
+  t: (ar: string, en: string) => string; index: number;
+}) {
   return (
-    <div
-      className="group w-full rounded-xl bg-navy-800/30 backdrop-blur-sm p-5 shadow-sm border border-white/5 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 md:p-6 relative overflow-hidden"
-      style={{
-        borderRightWidth: isRTL ? '4px' : undefined,
-        borderRightColor: isRTL ? '#C9A84C' : undefined,
-        borderLeftWidth: isRTL ? undefined : '4px',
-        borderLeftColor: isRTL ? undefined : '#C9A84C',
-      }}
+    <motion.div
+      initial={{ opacity: 0, x: isRTL ? 50 : -50 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ duration: 0.6, delay: index * 0.12, ease: [0.16, 1, 0.3, 1] }}
+      className="card-glass group p-6 md:p-7 relative overflow-hidden transition-all duration-400"
     >
-      {/* Subtle gradient background on hover */}
-      <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      {/* Gold accent line */}
+      <div
+        className="absolute top-0 h-full w-0.5 opacity-60 group-hover:opacity-100 transition-opacity duration-300"
+        style={{
+          background: 'linear-gradient(to bottom, #C8A45A, rgba(200,164,90,0.1))',
+          ...(isRTL ? { right: 0 } : { left: 0 }),
+        }}
+      />
+
+      {/* Hover background glow */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gold/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
 
       <div className="relative z-10">
-        <div className="mb-3 flex items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy-900 border border-white/5">
-            <Briefcase className="h-5 w-5 text-gold" />
+        {/* Header row */}
+        <div className="flex items-start gap-4 mb-4">
+          <div
+            className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center"
+            style={{ background: 'rgba(200,164,90,0.08)', border: '1px solid rgba(200,164,90,0.18)' }}
+          >
+            <i className="fi fi-br-briefcase text-sm" style={{ color: '#C8A45A' }} />
           </div>
-          <h3 className="text-lg font-semibold text-white">
+          <h3 className="text-base md:text-lg font-bold text-white leading-snug pt-1">
             {t(exp.companyAr, exp.companyEn)}
           </h3>
         </div>
-        <p className="text-sm leading-relaxed text-white/70 md:text-base">
+
+        {/* Description */}
+        <p className={`text-sm md:text-base leading-relaxed text-white/50 group-hover:text-white/65 transition-colors duration-300 ${isRTL ? 'text-right' : 'text-left'}`}>
           {t(exp.descAr, exp.descEn)}
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -56,84 +73,86 @@ export default function ExperienceSection() {
       .then(data => {
         setExperiences(Array.isArray(data) ? data.filter((e: ExperienceEntry) => e.visible) : []);
       })
-      .catch(() => {
-        setExperiences([]);
-      })
+      .catch(() => setExperiences([]))
       .finally(() => setLoading(false));
   }, []);
 
   return (
     <section
       id="experience"
-      className="bg-background section-padding"
+      className="bg-[#0A0A0A] section-padding"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        {/* Section Title */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 0.6 }}
-          className="mb-16 text-center"
-        >
-          <h2 className="text-3xl font-bold text-white md:text-4xl">
-            {t('الخبرة العملية', 'Work Experience')}
-          </h2>
-          <div className="mx-auto mt-4 h-1 w-20 rounded-full bg-gold" />
-        </motion.div>
+      <div className="mx-auto max-w-4xl px-6 sm:px-8">
 
-        {/* Timeline Container */}
+        {/* Header */}
+        <div className="mb-16 reveal-up">
+          <p className="section-eyebrow">
+            <i className="fi fi-br-briefcase" />
+            {t('مسيرتي المهنية', 'Professional Journey')}
+          </p>
+          <h2 className="section-title-xl">
+            {t('الخبرة', 'Work')}{' '}
+            <span style={{ color: '#C8A45A' }}>{t('العملية', 'Experience')}</span>
+          </h2>
+          <div className="gold-line" />
+        </div>
+
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gold/30 border-t-gold" />
+          <div className="flex items-center justify-center py-32">
+            <div className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-gold" />
           </div>
         ) : experiences.length === 0 ? (
-          <div className="py-20 text-center">
-            <p className="text-lg font-medium text-white/50">
-              {t('لا توجد خبرات بعد', 'No experiences yet')}
-            </p>
+          <div className="py-32 text-center">
+            <p className="text-white/30 text-base">{t('لا توجد خبرات بعد', 'No experiences yet')}</p>
           </div>
         ) : (
           <div className="relative">
-            {/* Vertical line */}
+            {/* Vertical timeline line */}
             <div
-              className="absolute top-0 h-full w-0.5"
+              className={`timeline-line absolute top-0 h-full ${isRTL ? 'right-[1.625rem]' : 'left-[1.625rem]'}`}
               style={{
-                background: 'linear-gradient(to bottom, #C9A84C, #13315C, #C9A84C)',
-                ...(isRTL ? { right: '1rem' } : { left: '1rem' }),
+                background: 'linear-gradient(to bottom, rgba(200,164,90,0.6), rgba(200,164,90,0.05))',
               }}
             />
+            {/* Trigger in-view for timeline line */}
+            <motion.div
+              className={`timeline-line-animated absolute top-0 w-px ${isRTL ? 'right-[1.625rem]' : 'left-[1.625rem]'}`}
+              style={{
+                background: 'linear-gradient(to bottom, #C8A45A, rgba(200,164,90,0))',
+              }}
+              initial={{ height: 0 }}
+              whileInView={{ height: '100%' }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 1.2, ease: 'easeOut' }}
+            />
 
-            {experiences.map((exp, index) => (
-              <motion.div
-                key={exp.id}
-                initial={{ opacity: 0, x: isRTL ? 40 : -40 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{
-                  duration: 0.5,
-                  delay: index * 0.12,
-                  ease: 'easeOut',
-                }}
-                className="relative mb-10 last:mb-0"
-              >
-                {/* Timeline dot with gold gradient and pulse */}
-                <div
-                  className="absolute top-3 z-10 flex h-5 w-5 items-center justify-center rounded-full animate-dot-pulse"
-                  style={{
-                    background: 'linear-gradient(135deg, #C9A84C 0%, #D4BC6A 100%)',
-                    border: '3px solid #0A1628',
-                    ...(isRTL ? { right: '0.625rem' } : { left: '0.625rem' }),
-                  }}
-                />
+            <div className="flex flex-col gap-8">
+              {experiences.map((exp, index) => (
+                <div key={exp.id} className="relative flex gap-6 md:gap-8">
+                  {/* Timeline dot */}
+                  <div className="flex-shrink-0 flex flex-col items-center mt-6">
+                    <motion.div
+                      className="w-5 h-5 rounded-full animate-dot-pulse z-10 relative"
+                      style={{
+                        background: 'linear-gradient(135deg, #C8A45A 0%, #D4BC6A 100%)',
+                        border: '3px solid #0A0A0A',
+                        boxShadow: '0 0 12px rgba(200,164,90,0.5)',
+                      }}
+                      initial={{ scale: 0 }}
+                      whileInView={{ scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.4, delay: index * 0.12 + 0.3 }}
+                    />
+                  </div>
 
-                {/* Card with offset */}
-                <div className={isRTL ? 'mr-12' : 'ml-12'}>
-                  <TimelineCard exp={exp} isRTL={isRTL} t={t} index={index} />
+                  {/* Card */}
+                  <div className="flex-1 pb-2">
+                    <TimelineCard exp={exp} isRTL={isRTL} t={t} index={index} />
+                  </div>
                 </div>
-              </motion.div>
-            ))}
+              ))}
+            </div>
           </div>
         )}
       </div>
