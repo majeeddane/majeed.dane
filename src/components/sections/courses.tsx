@@ -12,6 +12,7 @@ import {
   Layers,
   Sparkles,
   Brain,
+  Award,
   type LucideIcon,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -34,26 +35,10 @@ const iconMap: Record<string, LucideIcon> = {
   Layers,
   Sparkles,
   Brain,
+  Award,
 };
 
-const defaultIcons: LucideIcon[] = [Palette, Image, PenTool, Megaphone, Target, Brush, Layers, Sparkles, Brain];
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08 },
-  },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 25 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.5, ease: 'easeOut' },
-  },
-};
+const defaultIcons: LucideIcon[] = [Palette, Image, PenTool, Megaphone, Target, Brush, Layers, Sparkles, Brain, Award];
 
 export default function CoursesSection() {
   const { isRTL, t } = useLanguage();
@@ -75,43 +60,39 @@ export default function CoursesSection() {
   return (
     <section
       id="courses"
-      className="section-padding bg-muted/30"
+      className="bg-[#0A0A0A] section-padding relative overflow-hidden"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        {/* Section Title */}
-        <motion.div
-          className="mb-12 text-center md:mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-100px' }}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="text-3xl font-bold text-white md:text-4xl">
-            {t('الشهادات والدورات', 'Certifications & Courses')}
+      {/* Top line */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+
+      <div className="mx-auto max-w-7xl px-6 sm:px-8 lg:px-12">
+        {/* Section Header */}
+        <div className="mb-16 reveal-up">
+          <p className="section-eyebrow">
+            <Award className="w-3.5 h-3.5" style={{ color: '#C8A45A' }} />
+            {t('المؤهلات والدورات', 'Qualifications & Courses')}
+          </p>
+          <h2 className="section-title-xl">
+            {t('الشهادات', 'Certifications')}{' '}
+            <span style={{ color: '#C8A45A' }}>{t('والدورات', '& Courses')}</span>
           </h2>
-          <div className="mx-auto mt-4 h-1 w-20 rounded-full bg-gold" />
-        </motion.div>
+          <div className="gold-line" />
+        </div>
 
         {/* Courses Grid */}
         {loading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gold/30 border-t-gold" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-gold" />
           </div>
         ) : courses.length === 0 ? (
           <div className="py-20 text-center">
-            <p className="text-lg font-medium text-white/50">
+            <p className="text-sm font-medium text-white/30">
               {t('لا توجد دورات بعد', 'No courses yet')}
             </p>
           </div>
         ) : (
-          <motion.div
-            className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-100px' }}
-          >
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {courses.map((course, index) => {
               const IconComponent = course.icon && iconMap[course.icon]
                 ? iconMap[course.icon]
@@ -120,38 +101,45 @@ export default function CoursesSection() {
               return (
                 <motion.div
                   key={course.id}
-                  variants={cardVariants}
-                  whileHover={{ y: -4, transition: { duration: 0.2 } }}
-                  className="group relative rounded-xl bg-navy-800/30 backdrop-blur-sm p-5 shadow-sm border border-white/5 transition-shadow duration-300 hover:shadow-md overflow-hidden"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-40px' }}
+                  transition={{ duration: 0.5, delay: index * 0.08, ease: [0.16, 1, 0.3, 1] }}
+                  className="group card-glass p-6 relative overflow-hidden flex items-start gap-4"
                 >
-                  {/* Gradient accent bar on left (LTR) or right (RTL) */}
+                  {/* Accent border */}
                   <div
-                    className="absolute top-0 bottom-0 w-1 bg-gradient-to-b from-gold to-gold-light"
-                    style={{
-                      [isRTL ? 'right' : 'left']: 0,
-                    }}
+                    className={`absolute top-0 bottom-0 w-1 ${
+                      isRTL ? 'right-0 rounded-r-md' : 'left-0 rounded-l-md'
+                    }`}
+                    style={{ background: 'linear-gradient(to bottom, #C8A45A, rgba(200,164,90,0.2))' }}
                   />
 
-                  {/* Numbered badge in top-right */}
+                  {/* Number badge */}
                   <span
-                    className="absolute top-3 text-xs font-bold text-gold/30 select-none"
+                    className="absolute top-3 text-[11px] font-bold text-gold/30 select-none"
                     style={{
-                      [isRTL ? 'left' : 'right']: '12px',
+                      [isRTL ? 'left' : 'right']: '16px',
                     }}
                   >
                     {number}
                   </span>
 
-                  <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-lg bg-white/5 border border-white/5 transition-colors duration-300 group-hover:bg-gold/15">
-                    <IconComponent className="h-5 w-5 text-gold transition-colors duration-300 group-hover:text-gold" />
+                  <div
+                    className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-all duration-300 group-hover:scale-110"
+                    style={{ background: 'rgba(200,164,90,0.08)', border: '1px solid rgba(200,164,90,0.18)' }}
+                  >
+                    <IconComponent className="h-5 w-5" style={{ color: '#C8A45A' }} />
                   </div>
-                  <h3 className="text-sm font-semibold leading-relaxed text-white">
-                    {t(course.titleAr, course.titleEn)}
-                  </h3>
+                  <div className="pt-1">
+                    <h3 className="text-sm md:text-base font-bold leading-relaxed text-white group-hover:text-gold transition-colors duration-300">
+                      {t(course.titleAr, course.titleEn)}
+                    </h3>
+                  </div>
                 </motion.div>
               );
             })}
-          </motion.div>
+          </div>
         )}
       </div>
     </section>

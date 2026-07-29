@@ -1,8 +1,8 @@
 'use client';
 
 import { useLanguage } from '@/lib/language-context';
-import { ChevronDown, FileText } from 'lucide-react';
-import { motion, type Variants } from 'framer-motion';
+import { FileText } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { cachedFetch } from '@/lib/content-cache';
@@ -16,16 +16,6 @@ const socialLinks = [
   { icon: 'fi fi-brands-linkedin',  href: '#', label: 'LinkedIn',  color: '#0A66C2' },
   { icon: 'fi fi-brands-behance',   href: '#', label: 'Behance',   color: '#1769FF' },
 ];
-
-const containerVariants: Variants = {
-  hidden:  { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.12, delayChildren: 0.5 } },
-};
-
-const itemVariants: Variants = {
-  hidden:  { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1] } },
-};
 
 interface HeroSectionProps {
   initialContent?: ContentItem[];
@@ -75,34 +65,35 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
     gsap.fromTo(
       badgeRef.current,
       { scale: 0.7, opacity: 0, y: -20 },
-      { scale: 1, opacity: 1, y: 0, duration: 0.9, ease: 'elastic.out(1, 0.5)', delay: 2.2 }
+      { scale: 1, opacity: 1, y: 0, duration: 0.9, ease: 'elastic.out(1, 0.5)', delay: 1.8 }
     );
     gsap.to(badgeRef.current, {
-      boxShadow: '0 0 24px rgba(200,164,90,0.5)',
-      repeat: -1, yoyo: true, duration: 1.8, ease: 'sine.inOut', delay: 3.1,
+      boxShadow: '0 0 24px rgba(200,164,90,0.4)',
+      repeat: -1, yoyo: true, duration: 1.8, ease: 'sine.inOut', delay: 2.7,
     });
   }, []);
 
-  // GSAP — name split reveal
+  // GSAP — word-level reveal preserving Arabic cursive joining
   useEffect(() => {
     const el = nameRef.current;
     if (!el) return;
-    const chars = el.querySelectorAll('.char');
-    if (!chars.length) return;
+    const words = el.querySelectorAll('.hero-word');
+    if (!words.length) return;
+
     gsap.fromTo(
-      chars,
-      { y: '110%', opacity: 0 },
+      words,
+      { y: '100%', opacity: 0 },
       {
         y: '0%', opacity: 1,
-        duration: 0.8,
-        stagger: 0.04,
+        duration: 0.9,
+        stagger: 0.1,
         ease: 'power3.out',
-        delay: 0.3,
+        delay: 0.2,
       }
     );
-  }, [lang]);
+  }, [lang, dynamicContent]);
 
-  // Parallax on mouse move (subtle)
+  // Parallax on mouse move
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
@@ -147,10 +138,12 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
     window.open(portfolioFileUrl, '_blank');
   };
 
-  // Split name into chars for animation
-  const nameChars = name.split('').map((char, i) => (
-    <span key={i} className="char inline-block opacity-0" style={{ display: char === ' ' ? 'inline' : 'inline-block' }}>
-      {char === ' ' ? '\u00A0' : char}
+  // Split into whole words so Arabic letters remain perfectly joined (cursive)
+  const nameWords = name.split(' ').map((word, i) => (
+    <span key={i} className="inline-block overflow-hidden pb-2 me-3 sm:me-4">
+      <span className="hero-word inline-block opacity-0 translate-y-full">
+        {word}
+      </span>
     </span>
   ));
 
@@ -170,7 +163,7 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
       {/* Availability badge */}
       <div
         ref={badgeRef}
-        className="absolute top-24 right-6 z-20 opacity-0 hidden md:flex items-center gap-2 px-4 py-2 rounded-full glass-gold border border-gold/30 text-sm font-semibold shadow-lg"
+        className="absolute top-24 right-6 z-20 opacity-0 hidden md:flex items-center gap-2 px-4 py-2 rounded-full glass-gold border border-gold/30 text-xs font-semibold shadow-lg"
         style={{ color: '#C8A45A', direction: 'ltr' }}
       >
         <span className="relative flex h-2 w-2">
@@ -181,65 +174,64 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
       </div>
 
       {/* ── Main content ── */}
-      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-32 pb-24">
+      <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 pt-32 pb-20">
 
         {/* Eyebrow */}
         <motion.div
           className="section-eyebrow mb-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
         >
           <i className="fi fi-br-star" />
           {t('بورتفوليو إبداعي احترافي', 'Creative Professional Portfolio')}
           <i className="fi fi-br-star" />
         </motion.div>
 
-        {/* ── Name — MASSIVE typography ── */}
-        <div className="overflow-hidden mb-4">
+        {/* ── Name — Words animation with clean line-height to prevent overlapping ── */}
+        <div className="mb-4">
           <h1
             ref={nameRef}
-            className="font-bold leading-none tracking-tight"
+            className="font-bold tracking-tight leading-[1.15] flex flex-wrap items-baseline"
             style={{
-              fontSize: 'clamp(3.5rem, 10vw, 9rem)',
-              background: 'linear-gradient(135deg, #FFFFFF 0%, rgba(255,255,255,0.75) 100%)',
+              fontSize: 'clamp(2.75rem, 8vw, 7.5rem)',
+              background: 'linear-gradient(135deg, #FFFFFF 0%, rgba(255,255,255,0.85) 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
             }}
-            aria-label={name}
           >
-            {nameChars}
+            {nameWords}
           </h1>
         </div>
 
-        {/* Job title with gold gradient */}
+        {/* Job title with warm gold gradient */}
         <motion.p
-          className="text-base sm:text-lg md:text-xl font-semibold mb-5"
-          style={{ color: '#C8A45A', letterSpacing: '0.02em' }}
+          className="text-base sm:text-lg md:text-xl font-bold mb-4"
+          style={{ color: '#C8A45A', letterSpacing: '0.01em' }}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.9 }}
+          transition={{ duration: 0.7, delay: 0.6 }}
         >
           {title}
         </motion.p>
 
         {/* Tagline */}
         <motion.p
-          className="text-sm sm:text-base md:text-lg text-white/55 max-w-xl leading-relaxed mb-10"
+          className="text-sm sm:text-base md:text-lg text-white/60 max-w-2xl leading-relaxed mb-8"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 1.1 }}
+          transition={{ duration: 0.7, delay: 0.8 }}
         >
           {tagline}
         </motion.p>
 
         {/* ── CTA Buttons ── */}
         <motion.div
-          className="flex flex-col sm:flex-row items-start gap-3 mb-12"
+          className="flex flex-wrap items-center gap-4 mb-12"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 1.3 }}
+          transition={{ duration: 0.7, delay: 1.0 }}
         >
           <button
             onClick={() => scrollToSection('contact')}
@@ -270,16 +262,16 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
         </motion.div>
 
         {/* ── Bottom row: Social + Profile photo ── */}
-        <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-8">
+        <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-8 pt-4 border-t border-white/[0.05]">
 
           {/* Social Links */}
           <motion.div
             className="flex items-center gap-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 1.6 }}
+            transition={{ duration: 0.6, delay: 1.2 }}
           >
-            <span className="text-white/25 text-xs font-medium uppercase tracking-widest">
+            <span className="text-white/30 text-xs font-medium uppercase tracking-widest">
               {t('تابعني', 'Follow')}
             </span>
             <div className="h-px w-6 bg-white/15" />
@@ -290,30 +282,31 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
                 aria-label={s.label}
                 target="_blank"
                 rel="noopener noreferrer"
+                data-cursor-hover
                 className="hero-social-icon group relative w-9 h-9 rounded-full flex items-center justify-center border border-white/10 bg-white/[0.03] transition-all duration-300 hover:scale-110 hover:border-white/25"
               >
                 <i
-                  className={`${s.icon} text-base text-white/40 group-hover:text-white transition-colors`}
+                  className={`${s.icon} text-base text-white/50 group-hover:text-white transition-colors`}
                   style={{ '--hover-color': s.color } as React.CSSProperties}
                 />
               </a>
             ))}
           </motion.div>
 
-          {/* Profile image — compact, asymmetric position */}
+          {/* Profile photo circle */}
           <motion.div
             className="relative flex-shrink-0"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
             data-gsap="parallax"
           >
             {/* Glow */}
             <div className="absolute inset-0 rounded-full bg-gold/15 blur-3xl scale-125 pointer-events-none" />
 
-            {/* Rotating conic ring */}
+            {/* Rotating ring */}
             <motion.div
-              className="absolute -inset-5 rounded-full"
+              className="absolute -inset-4 rounded-full"
               style={{
                 background: 'conic-gradient(from 0deg, rgba(200,164,90,0.4), transparent 30%, rgba(200,164,90,0.2) 60%, transparent)',
               }}
@@ -321,9 +314,9 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
               transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
             />
 
-            {/* Photo circle */}
+            {/* Photo container */}
             <div
-              className="relative w-40 h-40 sm:w-52 sm:h-52 md:w-64 md:h-64 rounded-full p-[2px]"
+              className="relative w-36 h-36 sm:w-44 sm:h-44 md:w-52 md:h-52 rounded-full p-[2px]"
               style={{ background: 'linear-gradient(135deg, #C8A45A 0%, rgba(200,164,90,0.3) 50%, transparent 100%)' }}
             >
               <div className="w-full h-full rounded-full bg-[#111111] flex items-center justify-center overflow-hidden">
@@ -339,7 +332,7 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
                   />
                 ) : (
                   <span
-                    className="text-4xl sm:text-5xl md:text-6xl font-bold select-none"
+                    className="text-3xl sm:text-4xl md:text-5xl font-bold select-none"
                     style={{
                       background: 'linear-gradient(135deg, #C8A45A 0%, #E8D48B 100%)',
                       WebkitBackgroundClip: 'text',
@@ -355,18 +348,18 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
 
             {/* Floating badges */}
             <motion.div
-              className="absolute -bottom-2 -right-2 w-12 h-12 rounded-full bg-[#111] border border-gold/30 flex items-center justify-center shadow-lg"
-              animate={{ y: [0, -6, 0] }}
+              className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full bg-[#111] border border-gold/30 flex items-center justify-center shadow-lg"
+              animate={{ y: [0, -5, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <i className="fi fi-br-paint-brush" style={{ color: '#C8A45A', fontSize: '1.1rem' }} />
+              <i className="fi fi-br-paint-brush" style={{ color: '#C8A45A', fontSize: '1rem' }} />
             </motion.div>
             <motion.div
-              className="absolute -top-2 -left-2 w-10 h-10 rounded-full bg-[#111] border border-blue-500/30 flex items-center justify-center shadow-lg"
-              animate={{ y: [0, 6, 0] }}
+              className="absolute -top-1 -left-1 w-9 h-9 rounded-full bg-[#111] border border-blue-500/30 flex items-center justify-center shadow-lg"
+              animate={{ y: [0, 5, 0] }}
               transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
             >
-              <i className="fi fi-br-brain text-blue-400" style={{ fontSize: '0.95rem' }} />
+              <i className="fi fi-br-brain text-blue-400" style={{ fontSize: '0.85rem' }} />
             </motion.div>
           </motion.div>
 
@@ -375,15 +368,15 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
 
       {/* ── Scroll indicator ── */}
       <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 2, duration: 0.6 }}
+        transition={{ delay: 1.5, duration: 0.6 }}
       >
         <span className="text-white/25 text-[10px] font-semibold uppercase tracking-[0.25em]">
           {t('اكتشف', 'Scroll')}
         </span>
-        <div className="relative w-px h-10 bg-white/10 overflow-hidden">
+        <div className="relative w-px h-8 bg-white/10 overflow-hidden">
           <div
             className="absolute top-0 left-0 w-full bg-gradient-to-b from-transparent via-gold to-transparent"
             style={{ animation: 'scrollLine 2s ease-in-out infinite' }}
