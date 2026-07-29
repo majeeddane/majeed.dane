@@ -260,16 +260,37 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
             ))}
           </motion.div>
 
+          {/* Profile photo area with spinning circular rings */}
           <motion.div
             className="relative flex-shrink-0"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="absolute inset-0 rounded-full bg-blue-600/20 blur-3xl scale-125 pointer-events-none" />
+            {/* Glow behind photo */}
+            <div className="absolute inset-0 rounded-full bg-blue-600/25 blur-3xl scale-125 pointer-events-none" />
 
+            {/* 1. Fast Spinning Conic Gradient Ring */}
+            <motion.div
+              className="absolute -inset-5 rounded-full pointer-events-none"
+              style={{
+                background: 'conic-gradient(from 0deg, #C9A84C, #1E5F9E, #2E7BC4, #D4BC6A, #C9A84C)',
+                opacity: 0.4,
+              }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 7, repeat: Infinity, ease: 'linear' }}
+            />
+
+            {/* 2. Reverse Rotating Outer Dashed Ring */}
+            <motion.div
+              className="absolute -inset-3 rounded-full border border-dashed border-gold/50 pointer-events-none"
+              animate={{ rotate: -360 }}
+              transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
+            />
+
+            {/* Photo Container */}
             <div
-              className="relative w-36 h-36 sm:w-44 sm:h-44 md:w-52 md:h-52 rounded-full p-[2px]"
+              className="relative w-36 h-36 sm:w-44 sm:h-44 md:w-52 md:h-52 rounded-full p-[3px]"
               style={{ background: 'linear-gradient(135deg, #1E5F9E 0%, #C9A84C 100%)' }}
             >
               <div className="w-full h-full rounded-full bg-[#0A1628] flex items-center justify-center overflow-hidden">
@@ -299,11 +320,22 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
               </div>
             </div>
 
-            <div
+            {/* Floating icon badges */}
+            <motion.div
               className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full bg-[#0A1628] border border-gold/40 flex items-center justify-center shadow-lg"
+              animate={{ y: [0, -5, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
               <i className="fi fi-br-paint-brush" style={{ color: '#C9A84C', fontSize: '1rem' }} />
-            </div>
+            </motion.div>
+
+            <motion.div
+              className="absolute -top-1 -left-1 w-9 h-9 rounded-full bg-[#0A1628] border border-blue-500/40 flex items-center justify-center shadow-lg"
+              animate={{ y: [0, 5, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut', delay: 1 }}
+            >
+              <i className="fi fi-br-brain text-blue-400" style={{ fontSize: '0.85rem' }} />
+            </motion.div>
           </motion.div>
         </div>
       </div>

@@ -101,10 +101,21 @@ export default function AboutSection({ initialContent = [] }: AboutSectionProps)
 
         <div className={`flex flex-col lg:flex-row items-start gap-12 lg:gap-16 ${isRTL ? 'lg:flex-row-reverse' : ''}`}>
           <div className="flex-shrink-0 relative mx-auto lg:mx-0">
-            <div className="absolute inset-0 rounded-full bg-blue-600/15 blur-3xl scale-125 pointer-events-none" />
+            <div className="absolute inset-0 rounded-full bg-blue-600/20 blur-3xl scale-125 pointer-events-none" />
+
+            {/* Spinning Conic Gradient Ring */}
+            <motion.div
+              className="absolute -inset-4 rounded-full pointer-events-none"
+              style={{
+                background: 'conic-gradient(from 0deg, #C9A84C, #1E5F9E, #2E7BC4, #D4BC6A, #C9A84C)',
+                opacity: 0.35,
+              }}
+              animate={{ rotate: 360 }}
+              transition={{ duration: 9, repeat: Infinity, ease: 'linear' }}
+            />
 
             <div
-              className="relative w-52 h-52 sm:w-60 sm:h-60 md:w-64 md:h-64 rounded-full p-[2px]"
+              className="relative w-52 h-52 sm:w-60 sm:h-60 md:w-64 md:h-64 rounded-full p-[3px]"
               style={{ background: 'linear-gradient(135deg, #1E5F9E 0%, #C9A84C 100%)' }}
             >
               <div className="w-full h-full rounded-full bg-[#10243E] flex items-center justify-center overflow-hidden">
