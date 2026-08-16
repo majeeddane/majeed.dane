@@ -88,16 +88,16 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(schemaOrgData) }}
         />
-        {/* Animate.css */}
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-        />
+        {/* Resource hints for faster CDN loading */}
+        <link rel="preconnect" href="https://cdn-uicons.flaticon.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://cdn-uicons.flaticon.com" />
+
         {/* Flaticon UI Icons — Bold Rounded */}
         <link
           rel="stylesheet"
           href="https://cdn-uicons.flaticon.com/2.6.0/uicons-bold-rounded/css/uicons-bold-rounded.css"
         />
+
         {/* Flaticon UI Icons — Brands */}
         <link
           rel="stylesheet"

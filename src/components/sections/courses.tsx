@@ -16,6 +16,7 @@ import {
   type LucideIcon,
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { cachedFetch } from '@/lib/content-cache';
 
 interface Course {
   id: string;
@@ -46,8 +47,7 @@ export default function CoursesSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/courses')
-      .then(res => res.json())
+    cachedFetch<Course[]>('/api/courses')
       .then(data => {
         setCourses(Array.isArray(data) ? data.filter((c: Course) => c.visible) : []);
       })

@@ -4,6 +4,7 @@ import { useLanguage } from '@/lib/language-context';
 import { motion } from 'framer-motion';
 import { Building2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { cachedFetch } from '@/lib/content-cache';
 
 interface ClientEntry {
   id: string;
@@ -61,8 +62,7 @@ export default function ClientsSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/clients')
-      .then(res => res.json())
+    cachedFetch<ClientEntry[]>('/api/clients')
       .then(data => {
         setClients(Array.isArray(data) ? data.filter((c: ClientEntry) => c.visible) : []);
       })
@@ -76,8 +76,8 @@ export default function ClientsSection() {
   const firstRow = clients.slice(0, midpoint);
   const secondRow = clients.slice(midpoint);
 
-  const dupFirstRow = [...firstRow, ...firstRow, ...firstRow, ...firstRow];
-  const dupSecondRow = [...secondRow, ...secondRow, ...secondRow, ...secondRow];
+  const dupFirstRow = [...firstRow, ...firstRow];
+  const dupSecondRow = [...secondRow, ...secondRow];
 
   return (
     <section

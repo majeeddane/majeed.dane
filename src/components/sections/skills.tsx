@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { useLanguage } from '@/lib/language-context';
+import { cachedFetch } from '@/lib/content-cache';
 
 interface Skill {
   id: string;
@@ -119,8 +120,7 @@ export default function SkillsSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/skills')
-      .then(res => res.json())
+    cachedFetch<Skill[]>('/api/skills')
       .then(data => {
         setSkills(Array.isArray(data) ? data.filter((s: Skill) => s.visible) : []);
       })
@@ -137,7 +137,7 @@ export default function SkillsSection() {
             {t('ما أتقنه', 'What I Master')}
           </p>
           <h2 className="section-title-xl">
-            {t('الم', 'Sk')}<span style={{ color: '#C9A84C' }}>{t('هارات', 'ills')}</span>
+            {t('الـ', 'Sk')}<span style={{ color: '#C9A84C' }}>{t('مهارات', 'ills')}</span>
           </h2>
           <div className="gold-line mx-auto" />
         </div>

@@ -63,16 +63,23 @@ export default function GsapProvider({ children }: { children: React.ReactNode }
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('in-view');
-            // Don't unobserve — let CSS handle it (once: true behavior via CSS)
+            entry.target.classList.add('is-visible'); // for reveal-up CSS transition
+            revealObserver.unobserve(entry.target);   // fire once
           }
         });
       },
-      { threshold: 0.12, rootMargin: '-40px' }
+      { threshold: 0.1, rootMargin: '-30px' }
     );
 
-    document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right').forEach((el) => {
-      revealObserver.observe(el);
-    });
+    // Run observer on initial elements and re-check after dynamic content loads
+    const observeAll = () => {
+      document.querySelectorAll('.reveal-up, .reveal-left, .reveal-right').forEach((el) => {
+        revealObserver.observe(el);
+      });
+    };
+    observeAll();
+    // Re-scan after 500ms for dynamically rendered sections
+    const rescanTimer = setTimeout(observeAll, 500);
 
     // ── GSAP ScrollTrigger — section slide-in ───────────
     gsap.utils.toArray<Element>('[data-gsap="slide-left"]').forEach((el) => {
@@ -171,6 +178,7 @@ export default function GsapProvider({ children }: { children: React.ReactNode }
       lenis?.destroy();
       ScrollTrigger.getAll().forEach((t) => t.kill());
       revealObserver.disconnect();
+      clearTimeout(rescanTimer);
     };
   }, []);
 

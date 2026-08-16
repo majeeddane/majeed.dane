@@ -3,6 +3,7 @@
 import { useLanguage } from '@/lib/language-context';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { cachedFetch } from '@/lib/content-cache';
 
 interface ExperienceEntry {
   id: string;
@@ -58,8 +59,7 @@ export default function ExperienceSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/experience')
-      .then(res => res.json())
+    cachedFetch<ExperienceEntry[]>('/api/experience')
       .then(data => {
         setExperiences(Array.isArray(data) ? data.filter((e: ExperienceEntry) => e.visible) : []);
       })

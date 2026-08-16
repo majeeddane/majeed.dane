@@ -118,8 +118,8 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
   };
 
   const nameWords = name.split(' ').map((word, i) => (
-    <span key={i} className="inline-block overflow-hidden pb-1 me-3 sm:me-4">
-      <span className="hero-word inline-block opacity-0 translate-y-full">
+    <span key={i} className="inline-block overflow-hidden pb-1 me-2 sm:me-3" style={{ maxWidth: '100%' }}>
+      <span className="hero-word inline-block opacity-0 translate-y-full" style={{ wordBreak: 'keep-all' }}>
         {word}
       </span>
     </span>
@@ -162,16 +162,17 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
           <i className="fi fi-br-star" />
         </motion.div>
 
-        <div className="mb-4">
+        <div className="mb-4 overflow-hidden">
           <h1
             ref={nameRef}
-            className="font-bold tracking-tight leading-[1.15] flex flex-wrap items-baseline"
+            className="font-bold tracking-tight leading-[1.2] flex flex-wrap items-baseline"
             style={{
-              fontSize: 'clamp(2.75rem, 8vw, 7rem)',
+              fontSize: 'clamp(2.2rem, 7vw, 6.5rem)',
               background: 'linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 100%)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
+              wordBreak: 'keep-all',
             }}
           >
             {nameWords}

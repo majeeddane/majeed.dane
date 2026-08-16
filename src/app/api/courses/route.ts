@@ -30,7 +30,9 @@ export async function GET() {
       visible: item.visible,
     }));
 
-    return NextResponse.json(normalized);
+    const response = NextResponse.json(normalized);
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
+    return response;
   } catch (error) {
     console.error('Error fetching courses:', error);
     return NextResponse.json(
