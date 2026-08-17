@@ -105,7 +105,7 @@ function ImageCropDialog({
   }, [completedCrop, onCropComplete]);
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div data-lenis-prevent className="fixed inset-0 z-[200000] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
       <div className="w-full max-w-lg rounded-2xl border border-white/10 p-6 shadow-2xl" style={{ background: NAVY_900 }}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-white">{t('قص الصورة', 'Crop Image')}</h3>
@@ -289,6 +289,17 @@ export default function AdminPanel() {
     window.addEventListener('open-admin-panel', handleOpen);
     return () => window.removeEventListener('open-admin-panel', handleOpen);
   }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
@@ -902,7 +913,7 @@ export default function AdminPanel() {
       <div className="p-4 border-b border-white/10">
         <h2 className="text-lg font-bold" style={{ color: GOLD }}>{t('لوحة الإدارة', 'Admin Panel')}</h2>
       </div>
-      <nav className="flex-1 overflow-y-auto py-2 custom-scrollbar">
+      <nav data-lenis-prevent className="flex-1 overflow-y-auto py-2 custom-scrollbar">
         {NAV_ITEMS.map((item) => (
           <button
             key={item.key}
@@ -2014,7 +2025,7 @@ export default function AdminPanel() {
     <>
       {/* Full Panel Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex h-screen w-screen overflow-hidden" style={{ background: NAVY_900 }}>
+        <div data-lenis-prevent className="fixed inset-0 z-[99999] flex h-screen w-screen overflow-hidden" style={{ background: NAVY_900 }}>
           {/* Sidebar */}
           {isAuthenticated && renderSidebar()}
 
@@ -2047,7 +2058,7 @@ export default function AdminPanel() {
             </div>
 
             {/* Scrollable Content Area */}
-            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+            <div data-lenis-prevent className="flex-1 overflow-y-auto p-6 custom-scrollbar">
               {!isAuthenticated ? renderLogin() : renderSection()}
             </div>
           </div>

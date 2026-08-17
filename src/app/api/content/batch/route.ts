@@ -13,7 +13,7 @@ export async function PUT(request: Request) {
       );
     }
 
-    const results = [];
+    const results: any[] = [];
 
     for (const item of body) {
       const { key, valueAr, valueEn } = item;
