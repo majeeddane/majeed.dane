@@ -29,11 +29,13 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
 
   const [dynamicContent, setDynamicContent] = useState<Record<string, { valueAr: string; valueEn: string }>>(initialMap);
 
-  const initialProfileUrl   = initialContent.find(item => item.key === 'profile_image')?.valueAr || null;
-  const initialCvUrl        = initialContent.find(item => item.key === 'cv_file')?.valueAr || null;
+  const initialProfileUrl      = initialContent.find(item => item.key === 'profile_image')?.valueAr || null;
+  const initialCvUrl           = initialContent.find(item => item.key === 'cv_file')?.valueAr || null;
+  const initialPortfolioUrl    = initialContent.find(item => item.key === 'portfolio_file')?.valueAr || null;
 
-  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(initialProfileUrl);
-  const [cvUrl,           setCvUrl]           = useState<string | null>(initialCvUrl);
+  const [profileImageUrl,    setProfileImageUrl]    = useState<string | null>(initialProfileUrl);
+  const [cvUrl,              setCvUrl]              = useState<string | null>(initialCvUrl);
+  const [portfolioFileUrl,   setPortfolioFileUrl]   = useState<string | null>(initialPortfolioUrl);
 
   useEffect(() => {
     if (initialContent.length > 0) return;
@@ -43,6 +45,8 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
         if (profileItem?.valueAr) setProfileImageUrl(profileItem.valueAr);
         const cvItem = data.find(item => item.key === 'cv_file');
         if (cvItem?.valueAr) setCvUrl(cvItem.valueAr);
+        const pfItem = data.find(item => item.key === 'portfolio_file');
+        if (pfItem?.valueAr) setPortfolioFileUrl(pfItem.valueAr);
         const map: Record<string, { valueAr: string; valueEn: string }> = {};
         data.forEach(item => { map[item.key] = { valueAr: item.valueAr || '', valueEn: item.valueEn || '' }; });
         setDynamicContent(map);
@@ -78,6 +82,17 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
       return;
     }
     window.open(cvUrl, '_blank');
+  };
+
+  const handlePortfolioFileClick = () => {
+    if (!portfolioFileUrl) {
+      toast({
+        title: t('ملف الأعمال غير متاح بعد', 'Portfolio file not available yet'),
+        description: t('سيتم إضافة الملف قريباً', 'The file will be added soon'),
+      });
+      return;
+    }
+    window.open(portfolioFileUrl, '_blank');
   };
 
   const scrollToSection = (id: string) => {
@@ -234,14 +249,15 @@ export default function HeroSection({ initialContent = [] }: HeroSectionProps) {
                 {t('تحميل السيرة الذاتية', 'Download CV')}
               </button>
 
-              <a
-                href="mailto:majeed.dane@gmail.com"
+              <button
+                type="button"
+                onClick={handlePortfolioFileClick}
                 className="btn-outline-white"
                 data-cursor-hover
               >
-                <i className="fi fi-br-envelope text-sm" />
-                {t('تواصل معي', 'Contact Me')}
-              </a>
+                <FileText className="h-4 w-4" />
+                {t('ملف أعمالي', 'My Portfolio')}
+              </button>
             </motion.div>
           </div>
 
