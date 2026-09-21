@@ -371,16 +371,16 @@ export default function PortfolioSection() {
           <div className="mb-12 reveal-up">
             <p className="section-eyebrow">
               <i className="fi fi-br-layers" />
-              {t('مختارات من أعمالي', 'Selected Works')}
+              {t('أعمال مختارة', 'Selected Work')}
             </p>
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
               <h2 className="section-title-xl">
-                {t('معرض', 'Port')}<span style={{ color: '#C9A84C' }}>{t('الأعمال', 'folio')}</span>
+                {t('الأعمال', 'Select')}<span style={{ color: '#C9A84C' }}>{t(' المختارة', 'ed Work')}</span>
               </h2>
               <p className="text-white/50 text-sm max-w-xs leading-relaxed">
                 {t(
-                  'مجموعة من أبرز مشاريعي في التصميم والتسويق الرقمي',
-                  'A curated selection of my design and digital marketing projects'
+                  'مجموعة من أبرز مشاريعي في الهوية البصرية والتصميم التجاري',
+                  'A curated selection of my visual identity and commercial design projects'
                 )}
               </p>
             </div>

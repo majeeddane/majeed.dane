@@ -1,16 +1,16 @@
 'use client';
 
 import { useLanguage } from '@/lib/language-context';
-import { Download, Settings } from 'lucide-react';
+import { Download, Mail } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 const quickLinks = [
-  { ar: 'نبذة عني', en: 'About',      href: '#about' },
-  { ar: 'المهارات', en: 'Skills',     href: '#skills' },
-  { ar: 'الخبرة',   en: 'Experience', href: '#experience' },
-  { ar: 'الأعمال',  en: 'Portfolio',  href: '#portfolio' },
-  { ar: 'تواصل',    en: 'Contact',    href: '#contact' },
+  { ar: 'الأعمال',  en: 'Work',       href: '#portfolio' },
+  { ar: 'الخدمات', en: 'Services',   href: '#services'  },
+  { ar: 'الخبرة',  en: 'Experience', href: '#experience'},
+  { ar: 'عني',     en: 'About',      href: '#about'     },
+  { ar: 'تواصل',   en: 'Contact',    href: '#contact'   },
 ];
 
 interface FooterProps {
@@ -52,89 +52,101 @@ export default function Footer({ initialContent = [] }: FooterProps) {
     }
   };
 
+  const WHATSAPP_NUMBER = '966554767928';
+  const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}`;
+
   return (
     <footer
-      className="bg-[#060E1A] border-t border-white/10 relative overflow-hidden"
+      className="bg-[#060E1A] border-t border-white/[0.06] relative overflow-hidden"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 max-w-4xl h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 max-w-4xl h-px bg-gradient-to-r from-transparent via-gold/20 to-transparent" />
 
       <div className="mx-auto max-w-7xl px-6 py-14 sm:px-8 lg:px-12">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-3 md:gap-8 items-start">
+
+          {/* Brand */}
           <div>
-            <h3 className="text-2xl font-bold tracking-tight text-white mb-2">
-              <span style={{ color: '#C9A84C' }}>{t('عبدالمجيد', 'Al')}</span>
-              {t(' الضاعني', '-Daani')}
+            <h3 className="text-xl font-bold tracking-tight text-white mb-1">
+              <span style={{ color: '#C9A84C' }}>{t('عبدالمجيد', 'Abdulmajeed')}</span>
+              {t(' الضاعني', ' Aldhanei')}
             </h3>
-            <p className="text-xs font-semibold uppercase tracking-widest text-gold mb-3">
-              {t('مصمم جرافيك ومسوّق رقمي ومطوّر', 'Graphic Designer & Digital Marketer & Developer')}
+            <p className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-4">
+              {t('مصمم جرافيك', 'Graphic Designer')}
             </p>
-            <p className="text-sm leading-relaxed text-white/60 max-w-sm">
+            <p className="text-sm leading-relaxed text-white/40 max-w-xs">
               {t(
-                'أساعد العلامات التجارية والأنشطة التجارية على بناء هوية بصرية مميزة وتحقيق نمو رقمي مستدام من خلال مزج الإبداع بالتسويق والتكنولوجيا.',
-                'Helping brands and businesses build distinctive visual identities and achieve sustainable digital growth through creative design, strategic marketing, and technology.'
+                'الرياض، المملكة العربية السعودية',
+                'Riyadh, Saudi Arabia'
               )}
             </p>
+
+            {/* Contact links */}
+            <div className="mt-5 flex flex-col gap-2">
+              <a
+                href="mailto:majeed.dane@gmail.com"
+                className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors"
+              >
+                <Mail className="h-3.5 w-3.5" style={{ color: '#C9A84C' }} />
+                majeed.dane@gmail.com
+              </a>
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-xs text-white/40 hover:text-white/70 transition-colors"
+              >
+                <i className="fi fi-brands-whatsapp text-sm" style={{ color: '#25D366' }} />
+                +966 55 476 7928
+              </a>
+            </div>
           </div>
 
+          {/* Navigation */}
           <div className="md:mx-auto">
-            <h4 className="mb-4 text-xs font-bold uppercase tracking-widest text-gold">
-              {t('روابط سريعة', 'Quick Navigation')}
+            <h4 className="mb-4 text-xs font-bold uppercase tracking-widest text-white/25">
+              {t('روابط سريعة', 'Quick Links')}
             </h4>
-            <nav className="flex flex-col gap-2.5">
+            <nav className="flex flex-col gap-2.5" role="navigation" aria-label={t('روابط التنقل', 'Navigation Links')}>
               {quickLinks.map((link, index) => (
                 <a
                   key={index}
                   href={link.href}
                   onClick={(e) => handleNavClick(e, link.href)}
                   data-cursor-hover
-                  className="text-sm text-white/60 transition-colors duration-200 hover:text-white flex items-center gap-2 group"
+                  className="text-sm text-white/40 transition-colors duration-200 hover:text-white/70 flex items-center gap-2 group"
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-gold/40 group-hover:bg-gold transition-colors" />
+                  <span className="w-1 h-1 rounded-full bg-white/15 group-hover:bg-gold/60 transition-colors" />
                   {t(link.ar, link.en)}
                 </a>
               ))}
             </nav>
           </div>
 
-          <div className="flex flex-col justify-between h-full">
-            <div>
-              <h4 className="mb-4 text-xs font-bold uppercase tracking-widest text-gold">
-                {t('السيرة الذاتية وإدارة', 'Resume & Admin')}
-              </h4>
-              <div className="flex flex-wrap gap-3">
-                <a
-                  href={cvUrl || '#'}
-                  target={cvUrl ? '_blank' : undefined}
-                  rel={cvUrl ? 'noopener noreferrer' : undefined}
-                  onClick={handleCvClick}
-                  data-cursor-hover
-                  className="btn-outline-gold text-xs py-2 px-4"
-                >
-                  <Download className="h-3.5 w-3.5" />
-                  {t('تحميل السيرة الذاتية', 'Download CV')}
-                </a>
+          {/* CV & Actions */}
+          <div>
+            <h4 className="mb-4 text-xs font-bold uppercase tracking-widest text-white/25">
+              {t('السيرة الذاتية', 'Resume')}
+            </h4>
 
-                <button
-                  onClick={() => {
-                    window.dispatchEvent(new CustomEvent('open-admin-panel'));
-                  }}
-                  data-cursor-hover
-                  className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-medium text-white/60 transition-all duration-300 hover:border-gold/40 hover:bg-white/10 hover:text-white"
-                  aria-label={t('لوحة الإدارة', 'Admin Panel')}
-                >
-                  <Settings className="h-3.5 w-3.5 text-white/50" />
-                  <span>{t('لوحة التحكم', 'Admin Panel')}</span>
-                </button>
-              </div>
+            <div className="flex flex-col gap-3">
+              <a
+                href={cvUrl || '#'}
+                target={cvUrl ? '_blank' : undefined}
+                rel={cvUrl ? 'noopener noreferrer' : undefined}
+                onClick={handleCvClick}
+                data-cursor-hover
+                className="btn-outline-gold text-xs py-2.5 px-5 w-fit"
+              >
+                <Download className="h-3.5 w-3.5" />
+                {t('تحميل السيرة الذاتية', 'Download CV')}
+              </a>
             </div>
 
-            <div className="mt-10 pt-6 border-t border-white/10">
-              <p className="text-xs text-white/40">
-                {t(
-                  '© 2026 عبدالمجيد الضاعني. جميع الحقوق محفوظة.',
-                  '© 2026 Al-Daani. All Rights Reserved.'
-                )}
+            {/* Copyright */}
+            <div className="mt-10 pt-6 border-t border-white/[0.06]">
+              <p className="text-xs text-white/25">
+                © {new Date().getFullYear()} {t('عبدالمجيد الضاعني', 'Abdulmajeed Aldhanei')}
               </p>
             </div>
           </div>

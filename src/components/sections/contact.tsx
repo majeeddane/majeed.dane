@@ -101,7 +101,7 @@ export default function ContactSection() {
         <div className="mb-14 reveal-up">
           <p className="section-eyebrow">
             <i className="fi fi-br-envelope" />
-            {t('دعنا نتحدث', 'Let’s Connect')}
+            {t('هل لديك مشروع أو فرصة عمل؟', 'Have a project or opportunity?')}
           </p>
           <h2 className="section-title-xl">
             {t('تواصل', 'Get In')}{' '}
@@ -112,10 +112,10 @@ export default function ContactSection() {
 
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-2 lg:gap-16 items-start">
           <div className="flex flex-col gap-8">
-            <p className="text-base md:text-lg leading-relaxed text-white/70">
+            <p className="text-base md:text-lg leading-relaxed text-white/60">
               {t(
-                'أنا دائماً مستعد للتعاون والعمل على مشاريع جديدة وإبداعية. لا تتردد في التواصل معي لمناقشة فكرتك القادمة!',
-                'I am always ready to collaborate and work on exciting new projects. Feel free to reach out and let’s create something extraordinary together!'
+                'متاح للفرص الوظيفية والتعاون المهني في الرياض. إذا كان لديك مشروع تصميمي أو فرصة عمل مناسبة، لا تتردد في التواصل.',
+                'Available for on-site job opportunities and professional collaboration in Riyadh. If you have a design project or a suitable opportunity, feel free to get in touch.'
               )}
             </p>
 

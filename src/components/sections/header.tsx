@@ -7,11 +7,11 @@ import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const navLinks = [
-  { ar: 'نبذة عني',  en: 'About',      href: '#about'      },
-  { ar: 'المهارات',  en: 'Skills',     href: '#skills'     },
-  { ar: 'الخبرة',   en: 'Experience', href: '#experience' },
-  { ar: 'الأعمال',  en: 'Portfolio',  href: '#portfolio'  },
-  { ar: 'تواصل',    en: 'Contact',    href: '#contact'    },
+  { ar: 'الأعمال',   en: 'Work',       href: '#portfolio'  },
+  { ar: 'الخدمات',   en: 'Services',   href: '#services'   },
+  { ar: 'الخبرة',    en: 'Experience', href: '#experience' },
+  { ar: 'عني',       en: 'About',      href: '#about'      },
+  { ar: 'تواصل',     en: 'Contact',    href: '#contact'    },
 ];
 
 interface HeaderProps {
@@ -78,7 +78,7 @@ export default function Header({ initialContent = [] }: HeaderProps) {
         ref={headerRef}
         className={`fixed top-0 z-[9980] w-full transition-all duration-400 ${
           scrolled
-            ? 'bg-[#060E1A]/90 backdrop-blur-md border-b border-white/[0.08] shadow-lg shadow-black/30'
+            ? 'bg-[#060E1A]/92 backdrop-blur-md border-b border-white/[0.07] shadow-lg shadow-black/25'
             : 'bg-transparent'
         }`}
         dir={isRTL ? 'rtl' : 'ltr'}
@@ -89,26 +89,24 @@ export default function Header({ initialContent = [] }: HeaderProps) {
           <button
             onClick={scrollToTop}
             data-cursor-hover
-            className={`font-bold tracking-tight transition-all duration-300 ${
-              scrolled ? 'text-base text-white' : 'text-lg text-white'
-            }`}
+            className="font-bold tracking-tight transition-all duration-300 text-base text-white flex items-center gap-0"
           >
-            <span style={{ color: '#C9A84C' }}>{t('عبدالمجيد', 'Al')}</span>
-            {t(' الضاعني', '-Daani')}
+            <span style={{ color: '#C9A84C' }}>{t('عبدالمجيد', 'Aldhanei')}</span>
+            {t(' الضاعني', '')}
           </button>
 
           {/* Desktop Nav */}
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center gap-0.5 md:flex" role="navigation" aria-label={t('التنقل الرئيسي', 'Main Navigation')}>
             {navLinks.map((link, i) => (
               <a
                 key={i}
                 href={link.href}
                 onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
                 data-cursor-hover
-                className="relative px-4 py-2 text-sm font-medium text-white/70 hover:text-white transition-colors duration-200 group"
+                className="relative px-4 py-2 text-sm font-medium text-white/60 hover:text-white transition-colors duration-200 group"
               >
                 {t(link.ar, link.en)}
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-0 bg-gold group-hover:w-3/4 transition-all duration-300" />
+                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-px w-0 bg-gold group-hover:w-3/4 transition-all duration-300" />
               </a>
             ))}
           </nav>
@@ -118,7 +116,8 @@ export default function Header({ initialContent = [] }: HeaderProps) {
             <button
               onClick={toggleLanguage}
               data-cursor-hover
-              className="flex h-8 w-12 items-center justify-center rounded-full text-xs font-bold transition-all duration-200 border border-white/20 text-white/70 hover:border-white/40 hover:text-white"
+              className="flex h-7 w-11 items-center justify-center rounded-full text-[11px] font-semibold transition-all duration-200 border border-white/15 text-white/50 hover:border-white/30 hover:text-white/80"
+              aria-label={lang === 'ar' ? 'Switch to English' : 'التبديل للعربية'}
             >
               {lang === 'ar' ? 'EN' : 'عربي'}
             </button>
@@ -132,7 +131,7 @@ export default function Header({ initialContent = [] }: HeaderProps) {
               className="btn-outline-gold text-xs py-1.5 px-4"
             >
               <Download className="h-3.5 w-3.5" />
-              <span>{t('السيرة الذاتية', 'CV')}</span>
+              <span>{t('السيرة الذاتية', 'Download CV')}</span>
             </a>
           </div>
 
@@ -141,7 +140,8 @@ export default function Header({ initialContent = [] }: HeaderProps) {
             <button
               onClick={toggleLanguage}
               data-cursor-hover
-              className="flex h-8 w-12 items-center justify-center rounded-full text-[10px] font-bold border border-white/20 text-white/70"
+              className="flex h-7 w-11 items-center justify-center rounded-full text-[10px] font-semibold border border-white/15 text-white/50"
+              aria-label={lang === 'ar' ? 'Switch to English' : 'التبديل للعربية'}
             >
               {lang === 'ar' ? 'EN' : 'عربي'}
             </button>
@@ -151,6 +151,7 @@ export default function Header({ initialContent = [] }: HeaderProps) {
               data-cursor-hover
               className="relative w-9 h-9 flex flex-col justify-center items-center gap-1.5 z-[9999]"
               aria-label={mobileOpen ? 'إغلاق القائمة' : 'فتح القائمة'}
+              aria-expanded={mobileOpen}
             >
               <motion.span
                 className="block h-0.5 bg-white origin-center rounded-full"
@@ -180,34 +181,36 @@ export default function Header({ initialContent = [] }: HeaderProps) {
         {mobileOpen && (
           <motion.div
             key="mobile-menu"
-            className="fixed inset-0 z-[9970] flex flex-col bg-[#0A1628] md:hidden"
+            className="fixed inset-0 z-[9970] flex flex-col bg-[#060E1A] md:hidden"
             dir={isRTL ? 'rtl' : 'ltr'}
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('القائمة الرئيسية', 'Main Menu')}
           >
             <div className="flex flex-1 flex-col justify-center px-8">
-              <p className="section-eyebrow mb-6">
-                <i className="fi fi-br-bars-sort" />
-                {t('التنقل الرئيسية', 'Main Navigation')}
+              <p className="text-xs text-white/30 font-semibold uppercase tracking-widest mb-8">
+                {t('التنقل', 'Navigation')}
               </p>
 
-              <nav className="flex flex-col gap-2">
+              <nav className="flex flex-col gap-0" role="navigation">
                 {navLinks.map((link, i) => (
                   <a
                     key={i}
                     href={link.href}
                     onClick={(e) => { e.preventDefault(); scrollToSection(link.href); }}
-                    className="flex items-center justify-between py-3.5 border-b border-white/10 text-white/70 hover:text-white transition-colors"
+                    className="flex items-center justify-between py-4 border-b border-white/[0.07] text-white/60 hover:text-white transition-colors"
                   >
-                    <span className="text-xl font-bold">{t(link.ar, link.en)}</span>
-                    <span className="text-gold/60 text-xs font-semibold">0{i + 1}</span>
+                    <span className="text-2xl font-bold">{t(link.ar, link.en)}</span>
+                    <span className="text-gold/40 text-xs font-semibold tabular-nums">0{i + 1}</span>
                   </a>
                 ))}
               </nav>
 
-              <div className="mt-8 flex flex-col gap-3">
+              <div className="mt-10 flex flex-col gap-3">
                 <a
                   href={cvUrl || '#'}
                   target={cvUrl ? '_blank' : undefined}

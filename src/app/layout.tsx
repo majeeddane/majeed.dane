@@ -7,20 +7,24 @@ import CustomCursor from "@/components/ui/custom-cursor";
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://al-daani.xyz'),
-  title: "عبدالمجيد الضاعني | مصمم جرافيك ومسوّق رقمي",
+  title: "عبدالمجيد الضاعني | مصمم جرافيك",
   description:
-    "مصمم جرافيك ومسوّق رقمي محترف مع خبرة واسعة في التصميم الإبداعي والتسويق الرقمي. أقدم حلولاً إبداعية تمزج بين الفن والتقنية لتحقيق رؤية عملائك.",
+    "مصمم جرافيك متخصص في الهوية البصرية والتصميم التجاري والمحتوى الإبداعي، مع خبرة في تصميم المعارض والبروفايلات التجارية والمشاريع الرقمية. الرياض، السعودية.",
   keywords: [
-    "تصميم جرافيك",
-    "تسويق رقمي",
-    "عبدالمجيد الضاعني",
-    "Graphic Design",
-    "Digital Marketing",
-    "Branding",
+    "مصمم جرافيك",
     "هوية بصرية",
-    "تصميم شعارات",
+    "تصميم معارض",
+    "بروفايلات شركات",
+    "عبدالمجيد الضاعني",
+    "Graphic Designer",
+    "Brand Identity",
+    "Exhibition Design",
+    "Corporate Profiles",
+    "Riyadh",
+    "Saudi Arabia",
+    "تصميم الرياض",
   ],
-  authors: [{ name: "عبدالمجيد الضاعني" }],
+  authors: [{ name: "عبدالمجيد الضاعني", url: "https://al-daani.xyz" }],
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -28,27 +32,42 @@ export const metadata: Metadata = {
     ],
   },
   openGraph: {
-    title: "عبدالمجيد الضاعني | مصمم جرافيك ومسوّق رقمي",
+    title: "عبدالمجيد الضاعني | مصمم جرافيك",
     description:
-      "مصمم جرافيك ومسوّق رقمي محترف مع خبرة واسعة في التصميم الإبداعي والتسويق الرقمي. أقدم حلولاً إبداعية تمزج بين الفن والتقنية لتحقيق رؤية عملائك.",
+      "مصمم جرافيك متخصص في الهوية البصرية والتصميم التجاري والمحتوى الإبداعي، مع خبرة في تصميم المعارض والبروفايلات التجارية والمشاريع الرقمية.",
     type: "website",
     locale: "ar_SA",
     alternateLocale: "en_US",
+    url: "https://al-daani.xyz",
+    siteName: "Abdulmajeed Aldhanei — Graphic Designer",
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: "عبدالمجيد الضاعني | مصمم جرافيك ومسوّق رقمي",
+        alt: "عبدالمجيد الضاعني | مصمم جرافيك",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "عبدالمجيد الضاعني | مصمم جرافيك ومسوّق رقمي",
+    title: "عبدالمجيد الضاعني | مصمم جرافيك",
     description:
-      "مصمم جرافيك ومسوّق رقمي محترف مع خبرة واسعة في التصميم الإبداعي والتسويق الرقمي.",
+      "مصمم جرافيك متخصص في الهوية البصرية والتصميم التجاري والمحتوى الإبداعي.",
     images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  alternates: {
+    canonical: "https://al-daani.xyz",
   },
 };
 
@@ -67,16 +86,24 @@ export default function RootLayout({
     "@context": "https://schema.org",
     "@type": "Person",
     name: "عبدالمجيد الضاعني",
-    alternateName: "Abdulmajid Al-Daani",
-    jobTitle: "مصمم جرافيك ومسوّق رقمي",
+    alternateName: "Abdulmajeed Aldhanei",
+    jobTitle: "Graphic Designer",
     description:
-      "مصمم جرافيك ومسوّق رقمي محترف مع خبرة واسعة في التصميم الإبداعي والتسويق الرقمي.",
+      "Graphic designer specializing in visual identity, brand design, exhibition design, and corporate profiles. Based in Riyadh, Saudi Arabia.",
+    url: "https://al-daani.xyz",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Riyadh",
+      addressCountry: "SA",
+    },
     knowsAbout: [
       "Graphic Design",
-      "Digital Marketing",
-      "Branding",
-      "Social Media Marketing",
-      "UI/UX Design",
+      "Brand Identity",
+      "Visual Communication",
+      "Exhibition Design",
+      "Corporate Profiles",
+      "Digital Design",
+      "Web Design",
     ],
     sameAs: [],
   };

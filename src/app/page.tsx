@@ -1,13 +1,11 @@
 import Header from '@/components/sections/header';
 import HeroSection from '@/components/sections/hero';
-import AboutSection from '@/components/sections/about';
-import StatsSection from '@/components/sections/stats';
-import SkillsSection from '@/components/sections/skills';
-import AIExpertiseSection from '@/components/sections/ai-expertise';
-import ExperienceSection from '@/components/sections/experience';
-import ClientsSection from '@/components/sections/clients';
 import PortfolioSection from '@/components/sections/portfolio';
-import CoursesSection from '@/components/sections/courses';
+import ServicesSection from '@/components/sections/services';
+import ExperienceSection from '@/components/sections/experience';
+import AboutSection from '@/components/sections/about';
+import SkillsSection from '@/components/sections/skills';
+import ClientsSection from '@/components/sections/clients';
 import ContactSection from '@/components/sections/contact';
 import Footer from '@/components/sections/footer';
 import AdminPanel from '@/components/admin/admin-panel';
@@ -51,26 +49,29 @@ export default async function Home() {
     <div className="flex min-h-screen flex-col">
       <Header initialContent={initialContent} />
       <main className="flex-1">
+        {/* 1. Hero Section */}
         <HeroSection initialContent={initialContent} />
-        <div id="about">
-          <AboutSection initialContent={initialContent} />
-        </div>
-        <StatsSection />
-        <div id="skills">
-          <SkillsSection />
-        </div>
-        <AIExpertiseSection />
-        <div id="experience">
-          <ExperienceSection />
-        </div>
+
+        {/* 2. Selected Work */}
+        <PortfolioSection />
+
+        {/* 3. Services */}
+        <ServicesSection />
+
+        {/* 4. Work Experience */}
+        <ExperienceSection />
+
+        {/* 5. About Me */}
+        <AboutSection initialContent={initialContent} />
+
+        {/* 6. Skills */}
+        <SkillsSection />
+
+        {/* 7. Selected Clients */}
         <ClientsSection />
-        <div id="portfolio">
-          <PortfolioSection />
-        </div>
-        <CoursesSection />
-        <div id="contact">
-          <ContactSection />
-        </div>
+
+        {/* 8. Contact */}
+        <ContactSection />
       </main>
       <Footer initialContent={initialContent} />
       <AdminPanel />
