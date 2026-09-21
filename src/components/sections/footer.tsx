@@ -1,7 +1,7 @@
 'use client';
 
 import { useLanguage } from '@/lib/language-context';
-import { Download, Mail } from 'lucide-react';
+import { Download, Mail, Settings } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -123,10 +123,10 @@ export default function Footer({ initialContent = [] }: FooterProps) {
             </nav>
           </div>
 
-          {/* CV & Actions */}
+          {/* CV & Admin Actions */}
           <div>
             <h4 className="mb-4 text-xs font-bold uppercase tracking-widest text-white/25">
-              {t('السيرة الذاتية', 'Resume')}
+              {t('السيرة الذاتية والإدارة', 'Resume & Admin')}
             </h4>
 
             <div className="flex flex-col gap-3">
@@ -141,6 +141,19 @@ export default function Footer({ initialContent = [] }: FooterProps) {
                 <Download className="h-3.5 w-3.5" />
                 {t('تحميل السيرة الذاتية', 'Download CV')}
               </a>
+
+              {/* Admin Panel Trigger Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent('open-admin-panel'));
+                }}
+                className="inline-flex items-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-medium text-white/40 transition-all duration-300 hover:border-gold/40 hover:bg-gold/[0.08] hover:text-gold cursor-pointer w-fit"
+                aria-label={t('لوحة التحكم', 'Admin Panel')}
+              >
+                <Settings className="h-3.5 w-3.5 text-white/40 group-hover:text-gold" />
+                <span>{t('لوحة التحكم', 'Admin Panel')}</span>
+              </button>
             </div>
 
             {/* Copyright */}

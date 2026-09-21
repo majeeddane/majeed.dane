@@ -286,8 +286,18 @@ export default function AdminPanel() {
 
   useEffect(() => {
     const handleOpen = () => setIsOpen(true);
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.shiftKey || e.altKey) && (e.key.toLowerCase() === 'a')) {
+        e.preventDefault();
+        setIsOpen(prev => !prev);
+      }
+    };
     window.addEventListener('open-admin-panel', handleOpen);
-    return () => window.removeEventListener('open-admin-panel', handleOpen);
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('open-admin-panel', handleOpen);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   useEffect(() => {
